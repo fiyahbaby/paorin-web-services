@@ -1,0 +1,167 @@
+[
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.3",
+    "minTemp": "100.3",
+    "testName": "PKI_CRYPTO_WITH_DDR",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "110.0",
+    "minTemp": "99.4",
+    "testName": "GQSPI_1",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "109.8",
+    "minTemp": "99.9",
+    "testName": "SSAV_LPX_LPD_XPPU_register_access_error_on_APB",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "110.9",
+    "minTemp": "100.2",
+    "testName": "QSPI_Secure_boot_mode",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.8",
+    "minTemp": "101.7",
+    "testName": "PMX_PMC_XPPU_configuration_lock_test",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "110.0",
+    "minTemp": "99.6",
+    "testName": "SIVAL_PVT_26",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.5",
+    "minTemp": "100.7",
+    "testName": "PKI_CRYPTO_WITH_OCM",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.3",
+    "minTemp": "100.4",
+    "testName": "TTC",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "110.5",
+    "minTemp": "99.9",
+    "testName": "OCMBANK1_CE_Check_example",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.7",
+    "minTemp": "101.4",
+    "testName": "FPD_AFI_SLAVE",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.6",
+    "minTemp": "100.8",
+    "testName": "SIVAL_PVT_23",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.5",
+    "minTemp": "100.8",
+    "testName": "PKI_TRNG_ALL",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "108.2",
+    "minTemp": "99.3",
+    "testName": "FPD_timer",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "111.1",
+    "minTemp": "100.8",
+    "testName": "PMX_PMC_XPPU_NPI_configuration_lock_test",
+    "testResult": "PASS"
+  },
+  {
+    "buildID": "sival_PS-PVT_xapchar_20230209_18",
+    "deviceDNA": "TED8C9_5_12_2",
+    "voltage": "0.836_HP",
+    "runType": "PS-PVT",
+    "skew": "Non-Skewed",
+    "maxTemp": "112.2",
+    "minTemp": "100.6",
+    "testName": "SIVAL_PVT_33",
+    "testResult": "PASS"
+  }
+]

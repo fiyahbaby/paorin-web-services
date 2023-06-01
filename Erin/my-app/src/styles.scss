@@ -1,0 +1,48 @@
+/* You can add global styles to this file, and also import other style files */
+@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.scss";
+
+* {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  border-color: #dee2e6;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  background-color: var(--bluegray-50);
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+app-root,
+app-login {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+form {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.p-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ng-invalid.ng-touched {
+  border-color: #e24c4c;
+}

@@ -1,0 +1,19 @@
+<div
+  class="card flex align-items-center justify-content-between p-2 border-bottom-1"
+>
+  <p-image
+    class="logo-image"
+    src="../../../../assets/image/light-logo.png"
+    alt="Image"
+    height="50"
+  ></p-image>
+  <ng-container *ngIf="authService.isLoggedIn()">
+    <ng-container *ngIf="authService.isAdmin()">
+      <span class="welcome-text admin">Welcome, Admin</span>
+    </ng-container>
+    <ng-container *ngIf="!authService.isAdmin()">
+      <span class="welcome-text user">Welcome, User</span>
+    </ng-container>
+    <button (click)="logout()">Logout</button>
+  </ng-container>
+</div>

@@ -1,0 +1,16 @@
+.formLabel {
+  font-weight: bold;
+}
+
+.mandatoryAsterix {
+  color: red;
+}
+
+.formLabel span.toolTip::after {
+  content: " ";
+  width: 1px;
+  height: 1px;
+}
+.toolTip {
+  border-bottom: 1px dotted #000;
+}
