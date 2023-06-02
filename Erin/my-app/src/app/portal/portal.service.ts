@@ -18,10 +18,20 @@ export class PortalService {
 
   private getBackendUrl(): void {
     this.http
-      .get<{ ip: string }>('http://172.22.119.78:5000/api/ip')
+      .get('../../assets/APP_CONFIG.txt', { responseType: 'text' })
       .subscribe((data) => {
-        this.backendUrl = `http://${data.ip}:5000`;
+        const ipAddress = this.extractIpAddress(data);
+        this.backendUrl = `http://${ipAddress}:5000`;
       });
+  }
+
+  private extractIpAddress(configText: string): string {
+    const lines = configText.split('\n');
+    const ipAddressLine = lines.find((line) => line.startsWith('ip_address:'));
+    if (ipAddressLine) {
+      return ipAddressLine.split(':')[1].trim();
+    }
+    return '';
   }
 
   getAccounts(): Observable<any[]> {

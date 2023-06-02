@@ -7,13 +7,14 @@
     alt="Image"
     height="50"
   ></p-image>
-  <ng-container *ngIf="authService.isLoggedIn()">
-    <ng-container *ngIf="authService.isAdmin()">
-      <span class="welcome-text admin">Welcome, Admin</span>
-    </ng-container>
-    <ng-container *ngIf="!authService.isAdmin()">
-      <span class="welcome-text user">Welcome, User</span>
-    </ng-container>
-    <button (click)="logout()">Logout</button>
-  </ng-container>
+  <div class="flex align-items-center" *ngIf="authService.isLoggedIn()">
+    <span class="welcome-text {{ this.userType }}"
+      >Welcome, {{ this.userType | titlecase }}</span
+    >
+    <p-button
+      (click)="logout()"
+      icon="pi pi-sign-out"
+      styleClass="p-button-rounded p-button-primary"
+    />
+  </div>
 </div>
