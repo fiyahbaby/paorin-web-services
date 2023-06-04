@@ -10,6 +10,7 @@ import { MessagesModule } from 'primeng/messages';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormLabelComponent } from './form-label/form-label.component';
 import { NavbarComponent } from './navbar/navbar.component';
+import { TieredMenuModule } from 'primeng/tieredmenu';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent],
@@ -24,6 +25,7 @@ import { NavbarComponent } from './navbar/navbar.component';
     MessagesModule,
     MenubarModule,
     ImageModule,
+    TieredMenuModule,
   ],
   exports: [
     FormsModule,
@@ -38,6 +40,7 @@ import { NavbarComponent } from './navbar/navbar.component';
     MessagesModule,
     MenubarModule,
     ImageModule,
+    TieredMenuModule,
   ],
   providers: [],
 })

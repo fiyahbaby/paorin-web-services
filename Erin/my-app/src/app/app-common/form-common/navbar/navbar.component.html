@@ -7,6 +7,20 @@
     alt="Image"
     height="50"
   ></p-image>
+  <div class="flex align-items-center">
+    <p-button
+      label="Project"
+      styleClass="p-button-link"
+      (click)="pMenu.toggle($event)"
+    ></p-button>
+    <p-tieredMenu #pMenu [model]="project" [popup]="true"></p-tieredMenu>
+    <p-button
+      label="Build ID"
+      styleClass="p-button-link"
+      (click)="bMenu.toggle($event)"
+    ></p-button>
+    <p-tieredMenu #bMenu [model]="buildId" [popup]="true"></p-tieredMenu>
+  </div>
   <div class="flex align-items-center" *ngIf="authService.isLoggedIn()">
     <span class="welcome-text {{ this.userType }}"
       >Welcome, {{ this.userType | titlecase }}</span

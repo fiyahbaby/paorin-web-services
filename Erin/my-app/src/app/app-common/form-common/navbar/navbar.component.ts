@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../auth-service/auth.service';
 import { Router } from '@angular/router'; // Import the Router
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-navbar',
@@ -9,6 +10,8 @@ import { Router } from '@angular/router'; // Import the Router
 })
 export class NavbarComponent implements OnInit {
   userType: string | undefined;
+  project: MenuItem[] = [];
+  buildId: MenuItem[] = [];
 
   constructor(public authService: AuthService, private router: Router) {}
 
@@ -16,6 +19,24 @@ export class NavbarComponent implements OnInit {
     if (this.authService.isLoggedIn()) {
       this.userType = this.authService.getUserType();
     }
+
+    this.project = [
+      {
+        label: 'View Project',
+      },
+      {
+        label: 'Create Project',
+      },
+    ];
+
+    this.buildId = [
+      {
+        label: 'View Build IDs',
+      },
+      {
+        label: 'Create Build ID',
+      },
+    ];
   }
 
   logout(): void {
