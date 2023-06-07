@@ -26,6 +26,7 @@ export class NavbarComponent implements OnInit {
       },
       {
         label: 'Create Project',
+        command: () => this.router.navigate(['/create-project']),
       },
     ];
 
@@ -42,5 +43,9 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  navigateToHome(): void {
+    this.router.navigate(['/home']);
   }
 }

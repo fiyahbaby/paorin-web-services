@@ -1,12 +1,24 @@
 <div
   class="card flex align-items-center justify-content-between p-2 border-bottom-1"
 >
-  <p-image
-    class="logo-image"
-    src="../../../../assets/image/light-logo.png"
-    alt="Image"
-    height="55"
-  ></p-image>
+  <button
+    pripple=""
+    class="p-ripple p-element p-button-link logo-button p-button p-component custom-button"
+    type="button"
+    (click)="navigateToHome()"
+  >
+    <p-image
+      _ngcontent-ooy-c13=""
+      src="../../../../assets/image/light-logo.png"
+      alt="Image"
+      height="55"
+      class="p-element logo-image ng-tns-c6-7 ng-star-inserted"
+      ng-reflect-src="../../../../assets/image/light"
+      ng-reflect-alt="Image"
+      ng-reflect-height="55"
+    ></p-image>
+  </button>
+
   <div class="flex align-items-center">
     <p-button
       label="Project"
@@ -22,13 +34,13 @@
     <p-tieredMenu #bMenu [model]="buildId" [popup]="true"></p-tieredMenu>
   </div>
   <div class="flex align-items-center" *ngIf="authService.isLoggedIn()">
-    <span class="welcome-text {{ this.userType }}"
-      >Welcome, {{ this.userType | titlecase }}</span
+    <span class="welcome-text {{ this.userType }}">
+      {{ this.userType | titlecase }}</span
     >
     <p-button
       (click)="logout()"
       icon="pi pi-sign-out"
       styleClass="p-button-rounded p-button-primary"
-    />
+    ></p-button>
   </div>
 </div>

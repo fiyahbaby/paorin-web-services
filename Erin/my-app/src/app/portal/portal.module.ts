@@ -6,12 +6,16 @@ import { PortalRoutingModule } from './portal-routing.module';
 import { PortalComponent } from './portal.component';
 import { PortalService } from './portal.service';
 import { ProjectMenuComponent } from './project-menu/project-menu.component';
-import { CreateProjectComponent } from './project-menu/create-project/create-project.component';
 import { ViewProjectComponent } from './project-menu/view-project/view-project.component';
 import { EditProjectComponent } from './project-menu/edit-project/edit-project.component';
 
 @NgModule({
-  declarations: [PortalComponent, ProjectMenuComponent, CreateProjectComponent, ViewProjectComponent, EditProjectComponent],
+  declarations: [
+    PortalComponent,
+    ProjectMenuComponent,
+    ViewProjectComponent,
+    EditProjectComponent,
+  ],
   imports: [
     CommonModule,
     PortalRoutingModule,
