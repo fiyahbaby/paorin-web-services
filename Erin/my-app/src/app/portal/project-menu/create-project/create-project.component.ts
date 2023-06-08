@@ -4,7 +4,6 @@ import { Message, MessageService } from 'primeng/api';
 import { PortalService } from '../../portal.service';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
-import { CreateProjectResponse } from './create-project-response.interface';
 
 @Component({
   selector: 'app-create-project',
@@ -13,6 +12,7 @@ import { CreateProjectResponse } from './create-project-response.interface';
 })
 export class CreateProjectComponent implements OnInit {
   createProjectForm!: FormGroup;
+  checked: boolean = false;
   messages: Message[] = [];
 
   constructor(
@@ -29,8 +29,14 @@ export class CreateProjectComponent implements OnInit {
 
   private initFormControl(): void {
     this.createProjectForm = this.formBuilder.group({
-      // username: ['', Validators.required],
-      // password: ['', Validators.required],
+      existingDevice: [false, Validators.required],
+      existingRevision: [false, Validators.required],
+      existingTestType: [false, Validators.required],
+      existingBlock: [false, Validators.required],
+      deviceFamily: ['', Validators.required],
+      revision: ['', Validators.required],
+      testType: ['', Validators.required],
+      block: ['', Validators.required],
     });
   }
 }

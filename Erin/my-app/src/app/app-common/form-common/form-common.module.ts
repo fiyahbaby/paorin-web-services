@@ -11,6 +11,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FormLabelComponent } from './form-label/form-label.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { TieredMenuModule } from 'primeng/tieredmenu';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DividerModule } from 'primeng/divider';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent],
@@ -26,6 +28,8 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
     MenubarModule,
     ImageModule,
     TieredMenuModule,
+    CheckboxModule,
+    DividerModule,
   ],
   exports: [
     FormsModule,
@@ -41,6 +45,8 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
     MenubarModule,
     ImageModule,
     TieredMenuModule,
+    CheckboxModule,
+    DividerModule,
   ],
   providers: [],
 })

@@ -22,13 +22,13 @@
   <div class="flex align-items-center">
     <p-button
       label="Project"
-      styleClass="p-button-link"
+      styleClass="p-button-secondary p-button-text"
       (click)="pMenu.toggle($event)"
     ></p-button>
     <p-tieredMenu #pMenu [model]="project" [popup]="true"></p-tieredMenu>
     <p-button
       label="Build ID"
-      styleClass="p-button-link"
+      styleClass="p-button-secondary p-button-text"
       (click)="bMenu.toggle($event)"
     ></p-button>
     <p-tieredMenu #bMenu [model]="buildId" [popup]="true"></p-tieredMenu>
@@ -40,7 +40,7 @@
     <p-button
       (click)="logout()"
       icon="pi pi-sign-out"
-      styleClass="p-button-rounded p-button-primary"
+      styleClass="p-button-rounded p-button-secondary"
     ></p-button>
   </div>
 </div>
