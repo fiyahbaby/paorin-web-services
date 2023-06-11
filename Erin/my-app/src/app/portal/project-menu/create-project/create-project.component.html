@@ -1,163 +1,109 @@
 <app-navbar></app-navbar>
 <form [formGroup]="createProjectForm">
-  <div class="w-full h-full flex align-items-center justify-content-center">
-    <div class="card flex justify-content-center w-12">
-      <p-card class="w-12 h-full card-header" header="Create Project">
-        <p-divider align="left" class="w-full" type="dashed">
-          <div class="inline-flex align-items-center">
-            <b>Device</b>
+  <app-header formHeader="Create Project" formSubHeader="Project Menu > Create Project"></app-header>
+  <div class="w-full flex align-items-center justify-content-center">
+    <p-card class="w-12 h-full card-header" id="create-project-p-card">
+      <p-accordion [multiple]="true" [activeIndex]="[0]" class="w-full">
+        <p-accordionTab header="Device">
+          <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
+            <app-form-label class="col-2" formLabel="Existing device family"></app-form-label>
+            <div>
+              <p-checkbox [binary]="true" inputId="existingDevice" formControlName="existingDevice"
+                          (click)="onClick('existingDevice')"></p-checkbox>
+            </div>
           </div>
-        </p-divider>
-        <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
-          <app-form-label formLabel="Existing Device Family"></app-form-label>
-          <div>
-            <p-checkbox
-              [binary]="true"
-              inputId="existingDevice"
-              formControlName="existingDevice"
-            ></p-checkbox>
+
+          <div class="flex flex-row align-items-center gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="New device family name"></app-form-label>
+            <input pInputText formControlName="deviceFamily" type="text" class="col-4 input-field" />
+            <small class="p-error" *ngIf="
+                  createProjectForm.controls['deviceFamily'].invalid &&
+                  createProjectForm.controls['deviceFamily'].touched
+                ">Device Family is required.</small>
           </div>
-        </div>
-
-        <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label
-            formLabel="Device Family"
-            mandatory="true"
-          ></app-form-label>
-          <input
-            pInputText
-            formControlName="deviceFamily"
-            type="text"
-            class="input-field"
-          />
-          <small
-            class="p-error"
-            *ngIf="
-              createProjectForm.controls['deviceFamily'].invalid &&
-              createProjectForm.controls['deviceFamily'].touched
-            "
-            >Device Family is required.</small
-          >
-        </div>
-
-        <p-divider align="left" class="w-full" type="dashed">
-          <div class="inline-flex align-items-center">
-            <b>Revision</b>
+          <div class="flex flex-row align-items-center gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="Select existing device family"></app-form-label>
+            <p-dropdown id="dropdown-button" class="col-4" [options]="existingDeviceOptions"
+                        formControlName="existingDeviceField" placeholder="Select a device family"></p-dropdown>
           </div>
-        </p-divider>
+        </p-accordionTab>
 
-        <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
-          <app-form-label formLabel="Existing Revision"></app-form-label>
-          <div>
-            <p-checkbox
-              [(ngModel)]="checked"
-              [binary]="true"
-              inputId="binary"
-              formLabel="existingRevision"
-            ></p-checkbox>
+        <p-accordionTab header="Revision">
+          <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
+            <app-form-label class="col-2" formLabel="Existing revision"></app-form-label>
+            <div>
+              <p-checkbox [binary]="true" inputId="existingRevision" formControlName="existingRevision"
+                          (click)="onClick('existingRevision')"></p-checkbox>
+            </div>
           </div>
-        </div>
 
-        <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label
-            formLabel="Revision"
-            mandatory="true"
-          ></app-form-label>
-          <input
-            pInputText
-            formControlName="revision"
-            type="text"
-            class="input-field"
-          />
-          <small
-            class="p-error"
-            *ngIf="
-              createProjectForm.controls['revision'].invalid &&
-              createProjectForm.controls['revision'].touched
-            "
-            >Revision is required.</small
-          >
-        </div>
-
-        <p-divider align="left" class="w-full" type="dashed">
-          <div class="inline-flex align-items-center">
-            <b>Test Type</b>
+          <div class="flex flex-row gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="New revision name"></app-form-label>
+            <input pInputText formControlName="revision" type="text" class="col-4 input-field" />
+            <small class="p-error" *ngIf="
+                  createProjectForm.controls['revision'].invalid &&
+                  createProjectForm.controls['revision'].touched
+                ">Revision is required.</small>
           </div>
-        </p-divider>
-
-        <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
-          <app-form-label formLabel="Existing Test Type"></app-form-label>
-          <div>
-            <p-checkbox
-              [(ngModel)]="checked"
-              [binary]="true"
-              inputId="binary"
-              formLabel="existingRevision"
-            ></p-checkbox>
+          <div class="flex flex-row align-items-center gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="Select existing revision"></app-form-label>
+            <p-dropdown id="dropdown-button" class="col-4" [options]="existingRevisionOptions"
+                        formControlName="existingRevisionField" placeholder="Select a revision"></p-dropdown>
           </div>
-        </div>
+        </p-accordionTab>
 
-        <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label
-            formLabel="Test Type"
-            mandatory="true"
-          ></app-form-label>
-          <input
-            pInputText
-            formControlName="testType"
-            type="text"
-            class="input-field"
-          />
-          <small
-            class="p-error"
-            *ngIf="
-              createProjectForm.controls['testType'].invalid &&
-              createProjectForm.controls['testType'].touched
-            "
-            >Test Type is required.</small
-          >
-        </div>
-
-        <p-divider align="left" class="w-full" type="dashed">
-          <div class="inline-flex align-items-center">
-            <b>Block</b>
+        <p-accordionTab header="Test Type">
+          <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
+            <app-form-label class="col-2" formLabel="Existing test type"></app-form-label>
+            <div>
+              <p-checkbox [binary]="true" inputId="existingTestType" formControlName="existingTestType"
+                          (click)="onClick('existingTestType')"></p-checkbox>
+            </div>
           </div>
-        </p-divider>
 
-        <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
-          <app-form-label formLabel="Existing Block"></app-form-label>
-          <div>
-            <p-checkbox
-              [(ngModel)]="checked"
-              [binary]="true"
-              inputId="binary"
-              formLabel="existingRevision"
-            ></p-checkbox>
+          <div class="flex flex-row gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="New test type name"></app-form-label>
+            <input pInputText formControlName="testType" type="text" class="col-4 input-field" />
+            <small class="p-error" *ngIf="
+                  createProjectForm.controls['testType'].invalid &&
+                  createProjectForm.controls['testType'].touched
+                ">Test Type is required.</small>
           </div>
-        </div>
+          <div class="flex flex-row align-items-center gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="Select existing test type"></app-form-label>
+            <p-dropdown id="dropdown-button" class="col-4" [options]="existingTestTypeOptions"
+                        formControlName="existingTestTypeField" placeholder="Select a test type"></p-dropdown>
+          </div>
+        </p-accordionTab>
 
-        <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label formLabel="Block" mandatory="true"></app-form-label>
-          <input
-            pInputText
-            formControlName="block"
-            type="text"
-            class="input-field"
-          />
-          <small
-            class="p-error"
-            *ngIf="
-              createProjectForm.controls['block'].invalid &&
-              createProjectForm.controls['block'].touched
-            "
-            >Block is required.</small
-          >
-        </div>
+        <p-accordionTab header="Block">
+          <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
+            <app-form-label class="col-2" formLabel="Existing block"></app-form-label>
+            <div>
+              <p-checkbox [binary]="true" inputId="existingBlock" formControlName="existingBlock"
+                          (click)="onClick('existingBlock')"></p-checkbox>
+            </div>
+          </div>
 
-        <div class="flex justify-content-center">
-          <p-button label="Submit" styleClass="p-button-primary"></p-button>
+          <div class="flex flex-row gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="New block name"></app-form-label>
+            <input pInputText formControlName="block" type="text" class="col-4 input-field" />
+            <small class="p-error" *ngIf="
+                  createProjectForm.controls['block'].invalid &&
+                  createProjectForm.controls['block'].touched
+                ">Block is required.</small>
+          </div>
+          <div class="flex flex-row align-items-center gap-2 mb-5 w-full">
+            <app-form-label class="col-2" formLabel="Select existing block"></app-form-label>
+            <p-dropdown id="dropdown-button" class="col-4" [options]="existingBlockOptions"
+                        formControlName="existingBlockField" placeholder="Select a block"></p-dropdown>
+          </div>
+        </p-accordionTab>
+
+        <div class="flex justify-content-center submit-button">
+          <p-button label="Submit" styleClass="p-button-primary" type="submit" (onClick)="onSubmit()"></p-button>
         </div>
-      </p-card>
-    </div>
+      </p-accordion>
+    </p-card>
   </div>
 </form>

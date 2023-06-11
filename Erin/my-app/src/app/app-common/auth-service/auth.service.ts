@@ -8,13 +8,13 @@ export class AuthService {
   loggedInUserType: string | undefined;
 
   constructor() {
-    const storedUserType = localStorage.getItem(this.USER_TYPE_KEY);
+    const storedUserType = sessionStorage.getItem(this.USER_TYPE_KEY);
     this.loggedInUserType = storedUserType ? storedUserType : undefined;
   }
 
   setUserType(userType: string): void {
     this.loggedInUserType = userType;
-    localStorage.setItem(this.USER_TYPE_KEY, userType);
+    sessionStorage.setItem(this.USER_TYPE_KEY, userType);
   }
 
   getUserType(): string | undefined {
@@ -31,6 +31,6 @@ export class AuthService {
 
   logout(): void {
     this.loggedInUserType = undefined;
-    localStorage.removeItem(this.USER_TYPE_KEY);
+    sessionStorage.removeItem(this.USER_TYPE_KEY);
   }
 }

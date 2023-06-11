@@ -1,0 +1,26 @@
+[
+  {
+    "project": "Project 1",
+    "revision": "Rev 1",
+    "testType": "Test type 1",
+    "block": "Block 1"
+  },
+  {
+    "project": "Project 2",
+    "revision": "Rev 2",
+    "testType": "Test type 2",
+    "block": "Block 2"
+  },
+  {
+    "project": "Project 3",
+    "revision": "Rev 3",
+    "testType": "Test type 3",
+    "block": "Block 3"
+  },
+  {
+    "project": "Project 4",
+    "revision": "Rev 4",
+    "testType": "Test type 4",
+    "block": "Block 1"
+  }
+]

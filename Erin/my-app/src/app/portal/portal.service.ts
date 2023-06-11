@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
-import { Login } from './login/model/login.interface';
-import { AuthService } from '../app-common/auth-service/auth.service';
+import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { AuthService } from '../app-common/auth-service/auth.service';
+import { Login } from './login/model/login.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -12,17 +12,18 @@ import { tap } from 'rxjs/operators';
 export class PortalService {
   private backendUrl!: string;
 
-  constructor(private http: HttpClient, private authService: AuthService) {
-    this.getBackendUrl();
-  }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
-  private getBackendUrl(): void {
-    this.http
-      .get('../../assets/APP_CONFIG.txt', { responseType: 'text' })
-      .subscribe((data) => {
-        const ipAddress = this.extractIpAddress(data);
-        this.backendUrl = `http://${ipAddress}:5000`;
-      });
+  private async getBackendUrl(): Promise<string> {
+    return new Promise((resolve) => {
+      this.http
+        .get('../../assets/APP_CONFIG.txt', { responseType: 'text' })
+        .subscribe((data) => {
+          const ipAddress = this.extractIpAddress(data);
+          this.backendUrl = `http://${ipAddress}:5000`;
+          resolve(this.backendUrl);
+        });
+    });
   }
 
   private extractIpAddress(configText: string): string {
@@ -39,14 +40,22 @@ export class PortalService {
     return this.http.get<any[]>(url);
   }
 
-  setAccounts(value: AbstractControl): Observable<Login> {
-    const url = `${this.backendUrl}/api/login`;
-    return this.http.post<Login>(url, value).pipe(
+  async setAccounts(value: AbstractControl): Promise<Login> {
+    const url = `${await this.getBackendUrl()}/api/login`;
+    const response = this.http.post<Login>(url, value).pipe(
       tap((response: any) => {
         if (response.type === 'success') {
           this.authService.setUserType(response.userType);
         }
       })
     );
+    return response.toPromise();
+  }
+
+  async getProjects(): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/projects`;
+    const httpClient = this.http.get(url);
+
+    return httpClient.toPromise();
   }
 }

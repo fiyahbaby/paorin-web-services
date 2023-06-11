@@ -13,31 +13,12 @@ export class NavbarComponent implements OnInit {
   project: MenuItem[] = [];
   buildId: MenuItem[] = [];
 
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(public authService: AuthService, private router: Router) { }
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
       this.userType = this.authService.getUserType();
     }
-
-    this.project = [
-      {
-        label: 'View Project',
-      },
-      {
-        label: 'Create Project',
-        command: () => this.router.navigate(['/create-project']),
-      },
-    ];
-
-    this.buildId = [
-      {
-        label: 'View Build ID',
-      },
-      {
-        label: 'Create Build ID',
-      },
-    ];
   }
 
   logout(): void {

@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Message, MessageService } from 'primeng/api';
-import { PortalService } from '../../portal.service';
 import { Router } from '@angular/router';
+import { Message, MessageService, SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
+import { PortalService } from '../../portal.service';
 
 @Component({
   selector: 'app-create-project',
@@ -12,8 +12,11 @@ import { AuthService } from 'src/app/app-common/auth-service/auth.service';
 })
 export class CreateProjectComponent implements OnInit {
   createProjectForm!: FormGroup;
-  checked: boolean = false;
   messages: Message[] = [];
+  existingDeviceOptions: SelectItem[] = [];
+  existingRevisionOptions: SelectItem[] = [];
+  existingBlockOptions: SelectItem[] = [];
+  existingTestTypeOptions: SelectItem[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -21,10 +24,11 @@ export class CreateProjectComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initFormControl();
+    this.initSelectOptions();
   }
 
   private initFormControl(): void {
@@ -33,10 +37,80 @@ export class CreateProjectComponent implements OnInit {
       existingRevision: [false, Validators.required],
       existingTestType: [false, Validators.required],
       existingBlock: [false, Validators.required],
-      deviceFamily: ['', Validators.required],
-      revision: ['', Validators.required],
-      testType: ['', Validators.required],
-      block: ['', Validators.required],
+      deviceFamily: [{ value: '', disabled: false }, Validators.required],
+      revision: [{ value: '', disabled: false }, Validators.required],
+      testType: [{ value: '', disabled: false }, Validators.required],
+      block: [{ value: '', disabled: false }, Validators.required],
+      existingDeviceField: [{ value: '', disabled: true }, Validators.required],
+      existingRevisionField: [{ value: '', disabled: true }, Validators.required,],
+      existingTestTypeField: [{ value: '', disabled: true }, Validators.required,],
+      existingBlockField: [{ value: '', disabled: true }, Validators.required],
     });
+  }
+
+  private async initSelectOptions() {
+    this.existingDeviceOptions = await this.getProject();
+    this.existingBlockOptions = await this.getBlock();
+    this.existingRevisionOptions = await this.getRevision();
+    this.existingTestTypeOptions = await this.getTestType();
+  }
+
+  private async getProject() {
+    return this.toOptions(await this.portalService.getProjects(), 'project');
+  }
+
+  private async getBlock() {
+    return this.toOptions(await this.portalService.getProjects(), 'block');
+  }
+
+  private async getRevision() {
+    return this.toOptions(await this.portalService.getProjects(), 'revision');
+  }
+
+  private async getTestType() {
+    return this.toOptions(await this.portalService.getProjects(), 'testType');
+  }
+
+  private toOptions(options: [], valueField: string): SelectItem[] {
+    return !options ? [] : options.map<SelectItem<String>>((value) => {
+      return value[valueField];
+    });
+  }
+
+  onClick(field: string): void {
+    switch (field) {
+      case 'existingDevice':
+        this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
+        break;
+      case 'existingRevision':
+        this.setUpField('existingRevision', 'revision', 'existingRevisionField');
+        break;
+      case 'existingTestType':
+        this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
+        break;
+      case 'existingBlock':
+        this.setUpField('existingBlock', 'block', 'existingBlockField');
+        break;
+      default:
+        break;
+    }
+  }
+
+  private setUpField(existingFieldCheckBox: string, field: string, existingField: string): void {
+    const existingFormControl = this.createProjectForm.get(existingFieldCheckBox);
+    const formControl = this.createProjectForm.get(field);
+    const existingFieldFormControl = this.createProjectForm.get(existingField);
+
+    if (existingFormControl?.value) {
+      formControl?.reset({ value: '', disabled: true });
+      existingFieldFormControl?.reset({ value: '', disabled: false });
+    } else {
+      formControl?.reset({ value: '', disabled: false });
+      existingFieldFormControl?.reset({ value: '', disabled: true });
+    }
+  }
+
+  onSubmit(): void {
+
   }
 }

@@ -13,9 +13,12 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DividerModule } from 'primeng/divider';
+import { AccordionModule } from 'primeng/accordion';
+import { DropdownModule } from 'primeng/dropdown';
+import { HeaderComponent } from './header/header.component';
 
 @NgModule({
-  declarations: [FormLabelComponent, NavbarComponent],
+  declarations: [FormLabelComponent, NavbarComponent, HeaderComponent],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -30,12 +33,15 @@ import { DividerModule } from 'primeng/divider';
     TieredMenuModule,
     CheckboxModule,
     DividerModule,
+    AccordionModule,
+    DropdownModule,
   ],
   exports: [
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
     FormLabelComponent,
+    HeaderComponent,
     NavbarComponent,
     InputTextModule,
     CardModule,
@@ -47,7 +53,9 @@ import { DividerModule } from 'primeng/divider';
     TieredMenuModule,
     CheckboxModule,
     DividerModule,
+    AccordionModule,
+    DropdownModule,
   ],
   providers: [],
 })
-export class FormCommonModule {}
+export class FormCommonModule { }

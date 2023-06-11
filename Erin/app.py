@@ -31,7 +31,6 @@ def get_account():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    print("Login is accessed")
     flag = False
     data = request.get_json()
     with open('assets/backend-data/account.json', 'r') as account:
@@ -48,6 +47,12 @@ def login():
 def logout():
     session.clear()
     return {'message': 'Logout successful'}
+
+@app.route('/api/projects', methods=['GET'])
+def get_projects():
+    with open('assets/backend-data/projects.json', 'r') as projects_file:
+        projects = json.load(projects_file)
+    return jsonify(projects)
 
 if __name__ == '__main__':
     app.run(debug=True, host=host_ip, port=port)

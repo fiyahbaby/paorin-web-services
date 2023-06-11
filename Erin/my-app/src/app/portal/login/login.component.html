@@ -1,56 +1,27 @@
-<form [formGroup]="loginForm">
+<form [formGroup]="loginForm" id="loginForm">
   <p-messages [value]="messages"></p-messages>
   <div class="w-full h-full flex align-items-center justify-content-center">
     <div class="card flex justify-content-center w-3">
       <p-card class="w-12 h-full">
         <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label
-            formLabel="Username"
-            mandatory="true"
-          ></app-form-label>
-          <input
-            pInputText
-            formControlName="username"
-            name="username"
-            type="text"
-          />
-          <small
-            class="p-error"
-            *ngIf="
+          <app-form-label formLabel="Username" mandatory="true"></app-form-label>
+          <input pInputText formControlName="username" name="username" type="text" />
+          <small class="p-error" *ngIf="
               loginForm.controls['username'].invalid &&
               loginForm.controls['username'].touched
-            "
-            >Username is required.</small
-          >
+            ">Username is required.</small>
         </div>
 
         <div class="flex flex-column gap-2 mb-5 w-full">
-          <app-form-label
-            formLabel="Password"
-            mandatory="true"
-          ></app-form-label>
-          <input
-            pInputText
-            formControlName="password"
-            name="password"
-            type="password"
-          />
-          <small
-            class="p-error"
-            *ngIf="
+          <app-form-label formLabel="Password" mandatory="true"></app-form-label>
+          <input pInputText formControlName="password" name="password" type="password" />
+          <small class="p-error" *ngIf="
               loginForm.controls['password'].invalid &&
               loginForm.controls['password'].touched
-            "
-            >Password is required.</small
-          >
+            ">Password is required.</small>
         </div>
 
-        <p-button
-          label="Submit"
-          styleClass="p-button-primary"
-          (onClick)="onSubmit()"
-          type="submit"
-        ></p-button>
+        <p-button label="Submit" styleClass="p-button-primary" (onClick)="onSubmit()" type="submit"></p-button>
       </p-card>
     </div>
   </div>

@@ -11,10 +11,7 @@ import { EditProjectComponent } from './project-menu/edit-project/edit-project.c
 
 @NgModule({
   declarations: [
-    PortalComponent,
-    ProjectMenuComponent,
-    ViewProjectComponent,
-    EditProjectComponent,
+    PortalComponent
   ],
   imports: [
     CommonModule,
@@ -24,4 +21,4 @@ import { EditProjectComponent } from './project-menu/edit-project/edit-project.c
   ],
   providers: [PortalService],
 })
-export class PortalModule {}
+export class PortalModule { }

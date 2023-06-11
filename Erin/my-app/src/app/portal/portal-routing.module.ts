@@ -1,7 +1,5 @@
-import { HomeModule } from './home/home.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { CreateProjectModule } from './project-menu/create-project/create-project.module';
 
 const routes: Routes = [
   {
@@ -22,12 +20,10 @@ const routes: Routes = [
         },
       },
       {
-        path: 'create-project',
+        path: 'project-menu',
         loadChildren: async () => {
-          const { CreateProjectModule } = await import(
-            './project-menu/create-project/create-project.module'
-          );
-          return CreateProjectModule;
+          const { ProjectMenuModule } = await import('./project-menu/project-menu.module');
+          return ProjectMenuModule;
         },
       },
     ],
@@ -38,4 +34,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class PortalRoutingModule {}
+export class PortalRoutingModule { }

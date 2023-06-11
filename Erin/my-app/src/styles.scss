@@ -14,6 +14,7 @@ html {
   height: 100%;
   width: 100%;
   background-color: var(--bluegray-50);
+  color: #333333;
 }
 
 body {
@@ -37,12 +38,45 @@ form {
   padding: 20px;
 }
 
+.p-card-title {
+  display: flex;
+  justify-content: center;
+}
+
 .p-card-content {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
+#create-project-p-card .p-card-content {
+  align-items: center;
+}
+
 .ng-invalid.ng-touched {
   border-color: #e24c4c;
+}
+
+:disabled,
+.p-disabled {
+  background-color: #e6e6e6;
+  opacity: 1;
+}
+
+#navbar-button .p-button-label {
+  transition-duration: 0.2s;
+  color: black !important;
+}
+
+#logout-button .p-button-icon-only {
+  background: black;
+}
+
+#dropdown-button {
+  flex: 0 0 auto;
+  padding: 0rem;
+
+  .p-dropdown {
+    width: 100%;
+  }
 }

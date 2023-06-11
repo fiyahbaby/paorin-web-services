@@ -1,11 +1,4 @@
 <div class="formLabel">
-  <span
-    *ngIf="hasToolTip"
-    [pTooltip]="tooltipValue"
-    ngClass="toolTip"
-    tooltipPosition="top"
-    >{{ formLabel }}</span
-  >
-  <span *ngIf="!hasToolTip">{{ formLabel }}</span
-  >: <span *ngIf="mandatory" class="mandatoryAsterix">*</span>
+  <span *ngIf="hasToolTip" [pTooltip]="tooltipValue" ngClass="toolTip" tooltipPosition="top">{{ formLabel }}</span>
+  <span *ngIf="!hasToolTip">{{ formLabel }}</span>: <span *ngIf="mandatory" class="mandatoryAsterix">*</span>
 </div>

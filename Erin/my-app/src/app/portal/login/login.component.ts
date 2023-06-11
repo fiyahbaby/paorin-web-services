@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initFormControl();
@@ -49,7 +49,7 @@ export class LoginComponent implements OnInit {
 
     this.portalService
       .setAccounts(this.loginForm.value)
-      .subscribe((data: LoginResponse) => {
+      .then((data: LoginResponse) => {
         if (data.type === 'error') {
           this.messageService.add({
             severity: data.type,
@@ -60,6 +60,12 @@ export class LoginComponent implements OnInit {
           this.authService.setUserType(data.userType);
           this.navigateToHome();
         }
+      }).catch((error) => {
+        this.messageService.add({
+          severity: error.type,
+          summary: 'Error',
+          detail: error.message,
+        });
       });
   }
 

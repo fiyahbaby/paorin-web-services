@@ -1,46 +1,12 @@
-<div
-  class="card flex align-items-center justify-content-between p-2 border-bottom-1"
->
-  <button
-    pripple=""
-    class="p-ripple p-element p-button-link logo-button p-button p-component custom-button"
-    type="button"
-    (click)="navigateToHome()"
-  >
-    <p-image
-      _ngcontent-ooy-c13=""
-      src="../../../../assets/image/light-logo.png"
-      alt="Image"
-      height="55"
-      class="p-element logo-image ng-tns-c6-7 ng-star-inserted"
-      ng-reflect-src="../../../../assets/image/light"
-      ng-reflect-alt="Image"
-      ng-reflect-height="55"
-    ></p-image>
+<div class="card flex align-items-center justify-content-between p-2 border-bottom-1">
+  <button class="p-ripple p-element p-button-link logo-button p-button p-component custom-button" type="button"
+          (click)="navigateToHome()">
+    <p-image src="../../../../assets/image/amd-logo.png" alt="Image" height="40" class="p-element logo-image"></p-image>
   </button>
-
-  <div class="flex align-items-center">
-    <p-button
-      label="Project"
-      styleClass="p-button-secondary p-button-text"
-      (click)="pMenu.toggle($event)"
-    ></p-button>
-    <p-tieredMenu #pMenu [model]="project" [popup]="true"></p-tieredMenu>
-    <p-button
-      label="Build ID"
-      styleClass="p-button-secondary p-button-text"
-      (click)="bMenu.toggle($event)"
-    ></p-button>
-    <p-tieredMenu #bMenu [model]="buildId" [popup]="true"></p-tieredMenu>
-  </div>
   <div class="flex align-items-center" *ngIf="authService.isLoggedIn()">
     <span class="welcome-text {{ this.userType }}">
-      {{ this.userType | titlecase }}</span
-    >
-    <p-button
-      (click)="logout()"
-      icon="pi pi-sign-out"
-      styleClass="p-button-rounded p-button-secondary"
-    ></p-button>
+      {{ this.userType | titlecase }}</span>
+    <p-button id="logout-button" (click)="logout()" icon="pi pi-sign-out"
+              styleClass="p-button-rounded p-button-secondary"></p-button>
   </div>
 </div>
