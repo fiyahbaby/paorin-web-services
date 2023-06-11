@@ -33,10 +33,10 @@ export class CreateProjectComponent implements OnInit {
 
   private initFormControl(): void {
     this.createProjectForm = this.formBuilder.group({
-      existingDevice: [false, Validators.required],
-      existingRevision: [false, Validators.required],
-      existingTestType: [false, Validators.required],
-      existingBlock: [false, Validators.required],
+      existingDevice: [{ value: false, disabled: false }, Validators.required],
+      existingRevision: [{ value: false, disabled: false }, Validators.required],
+      existingTestType: [{ value: false, disabled: false }, Validators.required],
+      existingBlock: [{ value: false, disabled: false }, Validators.required],
       deviceFamily: [{ value: '', disabled: false }, Validators.required],
       revision: [{ value: '', disabled: false }, Validators.required],
       testType: [{ value: '', disabled: false }, Validators.required],
@@ -110,7 +110,17 @@ export class CreateProjectComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
-
+  onBack(): void {
+    this.router.navigate(['/home']);
   }
+
+  onReset(): void {
+    this.createProjectForm.reset();
+    //TODO: Do an initial states of the form fields. Currently, if existing is selected, new name will be disabled and when onReset(), it doesn't enable back
+  }
+
+  onSubmit(): void {
+    //TODO: Logic for form submission
+  }
+
 }

@@ -4,6 +4,9 @@
   <div class="w-full flex align-items-center justify-content-center">
     <p-card class="w-12 h-full card-header" id="create-project-p-card">
       <p-accordion [multiple]="true" [activeIndex]="[0]" class="w-full">
+        <div class="flex justify-content-end buttons-container top">
+          <ng-container *ngTemplateOutlet="buttons"></ng-container>
+        </div>
         <p-accordionTab header="Device">
           <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
             <app-form-label class="col-2" formLabel="Existing device family"></app-form-label>
@@ -100,10 +103,16 @@
           </div>
         </p-accordionTab>
 
-        <div class="flex justify-content-center submit-button">
-          <p-button label="Submit" styleClass="p-button-primary" type="submit" (onClick)="onSubmit()"></p-button>
+        <div class="flex justify-content-end buttons-container bottom">
+          <ng-container *ngTemplateOutlet="buttons"></ng-container>
         </div>
       </p-accordion>
     </p-card>
   </div>
 </form>
+
+<ng-template #buttons>
+  <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+  <p-button label="Reset" styleClass="p-button-danger" type="button" (onClick)="onReset()"></p-button>
+  <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>
