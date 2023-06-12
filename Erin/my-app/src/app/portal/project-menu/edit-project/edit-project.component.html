@@ -1,1 +1,40 @@
-<p>edit-project works!</p>
+<app-navbar></app-navbar>
+<form [formGroup]="editProjectForm">
+  <app-header
+    formHeader="Edit Project"
+    formSubHeader="Project Menu > Edit Project"
+  ></app-header>
+  <div class="w-full flex align-items-center justify-content-center">
+    <p-card class="w-full h-full card-header" id="create-project-p-card">
+      <div class="card w-full">
+        <p-header>
+          <h1 class="mt-0 mb-3" style="font-size: 18px">Select Project</h1>
+        </p-header>
+        <p-table
+          [value]="projects"
+          selectionMode="single"
+          [(selection)]="selectedProject"
+          class="flex flex-column mb-3"
+          [style.width]="'50%'"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="text-align: center">Device</th>
+              <th style="text-align: center">Revision</th>
+              <th style="text-align: center">Test Type</th>
+              <th style="text-align: center">Block</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-project>
+            <tr [pSelectableRow] class="cursor-pointer">
+              <td style="text-align: center">{{ project.project }}</td>
+              <td style="text-align: center">{{ project.revision }}</td>
+              <td style="text-align: center">{{ project.testType }}</td>
+              <td style="text-align: center">{{ project.block }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </p-card>
+  </div>
+</form>

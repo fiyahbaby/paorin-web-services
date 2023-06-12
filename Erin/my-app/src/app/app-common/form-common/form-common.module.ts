@@ -16,6 +16,9 @@ import { DividerModule } from 'primeng/divider';
 import { AccordionModule } from 'primeng/accordion';
 import { DropdownModule } from 'primeng/dropdown';
 import { HeaderComponent } from './header/header.component';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent, HeaderComponent],
@@ -35,6 +38,9 @@ import { HeaderComponent } from './header/header.component';
     DividerModule,
     AccordionModule,
     DropdownModule,
+    ConfirmDialogModule,
+    ToastModule,
+    TableModule,
   ],
   exports: [
     FormsModule,
@@ -55,7 +61,10 @@ import { HeaderComponent } from './header/header.component';
     DividerModule,
     AccordionModule,
     DropdownModule,
+    ConfirmDialogModule,
+    ToastModule,
+    TableModule,
   ],
   providers: [],
 })
-export class FormCommonModule { }
+export class FormCommonModule {}

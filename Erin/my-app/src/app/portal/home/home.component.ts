@@ -7,14 +7,17 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  constructor(private router: Router) { }
+  constructor(private router: Router) {}
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   onRedirect(field: string) {
     switch (field) {
       case 'createProject':
         this.router.navigate(['/project-menu/create-project']);
+        break;
+      case 'editProject':
+        this.router.navigate(['/project-menu/edit-project']);
         break;
       default:
         break;

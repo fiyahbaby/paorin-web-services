@@ -24,7 +24,7 @@ export class CreateProjectComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.initFormControl();
@@ -34,16 +34,28 @@ export class CreateProjectComponent implements OnInit {
   private initFormControl(): void {
     this.createProjectForm = this.formBuilder.group({
       existingDevice: [{ value: false, disabled: false }, Validators.required],
-      existingRevision: [{ value: false, disabled: false }, Validators.required],
-      existingTestType: [{ value: false, disabled: false }, Validators.required],
+      existingRevision: [
+        { value: false, disabled: false },
+        Validators.required,
+      ],
+      existingTestType: [
+        { value: false, disabled: false },
+        Validators.required,
+      ],
       existingBlock: [{ value: false, disabled: false }, Validators.required],
       deviceFamily: [{ value: '', disabled: false }, Validators.required],
       revision: [{ value: '', disabled: false }, Validators.required],
       testType: [{ value: '', disabled: false }, Validators.required],
       block: [{ value: '', disabled: false }, Validators.required],
       existingDeviceField: [{ value: '', disabled: true }, Validators.required],
-      existingRevisionField: [{ value: '', disabled: true }, Validators.required,],
-      existingTestTypeField: [{ value: '', disabled: true }, Validators.required,],
+      existingRevisionField: [
+        { value: '', disabled: true },
+        Validators.required,
+      ],
+      existingTestTypeField: [
+        { value: '', disabled: true },
+        Validators.required,
+      ],
       existingBlockField: [{ value: '', disabled: true }, Validators.required],
     });
   }
@@ -72,39 +84,56 @@ export class CreateProjectComponent implements OnInit {
   }
 
   private toOptions(options: [], valueField: string): SelectItem[] {
-    return !options ? [] : options.map<SelectItem<String>>((value) => {
-      return value[valueField];
-    });
+    return !options
+      ? []
+      : options.map<SelectItem<String>>((value) => {
+          return value[valueField];
+        });
   }
 
   onClick(field: string): void {
     switch (field) {
       case 'existingDevice':
-        this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
+        this.setUpField(
+          'existingDevice',
+          'deviceFamily',
+          'existingDeviceField'
+        );
         break;
       case 'existingRevision':
-        this.setUpField('existingRevision', 'revision', 'existingRevisionField');
+        this.setUpField(
+          'existingRevision',
+          'revision',
+          'existingRevisionField'
+        );
         break;
       case 'existingTestType':
-        this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
-        break;
-      case 'existingBlock':
-        this.setUpField('existingBlock', 'block', 'existingBlockField');
+        this.setUpField(
+          'existingTestType',
+          'testType',
+          'existingTestTypeField'
+        );
         break;
       default:
         break;
     }
   }
 
-  private setUpField(existingFieldCheckBox: string, field: string, existingField: string): void {
-    const existingFormControl = this.createProjectForm.get(existingFieldCheckBox);
+  private setUpField(
+    existingFieldCheckBox: string,
+    field: string,
+    existingField: string
+  ): void {
+    const existingFormControl = this.createProjectForm.get(
+      existingFieldCheckBox
+    );
     const formControl = this.createProjectForm.get(field);
     const existingFieldFormControl = this.createProjectForm.get(existingField);
 
     if (existingFormControl?.value) {
       formControl?.reset({ value: '', disabled: true });
       existingFieldFormControl?.reset({ value: '', disabled: false });
-    } else {
+    } else if (field !== 'block') {
       formControl?.reset({ value: '', disabled: false });
       existingFieldFormControl?.reset({ value: '', disabled: true });
     }
@@ -116,11 +145,13 @@ export class CreateProjectComponent implements OnInit {
 
   onReset(): void {
     this.createProjectForm.reset();
-    //TODO: Do an initial states of the form fields. Currently, if existing is selected, new name will be disabled and when onReset(), it doesn't enable back
+
+    this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
+    this.setUpField('existingRevision', 'revision', 'existingRevisionField');
+    this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
   }
 
   onSubmit(): void {
     //TODO: Logic for form submission
   }
-
 }

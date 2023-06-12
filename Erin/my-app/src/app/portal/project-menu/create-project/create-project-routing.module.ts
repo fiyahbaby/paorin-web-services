@@ -4,16 +4,15 @@ import { CreateProjectComponent } from './create-project.component';
 import { AuthGuard } from 'src/app/app-common/auth-service/auth-guard';
 
 const routes: Routes = [
-  // define an array of route objects
   {
-    path: '', // define the root path
-    component: CreateProjectComponent, // map the root path to LoginComponent
-    canActivate: [AuthGuard]
+    path: '',
+    component: CreateProjectComponent,
+    canActivate: [AuthGuard],
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)], // register the route configuration with the RouterModule using the forChild() method
-  exports: [RouterModule], // make the RouterModule available to other modules
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class CreateProjectRoutingModule { } // define the LoginRoutingModule class as a module
+export class CreateProjectRoutingModule {}
