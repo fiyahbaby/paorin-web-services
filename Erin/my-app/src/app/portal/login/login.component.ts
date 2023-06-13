@@ -5,6 +5,7 @@ import { PortalService } from '../portal.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../app-common/auth-service/auth.service';
 import { LoginResponse } from './login-response.interface';
+import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,8 @@ export class LoginComponent implements OnInit {
     private portalService: PortalService,
     private messageService: MessageService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private formCommonService: FormCommonService,
   ) { }
 
   ngOnInit(): void {
@@ -37,13 +39,8 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     this.messageService.clear();
 
-    const { username, password } = this.loginForm.controls;
-
     if (this.loginForm.invalid) {
-      username.markAsDirty();
-      username.markAsTouched();
-      password.markAsDirty();
-      password.markAsTouched();
+      this.formCommonService.validatorFormGroupFields(this.loginForm);
       return;
     }
 
@@ -51,21 +48,13 @@ export class LoginComponent implements OnInit {
       .setAccounts(this.loginForm.value)
       .then((data: LoginResponse) => {
         if (data.type === 'error') {
-          this.messageService.add({
-            severity: data.type,
-            summary: 'Error',
-            detail: data.message,
-          });
+          this.formCommonService.addErrorMessage(data.message, data.type);
         } else {
           this.authService.setUserType(data.userType);
           this.navigateToHome();
         }
       }).catch((error) => {
-        this.messageService.add({
-          severity: error.type,
-          summary: 'Error',
-          detail: error.message,
-        });
+        this.formCommonService.addErrorMessage(error.message, error.type);
       });
   }
 

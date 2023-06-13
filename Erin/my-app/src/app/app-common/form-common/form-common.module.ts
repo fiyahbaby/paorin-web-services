@@ -7,24 +7,26 @@ import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DividerModule } from 'primeng/divider';
+import { DropdownModule } from 'primeng/dropdown';
 import { ImageModule } from 'primeng/image';
+import { InputTextModule } from 'primeng/inputtext';
 import { MenubarModule } from 'primeng/menubar';
 import { MessagesModule } from 'primeng/messages';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { ErrorFieldMessageComponent } from './error-field-message/error-field-message.component';
 import { FormLabelComponent } from './form-label/form-label.component';
 import { HeaderComponent } from './header/header.component';
 import { NavbarComponent } from './navbar/navbar.component';
-import { TableModule } from 'primeng/table';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { DropdownModule } from 'primeng/dropdown';
-import { TagModule } from 'primeng/tag';
-import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 @NgModule({
-  declarations: [FormLabelComponent, NavbarComponent, HeaderComponent],
+  declarations: [FormLabelComponent, NavbarComponent, HeaderComponent, ErrorFieldMessageComponent],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -34,6 +36,7 @@ import { InputTextModule } from 'primeng/inputtext';
     TooltipModule,
     ButtonModule,
     MessagesModule,
+    MessageModule,
     MenubarModule,
     ImageModule,
     TieredMenuModule,
@@ -60,6 +63,7 @@ import { InputTextModule } from 'primeng/inputtext';
     TooltipModule,
     ButtonModule,
     MessagesModule,
+    MessageModule,
     MenubarModule,
     ImageModule,
     TieredMenuModule,
@@ -73,7 +77,8 @@ import { InputTextModule } from 'primeng/inputtext';
     RadioButtonModule,
     MultiSelectModule,
     TagModule,
+    ErrorFieldMessageComponent,
   ],
   providers: [],
 })
-export class FormCommonModule {}
+export class FormCommonModule { }

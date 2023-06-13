@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Message, MessageService, SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
+import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 import { PortalService } from '../../portal.service';
 
 @Component({
@@ -23,12 +24,30 @@ export class CreateProjectComponent implements OnInit {
     private portalService: PortalService,
     private messageService: MessageService,
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private formCommonService: FormCommonService
+  ) { }
 
   ngOnInit(): void {
     this.initFormControl();
     this.initSelectOptions();
+  }
+
+  get deviceFamily() {
+    return this.createProjectForm.get('deviceFamily') as FormControl;
+  }
+
+  get existingDeviceField() {
+    return this.createProjectForm.get('existingDeviceField') as FormControl;
+  }
+
+  get revision() {
+    return this.createProjectForm.get('revision') as FormControl;
+  }
+
+  get existingRevisionField() {
+    return this.createProjectForm.get('existingRevisionField') as FormControl;
   }
 
   private initFormControl(): void {
@@ -47,7 +66,7 @@ export class CreateProjectComponent implements OnInit {
       revision: [{ value: '', disabled: false }, Validators.required],
       testType: [{ value: '', disabled: false }, Validators.required],
       block: [{ value: '', disabled: false }, Validators.required],
-      existingDeviceField: [{ value: '', disabled: true }, Validators.required],
+      existingDeviceField: [{ value: '', disabled: true }, [Validators.required]],
       existingRevisionField: [
         { value: '', disabled: true },
         Validators.required,
@@ -87,46 +106,28 @@ export class CreateProjectComponent implements OnInit {
     return !options
       ? []
       : options.map<SelectItem<String>>((value) => {
-          return value[valueField];
-        });
+        return value[valueField];
+      });
   }
 
   onClick(field: string): void {
     switch (field) {
       case 'existingDevice':
-        this.setUpField(
-          'existingDevice',
-          'deviceFamily',
-          'existingDeviceField'
-        );
+        this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
         break;
       case 'existingRevision':
-        this.setUpField(
-          'existingRevision',
-          'revision',
-          'existingRevisionField'
-        );
+        this.setUpField('existingRevision', 'revision', 'existingRevisionField');
         break;
       case 'existingTestType':
-        this.setUpField(
-          'existingTestType',
-          'testType',
-          'existingTestTypeField'
-        );
+        this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
         break;
       default:
         break;
     }
   }
 
-  private setUpField(
-    existingFieldCheckBox: string,
-    field: string,
-    existingField: string
-  ): void {
-    const existingFormControl = this.createProjectForm.get(
-      existingFieldCheckBox
-    );
+  private setUpField(existingFieldCheckBox: string, field: string, existingField: string): void {
+    const existingFormControl = this.createProjectForm.get(existingFieldCheckBox);
     const formControl = this.createProjectForm.get(field);
     const existingFieldFormControl = this.createProjectForm.get(existingField);
 
@@ -144,6 +145,7 @@ export class CreateProjectComponent implements OnInit {
   }
 
   onReset(): void {
+    this.messageService.clear();
     this.createProjectForm.reset();
 
     this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
@@ -152,26 +154,11 @@ export class CreateProjectComponent implements OnInit {
   }
 
   onSubmit(): void {
-    const formControls = this.createProjectForm.controls;
-
-    if (
-      (formControls['existingDevice'].value === false &&
-        formControls['deviceFamily'].invalid) ||
-      (formControls['existingRevision'].value === false &&
-        formControls['revision'].invalid) ||
-      (formControls['existingTestType'].value === false &&
-        formControls['testType'].invalid) ||
-      formControls['block'].invalid
-    ) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Please fill in all the required fields.',
-      });
-      console.log('Error message added');
-      this.router.navigate(['./confirm-new-project']);
+    if (this.createProjectForm.invalid) {
+      this.formCommonService.validatorFormGroupFields(this.createProjectForm);
+      this.formCommonService.addErrorMessage('Please fill in all the required fields');
     } else {
-      this.router.navigate(['./confirm-new-project']);
+      this.router.navigate(['confirm-new-project'], { relativeTo: this.route });
     }
   }
 }

@@ -1,10 +1,7 @@
 <app-navbar></app-navbar>
 <p-messages></p-messages>
 <form [formGroup]="editProjectForm">
-  <app-header
-    formHeader="Edit Project"
-    formSubHeader="Project Menu > Edit Project"
-  ></app-header>
+  <app-header formHeader="Edit Project" formSubHeader="Project Menu > Edit Project"></app-header>
   <div class="w-full flex align-items-center justify-content-center">
     <p-card class="w-full h-full card-header" id="create-project-p-card">
       <div class="card w-full mb-5">
@@ -13,16 +10,9 @@
             Select Project
           </h1>
         </p-header>
-        <p-table
-          [value]="projects"
-          [paginator]="true"
-          [rows]="5"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-          [(selection)]="selectedProject"
-          dataKey="project"
-          styleClass="p-datatable-striped"
-        >
+        <p-table [value]="projects" [paginator]="true" [rows]="3" [showCurrentPageReport]="true"
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 [(selection)]="selectedProject" dataKey="project" styleClass="p-datatable-striped">
           <ng-template pTemplate="header">
             <tr>
               <th style="width: 6rem; text-align: center">Select</th>
@@ -53,34 +43,20 @@
           <div class="flex flex-row">
             <div class="w-full flex flex-column flex-wrap gap-2">
               <div class="flex flex-row mb-2 align-items-center">
-                <p-radioButton
-                  name="projectAction"
-                  value="edit"
-                  formControlName="projectAction"
-                  inputId="editAction"
-                ></p-radioButton>
+                <p-radioButton name="projectAction" value="edit" formControlName="projectAction"
+                               inputId="editAction"></p-radioButton>
                 <div class="flex flex-column ml-2">
-                  <label for="editAction" class="text-black-alpha-80"
-                    >Edit project parameters</label
-                  >
+                  <label for="editAction" class="text-black-alpha-80">Edit project parameters</label>
                   <span class="subHeaderText">Modify project components.</span>
                 </div>
               </div>
               <div class="flex flex-row mb-2 align-items-center">
-                <p-radioButton
-                  name="projectAction"
-                  value="add"
-                  formControlName="projectAction"
-                  inputId="addAction"
-                ></p-radioButton>
+                <p-radioButton name="projectAction" value="add" formControlName="projectAction"
+                               inputId="addAction"></p-radioButton>
                 <div class="flex flex-column ml-2">
-                  <label for="addAction" class="text-black-alpha-80"
-                    >Add project parameters</label
-                  >
-                  <span class="subHeaderText"
-                    >Add project components (unit, tests, voltage settings,
-                    etc.).</span
-                  >
+                  <label for="addAction" class="text-black-alpha-80">Add project parameters</label>
+                  <span class="subHeaderText">Add project components (unit, tests, voltage settings,
+                    etc.).</span>
                 </div>
               </div>
             </div>
@@ -95,16 +71,6 @@
 </form>
 
 <ng-template #buttons>
-  <p-button
-    label="Back"
-    styleClass="p-button-danger"
-    type="button"
-    (onClick)="onBack()"
-  ></p-button>
-  <p-button
-    label="Submit"
-    styleClass="p-button-success"
-    type="submit"
-    (onClick)="onSubmit()"
-  ></p-button>
+  <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+  <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
 </ng-template>

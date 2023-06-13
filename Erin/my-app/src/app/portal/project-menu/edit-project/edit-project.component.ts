@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Message, MessageService, SelectItem } from 'primeng/api';
+import { SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
+import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 import { PortalService } from '../../portal.service';
 
 @Component({
@@ -23,10 +24,10 @@ export class EditProjectComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private portalService: PortalService,
-    private messageService: MessageService,
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private formCommonService: FormCommonService
+  ) { }
 
   ngOnInit(): void {
     this.initFormControl();
@@ -57,13 +58,7 @@ export class EditProjectComponent implements OnInit {
     if (projectAction && this.selectedProject) {
       // Handle the submit logic here
     } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail:
-          'Required fields are missing. Please fill in all the required information.',
-      });
-      console.log('Error message added');
+      this.formCommonService.addErrorMessage('Required fields are missing. Please fill in all the required information.');
       return;
     }
   }
