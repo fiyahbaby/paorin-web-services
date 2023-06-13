@@ -1,8 +1,7 @@
-import { NgModule } from '@angular/core'; // import Angular core components
-import { RouterModule, Routes } from '@angular/router'; // import Router and Routes for defining routes
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  // define an array of route objects
   {
     path: '',
     children: [
@@ -29,7 +28,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)], // register the route configuration with the RouterModule using the forChild() method
-  exports: [RouterModule], // make the RouterModule available to other modules
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ProjectMenuRoutingModule {} // define the LoginRoutingModule class as a module
+export class ProjectMenuRoutingModule {}

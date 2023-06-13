@@ -22,7 +22,9 @@ const routes: Routes = [
       {
         path: 'project-menu',
         loadChildren: async () => {
-          const { ProjectMenuModule } = await import('./project-menu/project-menu.module');
+          const { ProjectMenuModule } = await import(
+            './project-menu/project-menu.module'
+          );
           return ProjectMenuModule;
         },
       },
@@ -34,4 +36,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class PortalRoutingModule { }
+export class PortalRoutingModule {}

@@ -17,11 +17,8 @@ export class EditProjectComponent implements OnInit {
   existingBlockOptions: SelectItem[] = [];
   existingTestTypeOptions: SelectItem[] = [];
   projects: any[] = [];
-  selectedProject: any[] = [];
-
-  selectRow(project: any) {
-    this.selectedProject = project;
-  }
+  selectedProject: any = null;
+  filter: string = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -38,10 +35,8 @@ export class EditProjectComponent implements OnInit {
 
   private initFormControl(): void {
     this.editProjectForm = this.formBuilder.group({
-      existingProjectField: [
-        { value: '', disabled: false },
-        Validators.required,
-      ],
+      projectAction: [{ value: '', disabled: false }, Validators.required],
+      filter: [{ value: '', disabled: false }],
     });
   }
 
@@ -50,6 +45,26 @@ export class EditProjectComponent implements OnInit {
       this.projects = await this.portalService.getProjects();
     } catch (error) {
       // Handle error here
+    }
+  }
+
+  onBack(): void {
+    this.router.navigate(['/home']);
+  }
+
+  onSubmit(): void {
+    const projectAction = this.editProjectForm.get('projectAction')?.value;
+    if (projectAction && this.selectedProject) {
+      // Handle the submit logic here
+    } else {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail:
+          'Required fields are missing. Please fill in all the required information.',
+      });
+      console.log('Error message added');
+      return;
     }
   }
 }

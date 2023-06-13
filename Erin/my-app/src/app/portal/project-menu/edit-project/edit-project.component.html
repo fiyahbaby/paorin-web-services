@@ -1,4 +1,5 @@
 <app-navbar></app-navbar>
+<p-messages></p-messages>
 <form [formGroup]="editProjectForm">
   <app-header
     formHeader="Edit Project"
@@ -6,19 +7,25 @@
   ></app-header>
   <div class="w-full flex align-items-center justify-content-center">
     <p-card class="w-full h-full card-header" id="create-project-p-card">
-      <div class="card w-full">
+      <div class="card w-full mb-5">
         <p-header>
-          <h1 class="mt-0 mb-3" style="font-size: 18px">Select Project</h1>
+          <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+            Select Project
+          </h1>
         </p-header>
         <p-table
           [value]="projects"
-          selectionMode="single"
+          [paginator]="true"
+          [rows]="5"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
           [(selection)]="selectedProject"
-          class="flex flex-column mb-3"
-          [style.width]="'50%'"
+          dataKey="project"
+          styleClass="p-datatable-striped"
         >
           <ng-template pTemplate="header">
             <tr>
+              <th style="width: 6rem; text-align: center">Select</th>
               <th style="text-align: center">Device</th>
               <th style="text-align: center">Revision</th>
               <th style="text-align: center">Test Type</th>
@@ -26,7 +33,10 @@
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-project>
-            <tr [pSelectableRow] class="cursor-pointer">
+            <tr>
+              <td style="text-align: center">
+                <p-tableRadioButton [value]="project"></p-tableRadioButton>
+              </td>
               <td style="text-align: center">{{ project.project }}</td>
               <td style="text-align: center">{{ project.revision }}</td>
               <td style="text-align: center">{{ project.testType }}</td>
@@ -34,7 +44,67 @@
             </tr>
           </ng-template>
         </p-table>
+        <div>
+          <p-header>
+            <h1 class="mt-5 mb-3 text-black-alpha-90" style="font-size: 18px">
+              Select Action
+            </h1>
+          </p-header>
+          <div class="flex flex-row">
+            <div class="w-full flex flex-column flex-wrap gap-2">
+              <div class="flex flex-row mb-2 align-items-center">
+                <p-radioButton
+                  name="projectAction"
+                  value="edit"
+                  formControlName="projectAction"
+                  inputId="editAction"
+                ></p-radioButton>
+                <div class="flex flex-column ml-2">
+                  <label for="editAction" class="text-black-alpha-80"
+                    >Edit project parameters</label
+                  >
+                  <span class="subHeaderText">Modify project components.</span>
+                </div>
+              </div>
+              <div class="flex flex-row mb-2 align-items-center">
+                <p-radioButton
+                  name="projectAction"
+                  value="add"
+                  formControlName="projectAction"
+                  inputId="addAction"
+                ></p-radioButton>
+                <div class="flex flex-column ml-2">
+                  <label for="addAction" class="text-black-alpha-80"
+                    >Add project parameters</label
+                  >
+                  <span class="subHeaderText"
+                    >Add project components (unit, tests, voltage settings,
+                    etc.).</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full flex justify-content-end buttons-container bottom">
+        <ng-container *ngTemplateOutlet="buttons"></ng-container>
       </div>
     </p-card>
   </div>
 </form>
+
+<ng-template #buttons>
+  <p-button
+    label="Back"
+    styleClass="p-button-danger"
+    type="button"
+    (onClick)="onBack()"
+  ></p-button>
+  <p-button
+    label="Submit"
+    styleClass="p-button-success"
+    type="submit"
+    (onClick)="onSubmit()"
+  ></p-button>
+</ng-template>

@@ -152,6 +152,26 @@ export class CreateProjectComponent implements OnInit {
   }
 
   onSubmit(): void {
-    //TODO: Logic for form submission
+    const formControls = this.createProjectForm.controls;
+
+    if (
+      (formControls['existingDevice'].value === false &&
+        formControls['deviceFamily'].invalid) ||
+      (formControls['existingRevision'].value === false &&
+        formControls['revision'].invalid) ||
+      (formControls['existingTestType'].value === false &&
+        formControls['testType'].invalid) ||
+      formControls['block'].invalid
+    ) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please fill in all the required fields.',
+      });
+      console.log('Error message added');
+      this.router.navigate(['./confirm-new-project']);
+    } else {
+      this.router.navigate(['./confirm-new-project']);
+    }
   }
 }

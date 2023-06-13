@@ -1,24 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DividerModule } from 'primeng/divider';
 import { ImageModule } from 'primeng/image';
-import { InputTextModule } from 'primeng/inputtext';
 import { MenubarModule } from 'primeng/menubar';
 import { MessagesModule } from 'primeng/messages';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { TieredMenuModule } from 'primeng/tieredmenu';
+import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormLabelComponent } from './form-label/form-label.component';
-import { NavbarComponent } from './navbar/navbar.component';
-import { TieredMenuModule } from 'primeng/tieredmenu';
-import { CheckboxModule } from 'primeng/checkbox';
-import { DividerModule } from 'primeng/divider';
-import { AccordionModule } from 'primeng/accordion';
-import { DropdownModule } from 'primeng/dropdown';
 import { HeaderComponent } from './header/header.component';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
+import { NavbarComponent } from './navbar/navbar.component';
 import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
+import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent, HeaderComponent],
@@ -41,6 +44,9 @@ import { TableModule } from 'primeng/table';
     ConfirmDialogModule,
     ToastModule,
     TableModule,
+    RadioButtonModule,
+    MultiSelectModule,
+    TagModule,
   ],
   exports: [
     FormsModule,
@@ -64,6 +70,9 @@ import { TableModule } from 'primeng/table';
     ConfirmDialogModule,
     ToastModule,
     TableModule,
+    RadioButtonModule,
+    MultiSelectModule,
+    TagModule,
   ],
   providers: [],
 })
