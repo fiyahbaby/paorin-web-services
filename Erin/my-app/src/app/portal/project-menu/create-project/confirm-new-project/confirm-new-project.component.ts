@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CreateProjectResponse } from '../create-project-response.class';
 
 @Component({
   selector: 'app-confirm-new-project',
@@ -8,25 +9,30 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class ConfirmNewProjectComponent implements OnInit {
   newProjectParams: any;
+  createProjectParams: any;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.newProjectParams = params;
-      console.log(this.newProjectParams);
     });
+
+    this.newProjectParams = JSON.parse(this.newProjectParams.data);
   }
 
   onBack() {
-    // To-do
+    const formData = JSON.stringify(this.newProjectParams);
     this.router.navigate(['../'], {
       relativeTo: this.route,
-      queryParams: this.newProjectParams,
+      queryParams: {
+        data: formData
+      },
     });
   }
 
+
   onSubmit() {
-    // To-do
+    // TODO
   }
 }

@@ -10,6 +10,7 @@ import { Message, MessageService, SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
 import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 import { PortalService } from '../../portal.service';
+import { CreateProjectResponse } from './create-project-response.class';
 
 @Component({
   selector: 'app-create-project',
@@ -36,13 +37,30 @@ export class CreateProjectComponent implements OnInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private formCommonService: FormCommonService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initFormControl();
     this.initSelectOptions();
     this.route.queryParams.subscribe((params) => {
-      this.createProjectForm.patchValue(params);
+      const data = params as any;
+      this.mapDataToForm(JSON.parse(data.data));
+    });
+    this.loadInitView();
+  }
+
+  mapDataToForm(data: CreateProjectResponse) {
+    this.createProjectForm.patchValue({
+      existingDevice: data.existingDevice,
+      deviceFamily: data.deviceFamily,
+      existingDeviceField: data.existingDeviceField,
+      existingRevision: data.existingRevision,
+      revision: data.revision,
+      existingRevisionField: data.existingRevisionField,
+      existingTestType: data.existingTestType,
+      testType: data.testType,
+      existingTestTypeField: data.existingTestTypeField,
+      block: data.block,
     });
   }
 
@@ -120,8 +138,8 @@ export class CreateProjectComponent implements OnInit {
     return !options
       ? []
       : options.map<SelectItem<String>>((value) => {
-          return value[valueField];
-        });
+        return value[valueField];
+      });
   }
 
   onClick(field: string): void {
@@ -163,12 +181,17 @@ export class CreateProjectComponent implements OnInit {
     const formControl = this.createProjectForm.get(field);
     const existingFieldFormControl = this.createProjectForm.get(existingField);
 
-    if (existingFormControl?.value) {
-      formControl?.reset({ value: '', disabled: true });
-      existingFieldFormControl?.reset({ value: '', disabled: false });
-    } else if (field !== 'block') {
-      formControl?.reset({ value: '', disabled: false });
-      existingFieldFormControl?.reset({ value: '', disabled: true });
+    if (existingFieldFormControl?.value) {
+      existingFieldFormControl.enable();
+      formControl?.disable();
+    } else {
+      if (existingFormControl?.value) {
+        formControl?.reset({ value: '', disabled: true });
+        existingFieldFormControl?.reset({ value: '', disabled: false });
+      } else if (!formControl?.value && field !== 'block') {
+        formControl?.reset({ value: '', disabled: false });
+        existingFieldFormControl?.reset({ value: '', disabled: true });
+      }
     }
   }
 
@@ -179,10 +202,7 @@ export class CreateProjectComponent implements OnInit {
   onReset(): void {
     this.messageService.clear();
     this.createProjectForm.reset();
-
-    this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
-    this.setUpField('existingRevision', 'revision', 'existingRevisionField');
-    this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
+    this.loadInitView();
   }
 
   onSubmit(): void {
@@ -192,45 +212,19 @@ export class CreateProjectComponent implements OnInit {
         'Please fill in all the required fields'
       );
     } else {
-      const formData = { ...this.createProjectForm.value };
-      delete formData.existingDevice;
-      delete formData.existingRevision;
-      delete formData.existingTestType;
-      delete formData.existingBlock;
-
-      if (this.createProjectForm.get('existingDeviceField')?.value) {
-        this.finalDeviceFamily = formData.existingDeviceField;
-      } else {
-        this.finalDeviceFamily = formData.deviceFamily;
-      }
-
-      if (this.createProjectForm.get('existingRevisionField')?.value) {
-        this.finalRevision = formData.existingRevisionField;
-      } else {
-        this.finalRevision = formData.revision;
-      }
-
-      if (this.createProjectForm.get('existingTestTypeField')?.value) {
-        this.finalTestType = formData.existingTestTypeField;
-      } else {
-        this.finalTestType = formData.testType;
-      }
-
-      if (this.createProjectForm.get('existingBlockField')?.value) {
-        this.finalBlock = formData.existingBlockField;
-      } else {
-        this.finalBlock = formData.block;
-      }
-
+      const formData = JSON.stringify(this.createProjectForm.value);
       this.router.navigate(['confirm-new-project'], {
         relativeTo: this.route,
         queryParams: {
-          deviceFamily: this.finalDeviceFamily,
-          revision: this.finalRevision,
-          testType: this.finalTestType,
-          block: this.finalBlock,
+          data: formData,
         },
       });
     }
+  }
+
+  private loadInitView(): void {
+    this.setUpField('existingDevice', 'deviceFamily', 'existingDeviceField');
+    this.setUpField('existingRevision', 'revision', 'existingRevisionField');
+    this.setUpField('existingTestType', 'testType', 'existingTestTypeField');
   }
 }

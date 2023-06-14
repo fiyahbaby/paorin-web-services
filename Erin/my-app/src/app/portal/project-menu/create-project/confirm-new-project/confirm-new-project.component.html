@@ -1,7 +1,7 @@
 <app-navbar></app-navbar>
 <div id="confirm-project">
     <app-header formHeader="New Projection Confirmation"
-        formSubHeader="Project Menu > Create Project > New Projection Confirmation"></app-header>
+                formSubHeader="Project Menu > Create Project > New Projection Confirmation"></app-header>
     <p-card class="w-12 h-full card-header" id="project-p-card">
         <div class="w-full">
             <p-header>
@@ -16,15 +16,18 @@
             <div>
                 <div class="flex flex-row w-full align-items-center">
                     <strong class="col-1 pl-0">Device:</strong>
-                    <span>{{ newProjectParams['deviceFamily'] }}</span>
+                    <span>{{ newProjectParams['deviceFamily'] ? newProjectParams['deviceFamily'] :
+                        newProjectParams['existingDeviceField'] }}</span>
                 </div>
                 <div class="flex flex-row w-full align-items-center">
                     <strong class="col-1 pl-0">Revision:</strong>
-                    <span>{{ newProjectParams['revision'] }}</span>
+                    <span>{{ newProjectParams['revision'] ? newProjectParams['revision']:
+                        newProjectParams['existingRevisionField'] }}</span>
                 </div>
                 <div class="flex flex-row w-full align-items-center">
                     <strong class="col-1 pl-0">Test Type:</strong>
-                    <span>{{ newProjectParams['testType'] }}</span>
+                    <span>{{ newProjectParams['testType'] ? newProjectParams['testType'] :
+                        newProjectParams['existingTestTypeField'] }}</span>
                 </div>
                 <div class="flex flex-row w-full align-items-center">
                     <strong class="col-1 pl-0">Block:</strong>

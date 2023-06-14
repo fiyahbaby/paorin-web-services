@@ -11,12 +11,13 @@
           </h1>
         </p-header>
         <p-table [value]="projects" [paginator]="true" [rows]="3" [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-          [(selection)]="selectedProject" dataKey="project" styleClass="p-datatable-striped p-datatable-gridlines">
+                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                 [(selection)]="selectedProject" dataKey="project"
+                 styleClass="p-datatable-striped p-datatable-gridlines">
           <ng-template pTemplate="header">
             <tr>
               <th style="width: 6rem; text-align: center">Select</th>
-              <th style="text-align: center">Device</th>
+              <th style="width: 20rem; text-align: center">Device</th>
               <th style="width: 20rem; text-align: center">Revision</th>
               <th style="width: 20rem; text-align: center">Test Type</th>
               <th style="width: 20rem; text-align: center">Block</th>
@@ -46,7 +47,7 @@
             <div class="w-full flex flex-column flex-wrap gap-2">
               <div class="flex flex-row mb-2 align-items-center">
                 <p-radioButton name="projectAction" value="edit" formControlName="projectAction"
-                  inputId="editAction"></p-radioButton>
+                               inputId="editAction"></p-radioButton>
                 <div class="flex flex-column ml-2">
                   <label for="editAction" class="text-black-alpha-80">Edit project parameters</label>
                   <span class="subHeaderText">Modify project components.</span>
@@ -54,7 +55,7 @@
               </div>
               <div class="flex flex-row mb-2 align-items-center">
                 <p-radioButton name="projectAction" value="add" formControlName="projectAction"
-                  inputId="addAction"></p-radioButton>
+                               inputId="addAction"></p-radioButton>
                 <div class="flex flex-column ml-2">
                   <label for="addAction" class="text-black-alpha-80">Add project parameters</label>
                   <span class="subHeaderText">Add project components (unit, tests, voltage settings,
