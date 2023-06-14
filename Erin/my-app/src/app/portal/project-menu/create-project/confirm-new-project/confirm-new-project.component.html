@@ -1,1 +1,44 @@
-<p>confirm-new-project works!</p>
+<app-navbar></app-navbar>
+<div id="confirm-project">
+    <app-header formHeader="New Projection Confirmation"
+        formSubHeader="Project Menu > Create Project > New Projection Confirmation"></app-header>
+    <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="w-full">
+            <p-header>
+                <h1 id="p-header" class="mt-0 mb-1 p-0 text-black-alpha-90" style="font-size: 18px">
+                    Project Details
+                </h1>
+            </p-header>
+            <div class="mb-5">
+                <span class="text-black-alpha-70 text-sm">View and verify the parameters for your new
+                    project.</span>
+            </div>
+            <div>
+                <div class="flex flex-row w-full align-items-center">
+                    <strong class="col-1 pl-0">Device:</strong>
+                    <span>{{ newProjectParams['deviceFamily'] }}</span>
+                </div>
+                <div class="flex flex-row w-full align-items-center">
+                    <strong class="col-1 pl-0">Revision:</strong>
+                    <span>{{ newProjectParams['revision'] }}</span>
+                </div>
+                <div class="flex flex-row w-full align-items-center">
+                    <strong class="col-1 pl-0">Test Type:</strong>
+                    <span>{{ newProjectParams['testType'] }}</span>
+                </div>
+                <div class="flex flex-row w-full align-items-center">
+                    <strong class="col-1 pl-0">Block:</strong>
+                    <span>{{ newProjectParams['block'] }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-content-end buttons-container bottom">
+            <ng-container *ngTemplateOutlet="buttons"></ng-container>
+        </div>
+    </p-card>
+</div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+    <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>

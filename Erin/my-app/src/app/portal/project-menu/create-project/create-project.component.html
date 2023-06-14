@@ -13,20 +13,20 @@
             <app-form-label class="col-2" formLabel="Existing device family"></app-form-label>
             <div>
               <p-checkbox [binary]="true" inputId="existingDevice" formControlName="existingDevice"
-                          (click)="onClick('existingDevice')"></p-checkbox>
+                (click)="onClick('existingDevice')"></p-checkbox>
             </div>
           </div>
 
           <div class="flex flex-row gap-2 mb-5 w-full">
-            <app-form-label class="col-2" formLabel="New device family name"></app-form-label>
+            <app-form-label class="col-2" formLabel="New device"></app-form-label>
             <input pInputText formControlName="deviceFamily" name="deviceFamily" type="text"
-                   class="col-4 input-field" />
+              class="col-4 input-field" />
             <app-error-field-message [formControl]="deviceFamily"></app-error-field-message>
           </div>
           <div class="flex flex-row align-items-center gap-2 mb-3 w-full">
-            <app-form-label class="col-2" formLabel="Select existing device family"></app-form-label>
+            <app-form-label class="col-2" formLabel="Select existing device"></app-form-label>
             <p-dropdown id="dropdown-button" class="col-4" [options]="existingDeviceOptions"
-                        formControlName="existingDeviceField" placeholder="Select a device family"></p-dropdown>
+              formControlName="existingDeviceField" placeholder="Select a device family"></p-dropdown>
             <app-error-field-message [formControl]="existingDeviceField"></app-error-field-message>
           </div>
         </p-accordionTab>
@@ -36,19 +36,19 @@
             <app-form-label class="col-2" formLabel="Existing revision"></app-form-label>
             <div>
               <p-checkbox [binary]="true" inputId="existingRevision" formControlName="existingRevision"
-                          (click)="onClick('existingRevision')"></p-checkbox>
+                (click)="onClick('existingRevision')"></p-checkbox>
             </div>
           </div>
 
           <div class="flex flex-row gap-2 mb-5 w-full">
-            <app-form-label class="col-2" formLabel="New revision name"></app-form-label>
+            <app-form-label class="col-2" formLabel="New revision"></app-form-label>
             <input pInputText formControlName="revision" name="revision" type="text" class="col-4 input-field" />
             <app-error-field-message [formControl]="revision"></app-error-field-message>
           </div>
           <div class="flex flex-row align-items-center gap-2 mb-3 w-full">
             <app-form-label class="col-2" formLabel="Select existing revision"></app-form-label>
             <p-dropdown id="dropdown-button" class="col-4" [options]="existingRevisionOptions"
-                        formControlName="existingRevisionField" placeholder="Select a revision"></p-dropdown>
+              formControlName="existingRevisionField" placeholder="Select a revision"></p-dropdown>
             <app-error-field-message [formControl]="existingRevisionField"></app-error-field-message>
           </div>
         </p-accordionTab>
@@ -58,12 +58,12 @@
             <app-form-label class="col-2" formLabel="Existing test type"></app-form-label>
             <div>
               <p-checkbox [binary]="true" inputId="existingTestType" formControlName="existingTestType"
-                          (click)="onClick('existingTestType')"></p-checkbox>
+                (click)="onClick('existingTestType')"></p-checkbox>
             </div>
           </div>
 
           <div class="flex flex-row gap-2 mb-5 w-full">
-            <app-form-label class="col-2" formLabel="New test type name"></app-form-label>
+            <app-form-label class="col-2" formLabel="New test type"></app-form-label>
             <input pInputText formControlName="testType" type="text" class="col-4 input-field" />
             <small class="p-error" *ngIf="
                 createProjectForm.controls['testType'].invalid &&
@@ -73,13 +73,13 @@
           <div class="flex flex-row align-items-center gap-2 mb-3 w-full">
             <app-form-label class="col-2" formLabel="Select existing test type"></app-form-label>
             <p-dropdown id="dropdown-button" class="col-4" [options]="existingTestTypeOptions"
-                        formControlName="existingTestTypeField" placeholder="Select a test type"></p-dropdown>
+              formControlName="existingTestTypeField" placeholder="Select a test type"></p-dropdown>
           </div>
         </p-accordionTab>
 
         <p-accordionTab header="Block">
           <div class="flex flex-row gap-2 my-3 w-full align-items-center">
-            <app-form-label class="col-2" formLabel="New block name"></app-form-label>
+            <app-form-label class="col-2" formLabel="New block"></app-form-label>
             <input pInputText formControlName="block" type="text" class="col-4 input-field" />
             <small class="p-error" *ngIf="
                 createProjectForm.controls['block'].invalid &&

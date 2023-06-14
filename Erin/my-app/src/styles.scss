@@ -49,8 +49,10 @@ form {
   align-items: flex-end;
 }
 
-#create-project-p-card .p-card-content {
+#project-p-card .p-card-content {
   align-items: center;
+  padding-top: 0%;
+  padding-bottom: 0%;
 }
 
 .ng-invalid.ng-touched {
