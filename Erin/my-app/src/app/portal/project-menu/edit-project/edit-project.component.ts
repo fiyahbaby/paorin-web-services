@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
 import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
@@ -25,6 +25,7 @@ export class EditProjectComponent implements OnInit {
     private formBuilder: FormBuilder,
     private portalService: PortalService,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
     private formCommonService: FormCommonService
   ) { }
@@ -36,8 +37,8 @@ export class EditProjectComponent implements OnInit {
 
   private initFormControl(): void {
     this.editProjectForm = this.formBuilder.group({
-      projectAction: [{ value: '', disabled: false }, Validators.required],
-      filter: [{ value: '', disabled: false }],
+      projectAction: ['', Validators.required],
+      selectedProject: [null],
     });
   }
 
@@ -55,11 +56,29 @@ export class EditProjectComponent implements OnInit {
 
   onSubmit(): void {
     const projectAction = this.editProjectForm.get('projectAction')?.value;
-    if (projectAction && this.selectedProject) {
-      // Handle the submit logic here
+    const selectedProject = this.editProjectForm.get('selectedProject')?.value;
+
+    if (projectAction && this.editProjectForm.get('selectedProject')?.value) {
+      if (projectAction === 'edit') {
+        // Edit project param
+      }
+      else {
+        this.router.navigate(['add-project-param'], {
+          relativeTo: this.route,
+          queryParams: {
+            data: JSON.stringify(selectedProject),
+          }
+        });
+      }
     } else {
       this.formCommonService.addErrorMessage('Required fields are missing. Please fill in all the required information.');
       return;
     }
+  }
+
+  onRowSelect(event: any): void {
+    this.editProjectForm.patchValue({
+      selectedProject: event.data
+    });
   }
 }

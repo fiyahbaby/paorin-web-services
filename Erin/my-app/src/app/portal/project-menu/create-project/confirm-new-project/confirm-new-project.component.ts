@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CreateProjectResponse } from '../create-project-response.class';
 
 @Component({
   selector: 'app-confirm-new-project',
@@ -17,7 +16,6 @@ export class ConfirmNewProjectComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       this.newProjectParams = params;
     });
-
     this.newProjectParams = JSON.parse(this.newProjectParams.data);
   }
 

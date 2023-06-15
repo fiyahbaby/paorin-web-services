@@ -1,10 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Message, MessageService, SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
@@ -80,34 +75,30 @@ export class CreateProjectComponent implements OnInit {
     return this.createProjectForm.get('existingRevisionField') as FormControl;
   }
 
+  get testType() {
+    return this.createProjectForm.get('testType') as FormControl;
+  }
+
+  get existingTestTypeField() {
+    return this.createProjectForm.get('existingTestTypeField') as FormControl;
+  }
+
+  get block() {
+    return this.createProjectForm.get('block') as FormControl;
+  }
+
   private initFormControl(): void {
     this.createProjectForm = this.formBuilder.group({
       existingDevice: [{ value: false, disabled: false }, Validators.required],
-      existingRevision: [
-        { value: false, disabled: false },
-        Validators.required,
-      ],
-      existingTestType: [
-        { value: false, disabled: false },
-        Validators.required,
-      ],
+      existingRevision: [{ value: false, disabled: false }, Validators.required,],
+      existingTestType: [{ value: false, disabled: false }, Validators.required,],
       deviceFamily: [{ value: '', disabled: false }, Validators.required],
       revision: [{ value: '', disabled: false }, Validators.required],
       testType: [{ value: '', disabled: false }, Validators.required],
       block: [{ value: '', disabled: false }, Validators.required],
-      existingDeviceField: [
-        { value: '', disabled: true },
-        [Validators.required],
-      ],
-      existingRevisionField: [
-        { value: '', disabled: true },
-        Validators.required,
-      ],
-      existingTestTypeField: [
-        { value: '', disabled: true },
-        Validators.required,
-      ],
-      existingBlockField: [{ value: '', disabled: true }, Validators.required],
+      existingDeviceField: [{ value: '', disabled: true }, [Validators.required],],
+      existingRevisionField: [{ value: '', disabled: true }, Validators.required,],
+      existingTestTypeField: [{ value: '', disabled: true }, Validators.required,],
     });
   }
 
@@ -201,8 +192,14 @@ export class CreateProjectComponent implements OnInit {
 
   onReset(): void {
     this.messageService.clear();
-    this.createProjectForm.reset();
-    this.loadInitView();
+    if (this.createProjectForm.dirty) {
+      this.createProjectForm.reset();
+      this.loadInitView();
+    }
+    else {
+      this.createProjectForm.reset();
+      this.loadInitView();
+    }
   }
 
   onSubmit(): void {

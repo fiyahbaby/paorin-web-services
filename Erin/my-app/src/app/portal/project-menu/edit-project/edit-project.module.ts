@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import { EditProjectRoutingModule } from './edit-project-routing.module';
 import { EditProjectComponent } from './edit-project.component';
 import { FormCommonModule } from 'src/app/app-common/form-common/form-common.module';
+import { AddProjectParamComponent } from './add-project-param/add-project-param.component';
 
 @NgModule({
-  declarations: [EditProjectComponent],
+  declarations: [EditProjectComponent, AddProjectParamComponent],
   imports: [EditProjectRoutingModule, FormCommonModule],
 })
 export class EditProjectModule {}
