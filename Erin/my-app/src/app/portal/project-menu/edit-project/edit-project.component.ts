@@ -50,6 +50,12 @@ export class EditProjectComponent implements OnInit {
     }
   }
 
+  onRowSelect(event: any): void {
+    this.editProjectForm.patchValue({
+      selectedProject: event.data
+    });
+  }
+
   onBack(): void {
     this.router.navigate(['/home']);
   }
@@ -74,11 +80,5 @@ export class EditProjectComponent implements OnInit {
       this.formCommonService.addErrorMessage('Required fields are missing. Please fill in all the required information.');
       return;
     }
-  }
-
-  onRowSelect(event: any): void {
-    this.editProjectForm.patchValue({
-      selectedProject: event.data
-    });
   }
 }

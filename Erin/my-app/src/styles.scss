@@ -78,6 +78,14 @@ form {
   background: black;
 }
 
+#add-row-button {
+  .p-button {
+    background: #f8f9fa;
+    color: black;
+    border: 1px solid #dee2e6;
+  }
+}
+
 #dropdown-button {
   flex: 0 0 auto;
   padding: 0rem;
