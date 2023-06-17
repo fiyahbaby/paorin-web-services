@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 
 
 @Component({
@@ -11,12 +12,14 @@ import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule, F
 export class AddProjectParamComponent implements OnInit {
   selectedProject: any;
   addUnitForm!: FormGroup;
-  unit: any[] = [];
+  units: any[] = [];
+  i = 1;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private formBuilder: FormBuilder,
+    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -37,12 +40,22 @@ export class AddProjectParamComponent implements OnInit {
   }
 
   addRow(): void {
-    this.unit.push({ processCorner: '', barCode: '' });
+    this.units.push({ index: this.i, processCorner: '', barCode: '' });
+    this.i++;
   }
 
   onBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
+
+  onReset(): void {
+    this.messageService.clear();
+    this.addUnitForm.reset();
+    this.units.splice(0);
+    this.i = 1;
+    this.addRow();
+  }
+
 
   onSubmit() {
     // TODO
