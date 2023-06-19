@@ -46,7 +46,7 @@ export class EditProjectComponent implements OnInit {
     try {
       this.projects = await this.portalService.getProjects();
     } catch (error) {
-      // Handle error here
+      console.log("Error retrieving project details.")
     }
   }
 
@@ -62,17 +62,22 @@ export class EditProjectComponent implements OnInit {
 
   onSubmit(): void {
     const projectAction = this.editProjectForm.get('projectAction')?.value;
-    const selectedProject = this.editProjectForm.get('selectedProject')?.value;
+    const selectedProject = JSON.stringify(this.editProjectForm.get('selectedProject')?.value);
 
     if (projectAction && this.editProjectForm.get('selectedProject')?.value) {
       if (projectAction === 'edit') {
-        // Edit project param
+        this.router.navigate(['edit-project-param'], {
+          relativeTo: this.route,
+          queryParams: {
+            data: selectedProject,
+          }
+        });
       }
       else {
         this.router.navigate(['add-project-param'], {
           relativeTo: this.route,
           queryParams: {
-            data: JSON.stringify(selectedProject),
+            data: selectedProject,
           }
         });
       }

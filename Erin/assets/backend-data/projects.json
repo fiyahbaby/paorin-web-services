@@ -4,27 +4,83 @@
     "revision": "Rev 1",
     "testType": "Test type 1",
     "block": "Block 1",
-    "dateCreated": "1/15/2023"
+    "dateCreated": "1/15/2023",
+    "voltages": {
+      "1": { "name": "LP", "value": "0.665" },
+      "2": { "name": "MP", "value": "0.76" },
+      "3": { "name": "HP", "value": "0.836" }
+    },
+    "temperature": {
+      "1": { "name": "High", "value": "110" },
+      "2": { "name": "Low", "value": "-40" }
+    },
+    "units": {
+      "1": { "processCorner": "TT", "barCode": "123" },
+      "2": { "processCorner": "FF", "barCode": "456" },
+      "3": { "processCorner": "SS", "barCode": "789" }
+    }
   },
   {
     "project": "Project 2",
     "revision": "Rev 2",
     "testType": "Test type 2",
     "block": "Block 2",
-    "dateCreated": "2/123/2023"
+    "dateCreated": "2/123/2023",
+    "voltages": {
+      "1": { "name": "LP", "value": "0.665" },
+      "2": { "name": "MP", "value": "0.76" },
+      "3": { "name": "HP", "value": "0.836" }
+    },
+    "temperature": {
+      "1": { "name": "High", "value": "110" },
+      "2": { "name": "Low", "value": "-40" }
+    },
+    "units": {
+      "1": { "processCorner": "TT", "barCode": "123" },
+      "2": { "processCorner": "FF", "barCode": "456" },
+      "3": { "processCorner": "SS", "barCode": "789" }
+    }
   },
   {
     "project": "Project 3",
     "revision": "Rev 3",
     "testType": "Test type 3",
     "block": "Block 3",
-    "dateCreated": "3/27/2023"
+    "dateCreated": "3/27/2023",
+    "voltages": {
+      "1": { "name": "LP", "value": "0.665" },
+      "2": { "name": "MP", "value": "0.76" },
+      "3": { "name": "HP", "value": "0.836" }
+    },
+    "temperature": {
+      "1": { "name": "High", "value": "110" },
+      "2": { "name": "Low", "value": "-40" }
+    },
+    "units": {
+      "1": { "processCorner": "TT", "barCode": "123" },
+      "2": { "processCorner": "FF", "barCode": "456" },
+      "3": { "processCorner": "SS", "barCode": "789" }
+    }
   },
   {
     "project": "Project 4",
     "revision": "Rev 4",
     "testType": "Test type 4",
     "block": "Block 4",
-    "dateCreated": "5/5/2023"
+    "dateCreated": "5/5/2023",
+    "voltages": {
+      "1": { "name": "LP", "value": "0.665" },
+      "2": { "name": "MP", "value": "0.76" },
+      "3": { "name": "HP", "value": "0.836" }
+    },
+    "temperature": {
+      "1": { "name": "High", "value": "110" },
+      "2": { "name": "Low", "value": "-40" }
+    },
+    "units": {
+      "1": { "processCorner": "TT", "barCode": "123" },
+      "2": { "processCorner": "FF", "barCode": "456" },
+      "3": { "processCorner": "SS", "barCode": "789" }
+    }
   }
 ]

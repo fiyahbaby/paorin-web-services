@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { EditProjectComponent } from './edit-project.component';
 import { AuthGuard } from 'src/app/app-common/auth-service/auth-guard';
 import { AddProjectParamComponent } from './add-project-param/add-project-param.component';
+import { EditProjectParamComponent } from './edit-project-param/edit-project-param.component';
 
 const routes: Routes = [
   {
@@ -13,6 +14,11 @@ const routes: Routes = [
   {
     path: 'add-project-param',
     component: AddProjectParamComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'edit-project-param',
+    component: EditProjectParamComponent,
     canActivate: [AuthGuard],
   },
 ];

@@ -1,0 +1,96 @@
+<app-navbar></app-navbar>
+<div id="edit-project-param">
+    <app-header formHeader="Edit Project Parameters"
+        formSubHeader="Project Menu > Edit Project > Edit Project Parameters"></app-header>
+    <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="w-full mb-2">
+            <p-header>
+                <h1 id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
+                    Selected Project
+                </h1>
+            </p-header>
+            <p-table [value]="[selectedProject]" styleClass="p-datatable-gridlines">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 20rem; text-align: center">Device</th>
+                        <th style="width: 20rem; text-align: center">Revision</th>
+                        <th style="width: 20rem; text-align: center">Test Type</th>
+                        <th style="width: 20rem; text-align: center">Block</th>
+                        <th style="width: 20rem; text-align: center">Date created</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-selectedProject>
+                    <tr>
+                        <td style="text-align: center">{{ selectedProject.project }}</td>
+                        <td style="text-align: center">{{ selectedProject.revision }}</td>
+                        <td style="text-align: center">{{ selectedProject.testType }}</td>
+                        <td style="text-align: center">{{ selectedProject.block }}</td>
+                        <td style="text-align: center">{{ selectedProject.dateCreated }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <p-divider class="w-full"></p-divider>
+        <div class="w-full">
+            <p-header>
+                <h1 id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
+                    Edit Parameters
+                </h1>
+            </p-header>
+            <p-accordion [multiple]="true" class="w-full mt-3">
+                <p-accordionTab header="Voltage">
+                    <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
+                        Voltage Settings
+                    </p>
+                    <p-table [value]="getVoltageData()" styleClass="p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 3rem; text-align: center">#</th>
+                                <th style="width: 20rem; text-align: center">Name</th>
+                                <th style="width: 20rem; text-align: center">Value</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-voltage let-rowIndex="rowIndex">
+                            <tr>
+                                <td style="text-align: center">{{ rowIndex + 1 }}</td>
+                                <td style="text-align: center">{{ voltage.name }}</td>
+                                <td style="text-align: center">{{ voltage.value }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-accordionTab>
+
+                <p-accordionTab header="Temperature">
+                    <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
+                        Temperature Settings
+                    </p>
+                    <p-table [value]="getTempData()" styleClass="p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 3rem; text-align: center">#</th>
+                                <th style="width: 20rem; text-align: center">Name</th>
+                                <th style="width: 20rem; text-align: center">Value</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-temperature let-tempIndex="rowIndex">
+                            <tr>
+                                <td style="text-align: center">{{ tempIndex + 1 }}</td>
+                                <td style="text-align: center">{{ temperature.name }}</td>
+                                <td style="text-align: center">{{ temperature.value }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+
+                </p-accordionTab>
+                <p-accordionTab header="Test List">
+
+                </p-accordionTab>
+                <p-accordionTab header="Unit">
+
+                </p-accordionTab>
+            </p-accordion>
+
+        </div>
+
+    </p-card>
+</div>

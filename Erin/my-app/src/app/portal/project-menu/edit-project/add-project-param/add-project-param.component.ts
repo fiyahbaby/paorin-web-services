@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-
 
 @Component({
   selector: 'app-add-project-param',
@@ -12,8 +11,10 @@ import { MessageService } from 'primeng/api';
 export class AddProjectParamComponent implements OnInit {
   selectedProject: any;
   addUnitForm!: FormGroup;
-  units: any[] = [];
-  i = 1;
+  addVoltageForm!: FormGroup;
+  addTempForm!: FormGroup;
+  formHasChanges: boolean = false;
+  uploadedFileName: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -27,46 +28,135 @@ export class AddProjectParamComponent implements OnInit {
       this.selectedProject = params;
     });
     this.selectedProject = JSON.parse(this.selectedProject.data);
-    this.addUnitFormControl();
-    this.addRow();
-  }
-
-
-  private addUnitFormControl(): void {
-    this.addUnitForm = this.formBuilder.group({
-      processCorner: [''],
-      barCode: ['']
+    this.initializeForm();
+    this.addUnitForm.valueChanges.subscribe(() => {
+      this.formHasChanges = true;
+    });
+    this.addVoltageForm.valueChanges.subscribe(() => {
+      this.formHasChanges = true;
+    });
+    this.addTempForm.valueChanges.subscribe(() => {
+      this.formHasChanges = true;
     });
   }
 
-  addRow(): void {
-    this.units.push({ index: this.i, processCorner: '', barCode: '' });
-    this.i++;
+  initializeForm(): void {
+    this.addUnitForm = this.formBuilder.group({
+      units: this.formBuilder.array([])
+    });
+    this.addUnitRow();
+
+    this.addVoltageForm = this.formBuilder.group({
+      voltages: this.formBuilder.array([])
+    });
+    this.addVoltageRow();
+
+    this.addTempForm = this.formBuilder.group({
+      temperatures: this.formBuilder.array([])
+    });
+    this.addTempRow();
+  }
+
+  createUnitFormGroup(index: number): FormGroup {
+    return this.formBuilder.group({
+      processCorner: '',
+      barcode: '',
+      index: index
+    });
+  }
+
+  createVoltageFormGroup(index: number): FormGroup {
+    return this.formBuilder.group({
+      name: '',
+      value: '',
+      index: index
+    });
+  }
+
+  createTempFormGroup(index: number): FormGroup {
+    return this.formBuilder.group({
+      name: '',
+      value: '',
+      index: index
+    });
+  }
+
+  get units(): FormArray {
+    return this.addUnitForm.get('units') as FormArray;
+  }
+
+  get voltages(): FormArray {
+    return this.addVoltageForm.get('voltages') as FormArray;
+  }
+
+  get temperatures(): FormArray {
+    return this.addTempForm.get('temperatures') as FormArray;
+  }
+
+  addUnitRow(): void {
+    const units = this.addUnitForm.get('units') as FormArray;
+    const unitFormGroup = this.createUnitFormGroup(units.length + 1);
+    units.push(unitFormGroup);
+  }
+
+  addVoltageRow(): void {
+    const voltages = this.addVoltageForm.get('voltages') as FormArray;
+    const voltageFormGroup = this.createVoltageFormGroup(voltages.length + 1);
+    voltages.push(voltageFormGroup);
+  }
+
+  addTempRow(): void {
+    const temperatures = this.addTempForm.get('temperatures') as FormArray;
+    const temperaturesFormGroup = this.createTempFormGroup(temperatures.length + 1);
+    temperatures.push(temperaturesFormGroup);
+  }
+
+  handleFileUpload(event: any): void {
+    const uploadedFiles = event.files;
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      this.uploadedFileName = uploadedFiles[0].name;
+      console.log(this.uploadedFileName)
+    } else {
+      this.uploadedFileName = '';
+      console.log(this.uploadedFileName)
+    }
+  }
+
+  onReset(): void {
+    const units = this.addUnitForm.get('units') as FormArray;
+    units.clear();
+    this.addUnitRow();
+
+    const voltages = this.addVoltageForm.get('voltages') as FormArray;
+    voltages.clear();
+    this.addVoltageRow();
+
+    const temperatures = this.addTempForm.get('temperatures') as FormArray;
+    temperatures.clear();
+    this.addTempRow();
+
+    this.formHasChanges = false;
+    this.uploadedFileName = '';
+  }
+
+  onSubmit() {
+    if (!this.formHasChanges) {
+      return;
+    }
+
+    const unitValues = this.addUnitForm.value.units;
+    console.log(unitValues);
+
+    const voltageValues = this.addVoltageForm.value.voltages;
+    console.log(voltageValues);
+
+    const tempValues = this.addTempForm.value.temperatures;
+    console.log(tempValues);
+
+    this.formHasChanges = false;
   }
 
   onBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
-
-  onReset(): void {
-    this.messageService.clear();
-    this.addUnitForm.reset();
-    this.units.splice(0);
-    this.i = 1;
-    this.addRow();
-  }
-
-
-  onSubmit() {
-    // TODO
-  }
-
-  get processCorner() {
-    return this.addUnitForm.get('processCorner') as FormControl;
-  }
-
-  get barCode() {
-    return this.addUnitForm.get('barCode') as FormControl;
-  }
-
 }
