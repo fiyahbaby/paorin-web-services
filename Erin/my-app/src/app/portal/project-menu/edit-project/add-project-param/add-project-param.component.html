@@ -53,7 +53,7 @@
                   <tr>
                     <th style="text-align: center; width: 5rem;">#</th>
                     <th style="text-align: center; width: 10rem;">Name</th>
-                    <th style="text-align: center">Voltage Value</th>
+                    <th style="text-align: center">Voltage Value (V)</th>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-voltage let-i="index">
@@ -69,7 +69,7 @@
                 </ng-template>
               </p-table>
               <div class="flex flex-column align-items-end">
-                <p-button id="add-row-button" label="Add Row" icon="pi pi-plus" (click)="addVoltageRow()"
+                <p-button id="action-button" label="Add Row" icon="pi pi-plus" (click)="addVoltageRow()"
                   class="mt-1"></p-button>
               </div>
             </div>
@@ -89,7 +89,7 @@
                   <tr>
                     <th style="text-align: center; width: 5rem;">#</th>
                     <th style="text-align: center; width: 10rem;">Name</th>
-                    <th style="text-align: center">Temperature Value</th>
+                    <th style="text-align: center">Temperature Value (&deg;C)</th>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-temperature let-i="index">
@@ -105,7 +105,7 @@
                 </ng-template>
               </p-table>
               <div class="flex flex-column align-items-end">
-                <p-button id="add-row-button" label="Add Row" icon="pi pi-plus" (click)="addTempRow()"
+                <p-button id="action-button" label="Add Row" icon="pi pi-plus" (click)="addTempRow()"
                   class="mt-1"></p-button>
               </div>
             </div>
@@ -156,7 +156,7 @@
 
               </p-table>
               <div class="flex flex-column align-items-end">
-                <p-button id="add-row-button" label="Add Row" icon="pi pi-plus" (click)="addUnitRow()"
+                <p-button id="action-button" label="Add Row" icon="pi pi-plus" (click)="addUnitRow()"
                   class="mt-1"></p-button>
               </div>
             </div>

@@ -23,6 +23,15 @@ const routes: Routes = [
           return EditProjectModule;
         },
       },
+      {
+        path: 'view-project',
+        loadChildren: async () => {
+          const { ViewProjectModule } = await import(
+            './view-project/view-project.module'
+          );
+          return ViewProjectModule;
+        },
+      },
     ],
   },
 ];
@@ -31,4 +40,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ProjectMenuRoutingModule {}
+export class ProjectMenuRoutingModule { }

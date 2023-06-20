@@ -58,4 +58,10 @@ export class PortalService {
 
     return httpClient.toPromise();
   }
+
+  async submitProjectData(projectData: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/createProjects`;
+    const response = this.http.post(url, projectData).toPromise();
+    return response;
+  }
 }
