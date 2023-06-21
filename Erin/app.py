@@ -1,64 +1,97 @@
 import json
-from flask import Flask, jsonify, request, session, make_response
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
-from flask_login import login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
 import socket
+from datetime import datetime
+import pytz
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.secret_key = b'mySecretKey'
 CORS(app, origins=["*"])
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/paolodel/sqlite/Databases/charfuncdb'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/paolodel/Documents/GitHub/paorin-web-services/Erin/sqlite/Databases/testdb2'
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class Projects(db.Model):
-    project_id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.String(255))
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    device_name = db.Column(db.String(255))
     revision_id = db.Column(db.Integer)
     test_type_id = db.Column(db.Integer)
     block_id = db.Column(db.Integer)
+    date_created = db.Column(db.String(255))
 
-    def __init__(self, project_name, revision_id, test_type_id, block_id):
-        self.project_name = project_name
-        self.revision_id = revision_id
-        self.test_type_id = test_type_id
-        self.block_id = block_id
+    def __str__(self):
+        return self.device_name
 
-class DeviceFamilies(db.Model):
-    device_family_id = db.Column(db.Integer, primary_key=True)
-    device_family_name = db.Column(db.String(255))
+class Voltages(db.Model):
+    __tablename__ = 'voltages'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    value = db.Column(db.Float)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
-    def __init__(self, device_family_name):
-        self.device_family_name = device_family_name
+    def __str__(self):
+        return self.name
 
-class Revisions(db.Model):
-    revision_id = db.Column(db.Integer, primary_key=True)
-    revision_name = db.Column(db.String(255))
+class Temperatures(db.Model):
+    __tablename__ = 'temperatures'
+    id = db.Column(db.Integer, primary_key=True)
+    temperature = db.Column(db.Float)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
-    def __init__(self, revision_name):
-        self.revision_name = revision_name
+    def __str__(self):
+        return str(self.temperature)
 
-class TestTypes(db.Model):
-    test_type_id = db.Column(db.Integer, primary_key=True)
-    test_type = db.Column(db.String(255))
+class Tests(db.Model):
+    __tablename__ = 'tests'
+    id = db.Column(db.Integer, primary_key=True)
+    s_suite = db.Column(db.String(255))
+    suite = db.Column(db.String(255))
+    name = db.Column(db.String(255))
+    dc = db.Column(db.String(255))
+    remarks = db.Column(db.String(255))
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
+    voltage_id = db.Column(db.Integer, db.ForeignKey('voltages.id'))
+    temperature_id = db.Column(db.Integer, db.ForeignKey('temperatures.id'))
 
-    def __init__(self, test_type):
-        self.test_type = test_type
+    def __str__(self):
+        return self.name
 
-class Blocks(db.Model):
-    block_id = db.Column(db.Integer, primary_key=True)
-    block_name = db.Column(db.String(255))
+class Units(db.Model):
+    __tablename__ = 'units'
+    id = db.Column(db.Integer, primary_key=True)
+    process_corner = db.Column(db.String(255))
+    two_d_name = db.Column(db.String(255))
+    device_dna = db.Column(db.String(255))
+    remarks = db.Column(db.String(255))
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
-    def __init__(self, block_name):
-        self.block_name = block_name
+    def __str__(self):
+        return self.two_d_name
 
+class BuildIDs(db.Model):
+    __tablename__ = 'build_ids'
+    id = db.Column(db.Integer, primary_key=True)
+    time_stamp = db.Column(db.String(255))
+    voltage_id = db.Column(db.Integer, db.ForeignKey('voltages.id'))
+    temperature_id = db.Column(db.Integer, db.ForeignKey('temperatures.id'))
+    two_d_name = db.Column(db.String(255))
+    test_id = db.Column(db.Integer, db.ForeignKey('tests.id'))
+    test_status = db.Column(db.String(255))
+    run_time = db.Column(db.String(255))
+
+    def __str__(self):
+        return self.time_stamp
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
 print(f"Host IP address: {ip_address}")
-host_ip = ip_address 
+host_ip = ip_address
 port = 5000
 
 @app.route('/api/ip', methods=['GET'])
@@ -84,12 +117,12 @@ def login():
         for acc in accounts:
             if data['username'] == acc['username'] and data['password'] == acc['password']:
                 session['user_id'] = 1
-                return { 'type': 'success', 'message': 'Logged in successful', 'userType': acc['type'] }
+                return {'type': 'success', 'message': 'Logged in successful', 'userType': acc['type']}
             flag = True
-        if (flag):
+        if flag:
             return {'type': 'error', 'message': 'Invalid username or password'}
-        
-@app.route('/api/logout', methods=['POST'])    
+
+@app.route('/api/logout', methods=['POST'])
 def logout():
     session.clear()
     return {'message': 'Logout successful'}
@@ -103,39 +136,22 @@ def get_projects():
 @app.route('/api/createProjects', methods=['POST'])
 def create_project():
     project_data = request.json
-    print('Received project data:', project_data)
-
     project_name = project_data.get('project_name')
     revision_id = project_data.get('revision_name')
     test_type_id = project_data.get('test_type_name')
     block_id = project_data.get('block_name')
+    date_created = datetime.now(pytz.timezone('Asia/Singapore')).date()
 
     project = Projects(
-        project_name=project_name,
+        device_name=project_name,
         revision_id=revision_id,
         test_type_id=test_type_id,
-        block_id=block_id
+        block_id=block_id,
+        date_created=date_created
     )
+
     db.session.add(project)
-
-    revision = Revisions(revision_name=revision_id) 
-    db.session.add(revision)
-
-    test_type = TestTypes(test_type=test_type_id)
-    db.session.add(test_type)
-
-    # block_name = project_data.get('block_name')
-    # block = Blocks(block_name=block_name)
-    # db.session.add(block)
-
-    # device_family_name = project_data.get('project_name')
-    # device_family = DeviceFamilies(
-    #     device_family_name=device_family_name,
-    # )
-    # db.session.add(device_family)
-
     db.session.commit()
-    print('Project created successfully')
 
     return jsonify({'message': 'Project created successfully'})
 

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PortalService } from 'src/app/portal/portal.service';
+import { Message, MessageService, SelectItem } from 'primeng/api';
+
 
 @Component({
   selector: 'app-confirm-new-project',
@@ -14,7 +16,8 @@ export class ConfirmNewProjectComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private portalService: PortalService
+    private portalService: PortalService,
+    private messageService: MessageService,
   ) { }
 
   ngOnInit(): void {
@@ -34,7 +37,6 @@ export class ConfirmNewProjectComponent implements OnInit {
     });
   }
 
-
   onSubmit() {
     const project_name = this.newProjectParams.existingDeviceField || this.newProjectParams.deviceFamily;
     const revision = this.newProjectParams.existingRevisionField || this.newProjectParams.revision;
@@ -48,11 +50,25 @@ export class ConfirmNewProjectComponent implements OnInit {
       block_name: block
     };
 
-    console.log(projectData)
-
     this.portalService.submitProjectData(projectData).then((response) => {
-      // Handle the response as needed
-      console.log(response);
-    })
+      if (!response.success) {
+        // There were no modifications made, so show a success message.
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Project created',
+          detail: 'Project has been successfully created.',
+          life: 3000
+        });
+      } else {
+        // There were modifications made, so show an error message.
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error creating project.',
+          life: 3000
+        });
+      }
+    });
+    // this.router.navigate(['/home']);
   }
 }
