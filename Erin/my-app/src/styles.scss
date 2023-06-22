@@ -55,6 +55,15 @@ form {
   padding-bottom: 0%;
 }
 
+#project-page .p-card-content {
+  padding-top: 0%;
+  padding-bottom: 0%;
+}
+
+#project-page .p-card-body {
+  padding-top: 1%;
+}
+
 .ng-invalid.ng-touched {
   border-color: #e24c4c;
 
@@ -93,4 +102,13 @@ form {
   .p-dropdown {
     width: 100%;
   }
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  color: black;
+}
+
+.p-tabview .p-tabview-panels {
+  padding: 0%;
+  padding-top: 1.25rem;
 }

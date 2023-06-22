@@ -52,12 +52,28 @@ export class PortalService {
     return response.toPromise();
   }
 
-  async getProjects(): Promise<any> {
+  async getProjects(): Promise<any[]> {
     const url = `${await this.getBackendUrl()}/api/projects`;
-    const httpClient = this.http.get(url);
-
-    return httpClient.toPromise();
+    const projects = await this.http.get<any[]>(url).toPromise();
+    return projects?.map((project) => {
+      return {
+        id: project.id,
+        name: project.device_name,
+        revisionId: project.revision_id,
+        testTypeId: project.test_type_id,
+        blockId: project.block_id,
+        dateCreated: project.date_created
+      };
+    }) || [];
   }
+
+  async getProjectData(projectId: number): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/data`;
+    const projectsData = await this.http.get<any[]>(url).toPromise();
+    const projectData = projectsData?.find((project) => project.id === projectId);
+    return projectData || null;
+  }
+
 
   async submitProjectData(projectData: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/createProjects`;

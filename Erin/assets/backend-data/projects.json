@@ -25,7 +25,7 @@
     "revision": "Rev 2",
     "testType": "Test type 2",
     "block": "Block 2",
-    "dateCreated": "2/123/2023",
+    "dateCreated": "2/23/2023",
     "voltages": {
       "1": { "name": "LP", "value": "0.665" },
       "2": { "name": "MP", "value": "0.76" },

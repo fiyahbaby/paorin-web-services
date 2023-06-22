@@ -129,9 +129,57 @@ def logout():
 
 @app.route('/api/projects', methods=['GET'])
 def get_projects():
-    with open('assets/backend-data/projects.json', 'r') as projects_file:
-        projects = json.load(projects_file)
-    return jsonify(projects)
+    projects = Projects.query.all()
+    projects_list = []
+    for project in projects:
+        project_dict = {
+            'id': project.id,
+            'device_name': project.device_name,
+            'revision_id': project.revision_id,
+            'test_type_id': project.test_type_id,
+            'block_id': project.block_id,
+            'date_created': project.date_created
+        }
+        projects_list.append(project_dict)
+        print(projects_list)
+    return jsonify(projects_list)
+
+@app.route('/api/data', methods=['GET'])
+def get_data():
+    # Retrieve all projects
+    projects = Projects.query.all()
+    data_list = []
+
+    # Loop through each project, and retrieve the corresponding voltages, temperatures, and units
+    for project in projects:
+        project_dict = {
+            'device_name': project.device_name,
+            'revision_id': project.revision_id,
+            'test_type_id': project.test_type_id,
+            'block_id': project.block_id,
+            'date_created': project.date_created
+        }
+
+        # Retrieve the voltages for this project
+        voltages = Voltages.query.filter_by(project_id=project.id).all()
+        voltage_list = [{'name': v.name, 'value': v.value} for v in voltages]
+        project_dict['voltages'] = voltage_list
+
+        # Retrieve the temperatures for this project
+        temperatures = Temperatures.query.filter_by(project_id=project.id).all()
+        temperature_list = [t.temperature for t in temperatures]
+        project_dict['temperatures'] = temperature_list
+
+        # Retrieve the units for this project
+        units = Units.query.filter_by(project_id=project.id).all()
+        unit_list = [{'process_corner': u.process_corner, 'two_d_name': u.two_d_name, 'device_dna': u.device_dna, 'remarks': u.remarks} for u in units]
+        project_dict['units'] = unit_list
+
+        data_list.append(project_dict)
+
+    return jsonify(data_list)
+
+
 
 @app.route('/api/createProjects', methods=['POST'])
 def create_project():

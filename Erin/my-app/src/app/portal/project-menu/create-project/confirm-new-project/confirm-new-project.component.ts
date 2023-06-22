@@ -55,7 +55,7 @@ export class ConfirmNewProjectComponent implements OnInit {
         // There were no modifications made, so show a success message.
         this.messageService.add({
           severity: 'success',
-          summary: 'Project created',
+          summary: 'Success',
           detail: 'Project has been successfully created.',
           life: 3000
         });

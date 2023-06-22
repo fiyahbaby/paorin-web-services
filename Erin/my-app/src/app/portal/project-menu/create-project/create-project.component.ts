@@ -125,11 +125,11 @@ export class CreateProjectComponent implements OnInit {
     return this.toOptions(await this.portalService.getProjects(), 'testType');
   }
 
-  private toOptions(options: [], valueField: string): SelectItem[] {
+  private toOptions(options: any[], valueField: string): SelectItem[] {
     return !options
       ? []
-      : options.map<SelectItem<String>>((value) => {
-        return value[valueField];
+      : options.map((value) => {
+        return { label: value[valueField], value: value[valueField] };
       });
   }
 
@@ -203,19 +203,15 @@ export class CreateProjectComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.createProjectForm.invalid) {
-      this.formCommonService.validatorFormGroupFields(this.createProjectForm);
-      this.formCommonService.addErrorMessage(
-        'Please fill in all the required fields'
-      );
-    } else {
+    if (this.createProjectForm.valid) {
       const formData = JSON.stringify(this.createProjectForm.value);
       this.router.navigate(['confirm-new-project'], {
         relativeTo: this.route,
-        queryParams: {
-          data: formData,
-        },
+        queryParams: { data: formData },
       });
+    } else {
+      this.formCommonService.validatorFormGroupFields(this.createProjectForm);
+      this.formCommonService.addErrorMessage('Please fill in all the required fields');
     }
   }
 
