@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { PortalService } from 'src/app/portal/portal.service';
 
 @Component({
   selector: 'app-add-project-param',
@@ -20,7 +21,8 @@ export class AddProjectParamComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private formBuilder: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private portalService: PortalService
   ) { }
 
   ngOnInit(): void {
@@ -28,6 +30,7 @@ export class AddProjectParamComponent implements OnInit {
       this.selectedProject = params;
     });
     this.selectedProject = JSON.parse(this.selectedProject.data);
+    console.log(this.selectedProject);
     this.initializeForm();
     this.addUnitForm.valueChanges.subscribe(() => {
       this.formHasChanges = true;
@@ -145,13 +148,26 @@ export class AddProjectParamComponent implements OnInit {
     }
 
     const unitValues = this.addUnitForm.value.units;
-    console.log(unitValues);
-
-    const voltageValues = this.addVoltageForm.value.voltages;
-    console.log(voltageValues);
-
     const tempValues = this.addTempForm.value.temperatures;
-    console.log(tempValues);
+    const voltageValues = this.addVoltageForm.value.voltages;
+
+    const projectData = {
+      project_id: this.selectedProject.id,
+      voltages: voltageValues,
+      temperatures: tempValues,
+      units: unitValues
+    };
+
+    console.log(projectData);
+
+    this.portalService.addProjectParam(projectData).then(response => {
+      console.log(response);
+      // Handle the response from the backend
+    })
+      .catch(error => {
+        console.error(error);
+        // Handle the error
+      });
 
     this.formHasChanges = false;
   }

@@ -24,19 +24,19 @@
                 <ng-template pTemplate="body" let-selectedProject>
                     <tr>
                         <td style="text-align: center">
-                            <input pInputText type="text" [(ngModel)]="selectedProject.project"
+                            <input pInputText type="text" [(ngModel)]="selectedProject.name"
                                 [disabled]="!selectedProject.isEditing" />
                         </td>
                         <td style="text-align: center">
-                            <input pInputText type="text" [(ngModel)]="selectedProject.revision"
+                            <input pInputText type="text" [(ngModel)]="selectedProject.revisionId"
                                 [disabled]="!selectedProject.isEditing" />
                         </td>
                         <td style="text-align: center">
-                            <input pInputText type="text" [(ngModel)]="selectedProject.testType"
+                            <input pInputText type="text" [(ngModel)]="selectedProject.testTypeId"
                                 [disabled]="!selectedProject.isEditing" />
                         </td>
                         <td style="text-align: center">
-                            <input pInputText type="text" [(ngModel)]="selectedProject.block"
+                            <input pInputText type="text" [(ngModel)]="selectedProject.blockId"
                                 [disabled]="!selectedProject.isEditing" />
                         </td>
                         <td style="text-align: center">

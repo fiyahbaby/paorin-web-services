@@ -12,7 +12,7 @@
         </p-header>
         <p-table [value]="projects" [paginator]="true" [rows]="3" [showCurrentPageReport]="true"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-          (onRowSelect)="onRowSelect($event)" dataKey="project" styleClass="p-datatable-striped p-datatable-gridlines">
+          (onRowSelect)="onRowSelect($event)" dataKey="id" styleClass="p-datatable-striped p-datatable-gridlines">
           <ng-template pTemplate="header">
             <tr>
               <th style="width: 6rem; text-align: center">Select</th>
@@ -28,10 +28,10 @@
               <td style="text-align: center">
                 <p-tableRadioButton [value]="project"></p-tableRadioButton>
               </td>
-              <td style="text-align: center">{{ project.project }}</td>
-              <td style="text-align: center">{{ project.revision }}</td>
-              <td style="text-align: center">{{ project.testType }}</td>
-              <td style="text-align: center">{{ project.block }}</td>
+              <td style="text-align: center">{{ project.name }}</td>
+              <td style="text-align: center">{{ project.revisionId }}</td>
+              <td style="text-align: center">{{ project.testTypeId }}</td>
+              <td style="text-align: center">{{ project.blockId }}</td>
               <td style="text-align: center">{{ project.dateCreated }}</td>
             </tr>
           </ng-template>

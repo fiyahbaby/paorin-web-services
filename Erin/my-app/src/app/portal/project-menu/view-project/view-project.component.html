@@ -13,7 +13,15 @@
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" selectionMode="single"
                 [(selection)]="selectedProject" dataKey="id" styleClass="p-datatable-striped p-datatable-gridlines"
                 (onRowSelect)="selectedProject = $event.data">
-                <ng-template pTemplate="header"> <!-- header template -->
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 6rem; text-align: center">Select</th>
+                        <th style="width: 20rem; text-align: center">Device</th>
+                        <th style="width: 20rem; text-align: center">Revision</th>
+                        <th style="width: 20rem; text-align: center">Test Type</th>
+                        <th style="width: 20rem; text-align: center">Block</th>
+                        <th style="width: 20rem; text-align: center">Date created</th>
+                    </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-project>
                     <tr>

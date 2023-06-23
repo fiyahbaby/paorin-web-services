@@ -20,9 +20,9 @@ class Projects(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
     device_name = db.Column(db.String(255))
-    revision_id = db.Column(db.Integer)
-    test_type_id = db.Column(db.Integer)
-    block_id = db.Column(db.Integer)
+    revision_id = db.Column(db.String(255))
+    test_type_id = db.Column(db.String(255))
+    block_id = db.Column(db.String(255))
     date_created = db.Column(db.String(255))
 
     def __str__(self):
@@ -41,7 +41,8 @@ class Voltages(db.Model):
 class Temperatures(db.Model):
     __tablename__ = 'temperatures'
     id = db.Column(db.Integer, primary_key=True)
-    temperature = db.Column(db.Float)
+    name = db.Column(db.String(255))
+    value = db.Column(db.Float)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
     def __str__(self):
@@ -67,7 +68,6 @@ class Units(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     process_corner = db.Column(db.String(255))
     two_d_name = db.Column(db.String(255))
-    device_dna = db.Column(db.String(255))
     remarks = db.Column(db.String(255))
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
 
@@ -141,44 +141,27 @@ def get_projects():
             'date_created': project.date_created
         }
         projects_list.append(project_dict)
-        print(projects_list)
     return jsonify(projects_list)
 
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    # Retrieve all projects
-    projects = Projects.query.all()
-    data_list = []
+    projectParam = []
+    project_id = request.args.get('projectId')
+    project = Projects.query.filter_by(id=project_id).first()
+    if not project:
+        return jsonify({'error': 'Project not found'}), 404
 
-    # Loop through each project, and retrieve the corresponding voltages, temperatures, and units
-    for project in projects:
-        project_dict = {
-            'device_name': project.device_name,
-            'revision_id': project.revision_id,
-            'test_type_id': project.test_type_id,
-            'block_id': project.block_id,
-            'date_created': project.date_created
-        }
+    voltages = Voltages.query.filter_by(project_id=project.id).all()
+    voltage_list = [{'name': v.name, 'value': v.value} for v in voltages]
+    temperatures = Temperatures.query.filter_by(project_id=project.id).all()
+    temperature_list = [{'name': t.name, 'value': t.value} for t in temperatures]
+    units = Units.query.filter_by(project_id=project.id).all()
+    unit_list = [{'process_corner': u.process_corner, 'two_d_name': u.two_d_name} for u in units]
 
-        # Retrieve the voltages for this project
-        voltages = Voltages.query.filter_by(project_id=project.id).all()
-        voltage_list = [{'name': v.name, 'value': v.value} for v in voltages]
-        project_dict['voltages'] = voltage_list
+    for v, t, u in zip(voltage_list, temperature_list, unit_list):
+        projectParam.append({'voltage': v, 'temperature': t, 'unit': u})  
 
-        # Retrieve the temperatures for this project
-        temperatures = Temperatures.query.filter_by(project_id=project.id).all()
-        temperature_list = [t.temperature for t in temperatures]
-        project_dict['temperatures'] = temperature_list
-
-        # Retrieve the units for this project
-        units = Units.query.filter_by(project_id=project.id).all()
-        unit_list = [{'process_corner': u.process_corner, 'two_d_name': u.two_d_name, 'device_dna': u.device_dna, 'remarks': u.remarks} for u in units]
-        project_dict['units'] = unit_list
-
-        data_list.append(project_dict)
-
-    return jsonify(data_list)
-
+    return jsonify(projectParam)
 
 
 @app.route('/api/createProjects', methods=['POST'])
@@ -202,6 +185,34 @@ def create_project():
     db.session.commit()
 
     return jsonify({'message': 'Project created successfully'})
+
+@app.route('/api/addProjectParam', methods=['POST'])
+def add_project_param():
+    project_data = request.json
+    project_id = project_data.get('project_id')
+    voltages = project_data.get('voltages')
+    temperatures = project_data.get('temperatures')
+    units = project_data.get('units')
+    existing_project = Projects.query.get(project_id)
+
+    if existing_project:
+        for voltage in voltages:
+            v = Voltages(name=voltage['name'], value=voltage['value'], project_id=project_id)
+            db.session.add(v)
+
+        for temperature in temperatures:
+            t = Temperatures(name=temperature['name'], value=temperature['value'], project_id=project_id)
+            db.session.add(t)
+
+        for unit in units:
+            u = Units(process_corner=unit['processCorner'], two_d_name=unit['barcode'], project_id=project_id)
+            db.session.add(u)
+
+        db.session.commit()
+        return {'message': 'Project data updated successfully'}
+    else:
+        return {'message': 'Project not found'}
+
 
 if __name__ == '__main__':
     app.run(debug=True, host=host_ip, port=port)

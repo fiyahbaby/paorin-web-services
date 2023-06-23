@@ -21,10 +21,10 @@
         </ng-template>
         <ng-template pTemplate="body" let-selectedProject>
           <tr>
-            <td style="text-align: center">{{ selectedProject.project }}</td>
-            <td style="text-align: center">{{ selectedProject.revision }}</td>
-            <td style="text-align: center">{{ selectedProject.testType }}</td>
-            <td style="text-align: center">{{ selectedProject.block }}</td>
+            <td style="text-align: center">{{ selectedProject.name }}</td>
+            <td style="text-align: center">{{ selectedProject.revisionId }}</td>
+            <td style="text-align: center">{{ selectedProject.testTypeId }}</td>
+            <td style="text-align: center">{{ selectedProject.blockId }}</td>
             <td style="text-align: center">{{ selectedProject.dateCreated }}</td>
           </tr>
         </ng-template>

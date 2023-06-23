@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { PortalService } from 'src/app/portal/portal.service';
 
 @Component({
   selector: 'app-edit-project-param',
@@ -13,33 +14,61 @@ export class EditProjectParamComponent implements OnInit {
   selectedProject: any;
   initialSelectedProject: any;
   isFormSubmitted: boolean = false;
+  voltages: any[] = [];
+  temperatures: any[] = [];
+  units: any[] = [];
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private formBuilder: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private portalService: PortalService
   ) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.route.queryParams.subscribe(params => {
       this.selectedProject = params;
     });
     this.selectedProject = JSON.parse(this.selectedProject.data);
     this.selectedProject.isEditing = false;
     this.initialSelectedProject = JSON.parse(JSON.stringify(this.selectedProject));
+
+    const projectData = await this.portalService.getProjectData(this.selectedProject.id);
+
+    this.voltages = projectData.map((project: { voltage: { name: any; value: any; }; }) => {
+      return {
+        name: project.voltage.name,
+        value: project.voltage.value
+      }
+    });
+
+    this.temperatures = projectData.map((project: { temperature: { name: any; value: any; }; }) => {
+      return {
+        name: project.temperature.name,
+        value: project.temperature.value
+      }
+    });
+
+    this.units = projectData.map((project: { unit: { process_corner: any; two_d_name: any; }; }) => {
+      return {
+        processCorner: project.unit.process_corner,
+        barCode: project.unit.two_d_name
+      }
+    });
   }
 
   getVoltageData(): any[] {
-    return Object.values(this.selectedProject?.voltages);
+    return this.voltages || [];
   }
 
   getTempData(): any[] {
-    return Object.values(this.selectedProject?.temperature);
+    return this.temperatures || [];
   }
 
   getUnitData(): any[] {
-    return Object.values(this.selectedProject?.units);
+    return this.units || [];
   }
 
   toggleEdit(project: any): void {
