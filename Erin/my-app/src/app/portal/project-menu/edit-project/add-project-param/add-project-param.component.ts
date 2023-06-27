@@ -144,6 +144,13 @@ export class AddProjectParamComponent implements OnInit {
 
   onSubmit() {
     if (!this.formHasChanges) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'No Modifications',
+        detail: 'There are no changes made.',
+        life: 3000
+      });
+      window.scrollTo(0, 0);
       return;
     }
 
@@ -158,11 +165,11 @@ export class AddProjectParamComponent implements OnInit {
       units: unitValues
     };
 
-    console.log(projectData);
-
     this.portalService.addProjectParam(projectData).then(response => {
-      console.log(response);
       // Handle the response from the backend
+      this.router.navigate(['/home'], {
+        queryParams: { message: response }
+      });
     })
       .catch(error => {
         console.error(error);
@@ -170,6 +177,9 @@ export class AddProjectParamComponent implements OnInit {
       });
 
     this.formHasChanges = false;
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 2000);
   }
 
   onBack(): void {

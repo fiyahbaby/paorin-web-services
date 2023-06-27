@@ -69,9 +69,10 @@ export class PortalService {
 
   async getProjectData(projectId: number): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/data?projectId=${projectId}`;
-    const projectsData = await this.http.get<any[]>(url).toPromise();
-    return projectsData;
+    const projectData = await this.http.get<any>(url).toPromise();
+    return projectData;
   }
+
 
 
   async submitProjectData(projectData: any): Promise<any> {
@@ -83,6 +84,12 @@ export class PortalService {
   async addProjectParam(projectParam: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/addProjectParam`;
     const response = this.http.post(url, projectParam).toPromise();
+    return response;
+  }
+
+  async updateProjectData(modifiedData: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/updateProjectData`;
+    const response = this.http.put(url, modifiedData).toPromise();
     return response;
   }
 }

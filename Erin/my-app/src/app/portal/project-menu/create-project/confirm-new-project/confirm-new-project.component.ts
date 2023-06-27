@@ -51,24 +51,25 @@ export class ConfirmNewProjectComponent implements OnInit {
     };
 
     this.portalService.submitProjectData(projectData).then((response) => {
-      if (!response.success) {
-        // There were no modifications made, so show a success message.
+      if (response.message === 'Project created successfully') {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Project has been successfully created.',
+          detail: response.message,
           life: 3000
         });
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 2000);
+        window.scrollTo(0, 0);
       } else {
-        // There were modifications made, so show an error message.
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Error creating project.',
+          detail: response.message,
           life: 3000
         });
       }
     });
-    // this.router.navigate(['/home']);
   }
 }

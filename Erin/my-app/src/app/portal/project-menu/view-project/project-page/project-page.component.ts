@@ -27,9 +27,6 @@ export class ProjectPageComponent implements OnInit {
     this.voltages = projectData?.voltages || [];
     this.temperatures = projectData?.temperatures || [];
     this.units = projectData?.units || [];
-    console.log(this.voltages);
-    console.log(this.temperatures);
-    console.log(this.units);
   }
 
   getVoltageData(): any[] {

@@ -64,7 +64,7 @@
                     <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
                         Project Settings
                     </p>
-                    <p-table [value]="getVoltageData()" styleClass="p-datatable-gridlines">
+                    <p-table [value]="voltages" styleClass="p-datatable-gridlines">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 1rem; text-align: center">#</th>
@@ -98,7 +98,7 @@
                     <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
                         Project Settings
                     </p>
-                    <p-table [value]="getTempData()" styleClass="p-datatable-gridlines">
+                    <p-table [value]="temperatures" styleClass="p-datatable-gridlines">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 1rem; text-align: center">#</th>
@@ -135,7 +135,7 @@
                     <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">
                         Project Settings
                     </p>
-                    <p-table [value]="getUnitData()" styleClass="p-datatable-gridlines">
+                    <p-table [value]="units" styleClass="p-datatable-gridlines">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 1rem; text-align: center">#</th>
@@ -148,11 +148,11 @@
                             <tr>
                                 <td style="text-align: center">{{ rowIndex + 1 }}</td>
                                 <td style="text-align: center">
-                                    <input pInputText type="text" [(ngModel)]="unit.processCorner"
+                                    <input pInputText type="text" [(ngModel)]="unit.process_corner"
                                         [disabled]="!unit.isEditing" />
                                 </td>
                                 <td style="text-align: center">
-                                    <input pInputText type="text" class="col-6" [(ngModel)]="unit.barCode"
+                                    <input pInputText type="text" class="col-6" [(ngModel)]="unit.two_d_name"
                                         [disabled]="!unit.isEditing" />
                                 </td>
                                 <td style="text-align: center">

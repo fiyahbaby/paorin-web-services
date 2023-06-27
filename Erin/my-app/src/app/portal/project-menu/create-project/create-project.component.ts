@@ -103,34 +103,33 @@ export class CreateProjectComponent implements OnInit {
   }
 
   private async initSelectOptions() {
-    this.existingDeviceOptions = await this.getProject();
-    this.existingBlockOptions = await this.getBlock();
+    this.existingDeviceOptions = await this.getDevice();
     this.existingRevisionOptions = await this.getRevision();
     this.existingTestTypeOptions = await this.getTestType();
   }
 
-  private async getProject() {
-    return this.toOptions(await this.portalService.getProjects(), 'project');
-  }
-
-  private async getBlock() {
-    return this.toOptions(await this.portalService.getProjects(), 'block');
+  private async getDevice() {
+    const projects = await this.portalService.getProjects();
+    const deviceOptions = projects.map((project) => {
+      return { label: project.name, value: project.name };
+    });
+    return deviceOptions;
   }
 
   private async getRevision() {
-    return this.toOptions(await this.portalService.getProjects(), 'revision');
+    const projects = await this.portalService.getProjects();
+    const revisionOptions = projects.map((project) => {
+      return { label: project.revisionId, value: project.revisionId };
+    });
+    return revisionOptions;
   }
 
   private async getTestType() {
-    return this.toOptions(await this.portalService.getProjects(), 'testType');
-  }
-
-  private toOptions(options: any[], valueField: string): SelectItem[] {
-    return !options
-      ? []
-      : options.map((value) => {
-        return { label: value[valueField], value: value[valueField] };
-      });
+    const projects = await this.portalService.getProjects();
+    const testTypeOptions = projects.map((project) => {
+      return { label: project.testTypeId, value: project.testTypeId };
+    });
+    return testTypeOptions;
   }
 
   onClick(field: string): void {
@@ -211,7 +210,13 @@ export class CreateProjectComponent implements OnInit {
       });
     } else {
       this.formCommonService.validatorFormGroupFields(this.createProjectForm);
-      this.formCommonService.addErrorMessage('Please fill in all the required fields');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please fill in all the required fields.',
+        life: 3000
+      });
+      window.scrollTo(0, 0);
     }
   }
 

@@ -12,13 +12,13 @@ app = Flask(__name__)
 app.secret_key = b'mySecretKey'
 CORS(app, origins=["*"])
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/paolodel/Documents/GitHub/paorin-web-services/Erin/sqlite/Databases/testdb2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/paolodel/Documents/GitHub/paorin-web-services/Erin/sqlite/Databases/testdb3'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 class Projects(db.Model):
     __tablename__ = 'projects'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     device_name = db.Column(db.String(255))
     revision_id = db.Column(db.String(255))
     test_type_id = db.Column(db.String(255))
@@ -30,7 +30,7 @@ class Projects(db.Model):
 
 class Voltages(db.Model):
     __tablename__ = 'voltages'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255))
     value = db.Column(db.Float)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
@@ -40,7 +40,7 @@ class Voltages(db.Model):
 
 class Temperatures(db.Model):
     __tablename__ = 'temperatures'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255))
     value = db.Column(db.Float)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
@@ -50,7 +50,7 @@ class Temperatures(db.Model):
 
 class Tests(db.Model):
     __tablename__ = 'tests'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     s_suite = db.Column(db.String(255))
     suite = db.Column(db.String(255))
     name = db.Column(db.String(255))
@@ -65,7 +65,7 @@ class Tests(db.Model):
 
 class Units(db.Model):
     __tablename__ = 'units'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     process_corner = db.Column(db.String(255))
     two_d_name = db.Column(db.String(255))
     remarks = db.Column(db.String(255))
@@ -76,7 +76,7 @@ class Units(db.Model):
 
 class BuildIDs(db.Model):
     __tablename__ = 'build_ids'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     time_stamp = db.Column(db.String(255))
     voltage_id = db.Column(db.Integer, db.ForeignKey('voltages.id'))
     temperature_id = db.Column(db.Integer, db.ForeignKey('temperatures.id'))
@@ -141,28 +141,28 @@ def get_projects():
             'date_created': project.date_created
         }
         projects_list.append(project_dict)
+        print(projects_list)
     return jsonify(projects_list)
 
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    projectParam = []
     project_id = request.args.get('projectId')
     project = Projects.query.filter_by(id=project_id).first()
+    project2 = Projects.query.filter_by(id=project_id).all()
+    project_list = [{'device_name': p.device_name, 'revision_id': p.revision_id, 'test_type_id': p.test_type_id, 'block_id': p.block_id, 'date_created': p.date_created} for p in project2]
+    
     if not project:
         return jsonify({'error': 'Project not found'}), 404
-
+    
     voltages = Voltages.query.filter_by(project_id=project.id).all()
-    voltage_list = [{'name': v.name, 'value': v.value} for v in voltages]
+    voltage_list = [{'id':v.id, 'name': v.name, 'value': v.value} for v in voltages]
     temperatures = Temperatures.query.filter_by(project_id=project.id).all()
-    temperature_list = [{'name': t.name, 'value': t.value} for t in temperatures]
+    temperature_list = [{'id':t.id, 'name': t.name, 'value': t.value} for t in temperatures]
     units = Units.query.filter_by(project_id=project.id).all()
-    unit_list = [{'process_corner': u.process_corner, 'two_d_name': u.two_d_name} for u in units]
+    unit_list = [{'id':u.id, 'process_corner': u.process_corner, 'two_d_name': u.two_d_name} for u in units]
+    combined_dict = {'project': project_list, 'voltages': voltage_list, 'temperatures': temperature_list, 'units': unit_list}
 
-    for v, t, u in zip(voltage_list, temperature_list, unit_list):
-        projectParam.append({'voltage': v, 'temperature': t, 'unit': u})  
-
-    return jsonify(projectParam)
-
+    return jsonify(combined_dict)
 
 @app.route('/api/createProjects', methods=['POST'])
 def create_project():
@@ -173,6 +173,10 @@ def create_project():
     block_id = project_data.get('block_name')
     date_created = datetime.now(pytz.timezone('Asia/Singapore')).date()
 
+    existing_project = Projects.query.filter_by(device_name=project_name, revision_id=revision_id, test_type_id=test_type_id, block_id=block_id).first()
+    if existing_project:
+        return jsonify({'message': 'Project already exists'})
+
     project = Projects(
         device_name=project_name,
         revision_id=revision_id,
@@ -180,11 +184,11 @@ def create_project():
         block_id=block_id,
         date_created=date_created
     )
-
     db.session.add(project)
     db.session.commit()
 
     return jsonify({'message': 'Project created successfully'})
+
 
 @app.route('/api/addProjectParam', methods=['POST'])
 def add_project_param():
@@ -197,21 +201,87 @@ def add_project_param():
 
     if existing_project:
         for voltage in voltages:
-            v = Voltages(name=voltage['name'], value=voltage['value'], project_id=project_id)
-            db.session.add(v)
+            if voltage['name'] and voltage['value']:
+                v = Voltages(name=voltage['name'], value=voltage['value'], project_id=project_id)
+                db.session.add(v)
 
         for temperature in temperatures:
-            t = Temperatures(name=temperature['name'], value=temperature['value'], project_id=project_id)
-            db.session.add(t)
+            if temperature['name'] and temperature['value']:
+                t = Temperatures(name=temperature['name'], value=temperature['value'], project_id=project_id)
+                db.session.add(t)
 
         for unit in units:
-            u = Units(process_corner=unit['processCorner'], two_d_name=unit['barcode'], project_id=project_id)
-            db.session.add(u)
+            if unit['processCorner'] and unit['barcode']:
+                u = Units(process_corner=unit['processCorner'], two_d_name=unit['barcode'], project_id=project_id)
+                db.session.add(u)
 
         db.session.commit()
         return {'message': 'Project data updated successfully'}
     else:
         return {'message': 'Project not found'}
+
+@app.route('/api/updateProjectData', methods=['PUT'])
+def update_project_data():
+    modified_data = request.json
+    voltages = modified_data.get('voltages')
+    temperatures = modified_data.get('temperatures')
+    units = modified_data.get('units')
+    projects = modified_data.get('project')
+
+    for voltage in voltages:
+        voltage_id = voltage.get('id')
+        name = voltage.get('name')
+        value = voltage.get('value')
+        updated_voltage = Voltages.query.get(voltage_id)
+        if updated_voltage and (updated_voltage.name != name or updated_voltage.value != value):
+            updated_voltage.name = name
+            updated_voltage.value = value
+
+    for temperature in temperatures:
+        temperature_id = temperature.get('id')
+        name = temperature.get('name')
+        value = temperature.get('value')
+
+        updated_temperature = Temperatures.query.get(temperature_id)
+        if updated_temperature and (updated_temperature.name != name or updated_temperature.value != value):
+            updated_temperature.name = name
+            updated_temperature.value = value
+
+    for unit in units:
+        unit_id = unit.get('id')
+        process_corner = unit.get('processCorner')
+        barcode = unit.get('barCode')
+        updated_unit = Units.query.get(unit_id)
+        if updated_unit and (updated_unit.process_corner != process_corner or updated_unit.two_d_name != barcode):
+            updated_unit.process_corner = process_corner
+            updated_unit.two_d_name = barcode
+
+    for project in projects:
+        print(project)
+        project_id = project['id']
+        device_name = project['name']
+        revision_id = project['revisionId']
+        test_type_id = project['testTypeId']
+        block_id = project['blockId']
+        date_created = project['dateCreated']
+        
+        updated_project = Projects.query.get(project_id)
+        if updated_project and (
+            updated_project.device_name != device_name
+            or updated_project.revision_id != revision_id
+            or updated_project.test_type_id != test_type_id
+            or updated_project.block_id != block_id
+            or updated_project.date_created != date_created
+        ):
+            updated_project.device_name = device_name
+            updated_project.revision_id = revision_id
+            updated_project.test_type_id = test_type_id
+            updated_project.block_id = block_id
+            updated_project.date_created = date_created
+        
+    db.session.commit()
+    return jsonify({'success': True})
+
 
 
 if __name__ == '__main__':
