@@ -92,4 +92,15 @@ export class PortalService {
     const response = this.http.put(url, modifiedData).toPromise();
     return response;
   }
+
+  async deleteProject(projectId: number): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/deleteProject/${projectId}`;
+    return this.http.delete(url).toPromise()
+      .then(response => {
+        return response;
+      })
+      .catch(error => {
+        throw error;
+      });
+  }
 }

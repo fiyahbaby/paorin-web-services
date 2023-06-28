@@ -1,30 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SelectItem } from 'primeng/api';
-import { AuthService } from 'src/app/app-common/auth-service/auth.service';
-import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 import { PortalService } from '../../portal.service';
 import { MessageService } from 'primeng/api';
-import { JsonPipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-view-project',
-  templateUrl: './view-project.component.html',
-  styleUrls: ['./view-project.component.scss']
+  selector: 'app-delete-project',
+  templateUrl: './delete-project.component.html',
+  styleUrls: ['./delete-project.component.scss']
 })
-export class ViewProjectComponent implements OnInit {
+export class DeleteProjectComponent implements OnInit {
   projects: any[] = [];
   selectedProject: any;
 
   constructor(
-    private formBuilder: FormBuilder,
     private portalService: PortalService,
+    private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService,
-    private formCommonService: FormCommonService,
-    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -39,10 +31,6 @@ export class ViewProjectComponent implements OnInit {
     }
   }
 
-  onBack() {
-    this.router.navigate(['/home']);
-  }
-
   onSubmit() {
     const selectedProject = JSON.stringify(this.selectedProject);
     if (!this.selectedProject) {
@@ -52,14 +40,17 @@ export class ViewProjectComponent implements OnInit {
         detail: 'Please select a project.',
         life: 3000
       });
+      window.scrollTo(0, 0);
     } else {
-      this.router.navigate(['project-page'], {
+      console.log(selectedProject)
+      this.router.navigate(['confirm-delete-project'], {
         relativeTo: this.route,
-        queryParams:
-        {
-          data: selectedProject,
-        }
-      });
+        queryParams: { data: selectedProject },
+      })
     }
+  }
+
+  onBack() {
+    this.router.navigate(['/home']);
   }
 }

@@ -34,16 +34,26 @@
           <span class="subHeaderText">This is a sample text of Edit Project</span>
         </div>
       </div>
+
+      <div class="section-container flex flex-row mt-4" (click)="onRedirect('deleteProject')">
+        <div class="icon-container">
+          <i class="pi pi-trash" style="font-size: 1.25rem; color: var(--surface-700)"></i>
+        </div>
+        <div class="flex flex-column">
+          <span class="headerText">Delete Project</span>
+          <span class="subHeaderText">This is a sample text of Delete Project</span>
+        </div>
+      </div>
     </div>
     <div class="h-30rem ml-8">
-      <span class="title">Build ID</span>
+      <span class="title">Data</span>
 
       <div class="section-container flex flex-row mt-4" (click)="onRedirect('viewBuildId')">
         <div class="icon-container">
           <i class="pi pi-eye" style="font-size: 1.25rem; color: var(--surface-700)"></i>
         </div>
         <div class="flex flex-column">
-          <span class="headerText">View Build ID</span>
+          <span class="headerText">View PVT Data</span>
           <span class="subHeaderText">This is a sample text of View Build ID</span>
         </div>
       </div>

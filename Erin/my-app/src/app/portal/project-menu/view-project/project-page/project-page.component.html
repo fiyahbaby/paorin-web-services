@@ -44,7 +44,7 @@
                                 </ng-template>
                             </p-table>
                         </p-accordionTab>
-                        <p-accordionTab header="Units">
+                        <p-accordionTab header="Unit">
 
                             <p-table [value]="getUnitData()" styleClass="p-datatable-gridlines">
                                 <ng-template pTemplate="header">
@@ -67,5 +67,12 @@
                 </p-tabPanel>
             </p-tabView>
         </div>
+        <div class="w-full flex justify-content-end buttons-container bottom mt-3">
+            <ng-container *ngTemplateOutlet="buttons"></ng-container>
+        </div>
     </p-card>
 </div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+</ng-template>

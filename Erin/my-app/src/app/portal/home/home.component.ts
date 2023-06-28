@@ -45,6 +45,9 @@ export class HomeComponent implements OnInit {
       case 'viewProject':
         this.router.navigate(['/project-menu/view-project']);
         break;
+      case 'deleteProject':
+        this.router.navigate(['/project-menu/delete-project']);
+        break;
       default:
         break;
     }

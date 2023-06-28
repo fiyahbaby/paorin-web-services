@@ -32,6 +32,15 @@ const routes: Routes = [
           return ViewProjectModule;
         },
       },
+      {
+        path: 'delete-project',
+        loadChildren: async () => {
+          const { DeleteProjectModule } = await import(
+            './delete-project/delete-project.module'
+          );
+          return DeleteProjectModule;
+        },
+      },
     ],
   },
 ];

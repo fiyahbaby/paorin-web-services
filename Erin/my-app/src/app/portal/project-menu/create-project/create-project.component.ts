@@ -110,24 +110,28 @@ export class CreateProjectComponent implements OnInit {
 
   private async getDevice() {
     const projects = await this.portalService.getProjects();
-    const deviceOptions = projects.map((project) => {
-      return { label: project.name, value: project.name };
+    const deviceSet = new Set(projects.map((project) => project.name));
+    const deviceOptions = Array.from(deviceSet).map((name) => {
+      return { label: name, value: name };
     });
     return deviceOptions;
   }
 
   private async getRevision() {
     const projects = await this.portalService.getProjects();
-    const revisionOptions = projects.map((project) => {
-      return { label: project.revisionId, value: project.revisionId };
+    const revisionSet = new Set(projects.map((project) => project.revisionId));
+    const revisionOptions = Array.from(revisionSet).map((revisionId) => {
+      return { label: revisionId, value: revisionId };
     });
     return revisionOptions;
   }
 
+
   private async getTestType() {
     const projects = await this.portalService.getProjects();
-    const testTypeOptions = projects.map((project) => {
-      return { label: project.testTypeId, value: project.testTypeId };
+    const testTypeSet = new Set(projects.map((project) => project.testTypeId));
+    const testTypeOptions = Array.from(testTypeSet).map((testTypeId) => {
+      return { label: testTypeId, value: testTypeId };
     });
     return testTypeOptions;
   }

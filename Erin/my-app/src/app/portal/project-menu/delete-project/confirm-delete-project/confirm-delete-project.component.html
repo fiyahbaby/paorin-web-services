@@ -1,0 +1,122 @@
+<app-navbar></app-navbar>
+<p-messages></p-messages>
+<div id="confirm-delete-project">
+    <app-header formHeader="Confirm Deletion"
+        formSubHeader="Project Menu > Delete Project > Confirm Deletion"></app-header>
+    <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="card w-full">
+            <div class="mb-6">
+                <p-header>
+                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                        Project Details</h1>
+                </p-header>
+                <p-table [value]="[selectedProject]" styleClass="p-datatable-striped p-datatable-gridlines">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 20rem; text-align: center">Device</th>
+                            <th style="width: 20rem; text-align: center">Revision</th>
+                            <th style="width: 20rem; text-align: center">Test Type</th>
+                            <th style="width: 20rem; text-align: center">Block</th>
+                            <th style="width: 20rem; text-align: center">Date created</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-project>
+                        <tr>
+                            <td style="text-align: center">{{ project.name }}</td>
+                            <td style="text-align: center">{{ project.revisionId }}</td>
+                            <td style="text-align: center">{{ project.testTypeId }}</td>
+                            <td style="text-align: center">{{ project.blockId }}</td>
+                            <td style="text-align: center">{{ project.dateCreated }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <p-divider type="dashed"></p-divider>
+
+            <div class="mt-3 mb-6">
+                <p-header>
+                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                        Voltage
+                    </h1>
+                </p-header>
+                <p-table [value]="getVoltageData()" styleClass="p-datatable-striped p-datatable-gridlines">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 1rem; text-align: center">#</th>
+                            <th style="width: 20rem; text-align: center">Name</th>
+                            <th style="width: 20rem; text-align: center">Voltage Value (V)</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-voltage let-rowIndex="rowIndex">
+                        <tr>
+                            <td style="text-align: center">{{ rowIndex + 1 }}</td>
+                            <td style="text-align: center">{{ voltage.name }}</td>
+                            <td style="text-align: center">{{ voltage.value }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <p-divider type="dashed"></p-divider>
+
+            <div class="mt-3 mb-6">
+                <p-header>
+                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                        Temperature
+                    </h1>
+                </p-header>
+                <p-table [value]="getTempData()" styleClass="p-datatable-striped p-datatable-gridlines">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 1rem; text-align: center">#</th>
+                            <th style="width: 20rem; text-align: center">Name</th>
+                            <th style="width: 20rem; text-align: center">Temperature Value (&deg;C)</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-temp let-rowIndex="rowIndex">
+                        <tr>
+                            <td style="text-align: center">{{ rowIndex + 1 }}</td>
+                            <td style="text-align: center">{{ temp.name }}</td>
+                            <td style="text-align: center">{{ temp.value }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <p-divider type="dashed"></p-divider>
+
+            <div class="mt-3">
+                <p-header>
+                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                        Unit
+                    </h1>
+                </p-header>
+                <p-table [value]="getUnitData()" styleClass="p-datatable-striped p-datatable-gridlines">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 1rem; text-align: center">#</th>
+                            <th style="width: 20rem; text-align: center">Process Corner</th>
+                            <th style="width: 20rem; text-align: center">2D Bar Code</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-unit let-rowIndex="rowIndex">
+                        <tr>
+                            <td style="text-align: center">{{ rowIndex + 1 }}</td>
+                            <td style="text-align: center">{{ unit.process_corner }}</td>
+                            <td style="text-align: center">{{ unit.two_d_name }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+        <div class="w-full flex justify-content-end buttons-container bottom mt-6">
+            <ng-container *ngTemplateOutlet="buttons"></ng-container>
+        </div>
+    </p-card>
+</div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+    <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>
