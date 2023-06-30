@@ -7,6 +7,8 @@ import socket
 from datetime import datetime
 import pytz
 from flask_migrate import Migrate
+from pymongo import MongoClient
+from mongodb_data_retrieval import retrieveDbData
 
 app = Flask(__name__)
 app.secret_key = b"mySecretKey"
@@ -17,6 +19,10 @@ app.config[
 ] = "sqlite:///C:/Users/paolodel/Documents/GitHub/paorin-web-services/Erin/sqlite/Databases/testdb3"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+mongoDB = MongoClient(
+    "mongodb://vncmgr:vncw0rld19@xsj-pvdbvnc02:27060,xsj-pvdbvnc03:27060,xsj-pvdbvnc04:27060/?replicaSet=acapprd"
+).vncreg
 
 
 class Projects(db.Model):
@@ -206,7 +212,6 @@ def get_data():
         "temperatures": temperature_list,
         "units": unit_list,
     }
-
     return jsonify(combined_dict)
 
 
@@ -369,6 +374,19 @@ def delete_project(project_id):
     db.session.commit()
 
     return jsonify({"message": "Project deleted successfully"})
+
+
+@app.route("/api/retrieveDbData/<build_id>", methods=["GET"])
+def retrieve_data(build_id):
+    if not build_id:
+        return jsonify({"message": "Missing 'buildID' parameter"})
+
+    try:
+        result = retrieveDbData(mongoDB, build_id)
+        return jsonify(result)
+    except Exception as e:
+        print("Error retrieving data.")
+        return jsonify({"message": "No data found."})
 
 
 if __name__ == "__main__":

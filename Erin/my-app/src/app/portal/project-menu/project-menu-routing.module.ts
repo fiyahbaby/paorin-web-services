@@ -41,6 +41,15 @@ const routes: Routes = [
           return DeleteProjectModule;
         },
       },
+      {
+        path: 'view-data',
+        loadChildren: async () => {
+          const { ViewDataModule } = await import(
+            './view-data/view-data.module'
+          );
+          return ViewDataModule;
+        },
+      },
     ],
   },
 ];

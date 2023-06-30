@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -102,5 +102,11 @@ export class PortalService {
       .catch(error => {
         throw error;
       });
+  }
+
+  async getBuildData(buildID: string): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/retrieveDbData/${buildID}`;
+    const data = await this.http.get<any>(url).toPromise();
+    return data;
   }
 }

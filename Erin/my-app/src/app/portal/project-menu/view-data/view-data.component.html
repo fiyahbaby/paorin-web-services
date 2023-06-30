@@ -1,0 +1,20 @@
+<app-navbar></app-navbar>
+<div id="view-data">
+    <app-header formHeader="View Data" formSubHeader="Project Menu > View Data"></app-header>
+    <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="w-full">
+            <div class="flex flex-row gap-2 mb-3 mt-2 w-full">
+                <app-form-label class="col-2" formLabel="Enter Build ID"></app-form-label>
+                <input pInputText [(ngModel)]="buildID" name="buildID" type="text" class="col-4" />
+            </div>
+            <div class="flex justify-content-end buttons-container bottom">
+                <ng-container *ngTemplateOutlet="buttons"></ng-container>
+            </div>
+        </div>
+    </p-card>
+</div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+    <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>
