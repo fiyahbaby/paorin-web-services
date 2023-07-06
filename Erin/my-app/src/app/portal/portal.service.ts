@@ -109,4 +109,9 @@ export class PortalService {
     const data = await this.http.get<any>(url).toPromise();
     return data;
   }
+
+  async sendBuildData(buildData: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/processTempLimit`;
+    return this.http.post(url, buildData).toPromise();
+  }
 }

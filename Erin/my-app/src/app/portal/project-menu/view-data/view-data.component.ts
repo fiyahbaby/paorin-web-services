@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { PortalService } from '../../portal.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-view-data',
@@ -17,22 +17,51 @@ export class ViewDataComponent {
     private portalService: PortalService,
     private router: Router,
     private route: ActivatedRoute,
+    private messageService: MessageService,
   ) { }
 
   async fetchData() {
     console.log(this.buildID);
     try {
       const buildData = await this.portalService.getBuildData(this.buildID);
-      console.log(buildData);
+      return buildData;
     } catch (error) {
       console.error('An error occurred while fetching build data:', error);
-      // Handle the error appropriately (e.g., display an error message)
+      throw error;
     }
   }
 
   onSubmit() {
     this.fetchData()
+      .then((buildData) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Build data retrieved successfully',
+          life: 3000
+        });
+        console.log(buildData);
+        setTimeout(() => {
+          // this.router.navigate(['/home']);
+          this.router.navigate(['view-data-page'], {
+            relativeTo: this.route,
+            queryParams: { data: JSON.stringify(buildData) },
+          });
+        }, 2000);
+        window.scrollTo(0, 0);
+      })
+      .catch((error) => {
+        console.error('An error occurred while fetching build data:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'An error occurred while fetching build data',
+          life: 3000
+        });
+        window.scrollTo(0, 0);
+      });
   }
+
 
   onBack(): void {
     this.router.navigate(['/home']);

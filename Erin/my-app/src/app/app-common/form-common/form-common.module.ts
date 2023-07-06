@@ -27,7 +27,6 @@ import { MessageModule } from 'primeng/message';
 import { FileUploadModule } from 'primeng/fileupload';
 import { TabViewModule } from 'primeng/tabview';
 
-
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent, HeaderComponent, ErrorFieldMessageComponent],
   imports: [

@@ -389,5 +389,35 @@ def retrieve_data(build_id):
         return jsonify({"message": "No data found."})
 
 
+@app.route("/api/processTempLimit", methods=["POST"])
+def process_temp_limit():
+    try:
+        build_data = request.json
+        temp = process_ref_temp(build_data)
+        print(temp)
+        return jsonify(temp)
+    except Exception as e:
+        error_message = "Error processing build data: {}".format(str(e))
+        print(error_message)
+        return jsonify({"error": error_message})
+
+
+def process_ref_temp(data):
+    max_temp = float("-inf")
+    min_temp = float("inf")
+
+    for item in data:
+        if "Max. Temp" in item and "Min. Temp" in item:
+            max_temp_item = float(item["Max. Temp"])
+            min_temp_item = float(item["Min. Temp"])
+
+            if max_temp_item > max_temp:
+                max_temp = max_temp_item
+
+            if min_temp_item < min_temp:
+                min_temp = min_temp_item
+    return {"Max. Temp": max_temp, "Min. Temp": min_temp}
+
+
 if __name__ == "__main__":
     app.run(debug=True, host=host_ip, port=port)
