@@ -144,10 +144,12 @@ def retrieveDbData(db, build_id):
             "VCCAUX_PMC": doc["DB_PARAM__vccaux_pmc"],
             "VCCAUX_SYSMON": doc["DB_PARAM__vccaux_sysmon"],
             "VCCINT": doc["DB_PARAM__vccint"],
-            "VCCINT": doc["DB_PARAM__vccint_pmc"],
+            "VCCINT_PMC": doc["DB_PARAM__vccint_pmc"],
             "Date/Time": doc["updated_on"],
         }
         testList.append(testDict)
+        print(doc)
+        print("\n\n")
 
     for test in testList:
         for key, value in test.items():

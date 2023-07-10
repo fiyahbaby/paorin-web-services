@@ -26,6 +26,7 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { MessageModule } from 'primeng/message';
 import { FileUploadModule } from 'primeng/fileupload';
 import { TabViewModule } from 'primeng/tabview';
+import { ChartModule } from 'primeng/chart';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent, HeaderComponent, ErrorFieldMessageComponent],
@@ -53,7 +54,7 @@ import { TabViewModule } from 'primeng/tabview';
     MultiSelectModule,
     TagModule,
     FileUploadModule,
-    TabViewModule
+    TabViewModule,
   ],
   exports: [
     FormsModule,
@@ -83,7 +84,7 @@ import { TabViewModule } from 'primeng/tabview';
     TagModule,
     ErrorFieldMessageComponent,
     FileUploadModule,
-    TabViewModule
+    TabViewModule,
   ],
   providers: [],
 })

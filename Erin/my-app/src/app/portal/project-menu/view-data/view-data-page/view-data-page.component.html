@@ -2,6 +2,22 @@
 <div id="view-data-page">
     <app-header formHeader="View Data Page" formSubHeader="Project Menu > View Data > View Data Page"></app-header>
     <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="w-full">
+            <p-header>
+                <h1 class="w-full mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                    Test Summary
+                </h1>
+            </p-header>
+            <div class="mb-5 flex justify-content-evenly ">
+                <div class="doughnut-chart-container">
+                    <canvas #chartCanvas></canvas>
+                </div>
+                <div class="chart-container w-6">
+                    <canvas #lineChartCanvas></canvas>
+                </div>
+            </div>
+        </div>
+
         <div class="w-full flex flex-column">
             <div class="w-full mb-3">
                 <p-header>
@@ -9,8 +25,10 @@
                         Test Results
                     </h1>
                 </p-header>
-                <p-table [scrollable]="true" scrollHeight="350px" class="paramTable" [value]="buildData"
-                    styleClass="p-datatable-striped p-datatable-gridlines" (sortChange)="sortNumericColumn($event)">
+                <p-table [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" class="paramTable"
+                    [value]="buildData" styleClass="p-datatable-striped p-datatable-gridlines"
+                    (sortChange)="sortNumericColumn($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="text-align: center" *ngFor="let key of testResults" [pSortableColumn]="key">

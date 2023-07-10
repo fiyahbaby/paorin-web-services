@@ -40,9 +40,7 @@ export class ViewDataComponent {
           detail: 'Build data retrieved successfully',
           life: 3000
         });
-        console.log(buildData);
         setTimeout(() => {
-          // this.router.navigate(['/home']);
           this.router.navigate(['view-data-page'], {
             relativeTo: this.route,
             queryParams: { data: JSON.stringify(buildData) },
@@ -67,8 +65,7 @@ export class ViewDataComponent {
     this.router.navigate(['/home']);
   }
 
-  ngOnDestroy() {
-    // Unsubscribe from subscriptions to avoid memory leaks
-    this.subscriptions.forEach((subscription: { unsubscribe: () => any; }) => subscription.unsubscribe());
-  }
+  // ngOnDestroy() {
+  //   this.subscriptions.forEach((subscription: { unsubscribe: () => any; }) => subscription.unsubscribe());
+  // }
 }
