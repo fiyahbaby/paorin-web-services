@@ -13,7 +13,10 @@ import { Chart, Tooltip } from 'chart.js/auto';
 export class ViewDataPageComponent implements OnInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
+  buildID: any;
   buildData: any;
+  testCount = 0;
+  passingPercentage = 0;
   buildDataMap: { [key: string]: any } = {};
   testResultMap: { [key: string]: any } = {};
   refParam: any;
@@ -61,22 +64,38 @@ export class ViewDataPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const storedData = localStorage.getItem(this.storageKey);
-    if (storedData) {
-      this.buildData = JSON.parse(storedData);
-      this.createBuildDataMap();
-      this.createTestResultMap();
-      this.sendData();
-      this.refParam = this.buildData[0];
-    } else {
-      this.route.queryParams.subscribe((params) => {
-        this.buildData = params;
-        this.buildData = JSON.parse(this.buildData.data);
-        this.createBuildDataMap();
-        this.createTestResultMap();
-        this.sendData();
-        this.refParam = this.buildData[0];
-      });
+    this.route.queryParams.subscribe((params) => {
+      this.buildID = params;
+      console.log(this.buildID);
+      this.fetchData()
+        .then((buildData) => {
+          this.buildData = buildData;
+          this.createBuildDataMap();
+          this.createTestResultMap();
+          this.sendData();
+          this.refParam = this.buildData[0];
+          this.testCount = this.buildData.length
+        })
+        .catch((error) => {
+          console.error('An error occurred while fetching build data:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'An error occurred while fetching build data',
+            life: 3000
+          });
+          window.scrollTo(0, 0);
+        });
+    });
+  }
+
+  async fetchData() {
+    try {
+      const buildData = await this.portalService.getBuildData(JSON.stringify(this.buildID));
+      return buildData;
+    } catch (error) {
+      console.error('An error occurred while fetching build data:', error);
+      throw error;
     }
   }
 
@@ -110,13 +129,19 @@ export class ViewDataPageComponent implements OnInit {
   sendData(): void {
     this.portalService.sendBuildData(this.buildData)
       .then(response => {
-        const { "Max. Temp": maxTemp, "Min. Temp": minTemp } = response;
+        let { "Max. Temp": maxTemp, "Min. Temp": minTemp } = response;
+        maxTemp = parseFloat(maxTemp).toFixed(2);
+        minTemp = parseFloat(minTemp).toFixed(2);
         this.refParam = { ...this.refParam, "Max. Temp": maxTemp, "Min. Temp": minTemp };
+        this.highestMaxTemp = parseFloat(maxTemp);
+        this.lowestMinTemp = parseFloat(minTemp);
       })
       .catch(error => {
         console.error(error);
       });
   }
+
+
 
   sortNumericColumn(event: any): void {
     const column = event.field;
@@ -157,7 +182,7 @@ export class ViewDataPageComponent implements OnInit {
     const notRunCount = this.buildData.filter((item: any) => item['Test Result'] === 'NOT-RUN').length;
 
     const doughnutChartData = {
-      labels: ['PASS', 'FAIL', 'NOT_RUN'],
+      labels: ['PASS', 'FAIL', 'NOT-RUN'],
       datasets: [{
         data: [passCount, failCount, notRunCount],
         backgroundColor: ['#00be00', '#FF0000', '#FFA500']
@@ -170,13 +195,18 @@ export class ViewDataPageComponent implements OnInit {
         style: {
           fontSize: 20,
           fontWeight: 'bold',
-          color: '#ffffff'
+          color: '#ffffff',
+          fontFamily: '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'
         },
         onCreated: function () {
           console.log('Text element rendered');
         }
       }]
     };
+
+
+    const passingPercentage = (passCount / this.testCount) * 100;
+    this.passingPercentage = Math.round(passingPercentage);
 
     new Chart(doughnutCanvas, {
       type: 'doughnut',
@@ -231,7 +261,7 @@ export class ViewDataPageComponent implements OnInit {
             }
           },
           y1: {
-            max: 1,
+            max: 0.95,
             position: 'right',
             beginAtZero: false,
             title: {
@@ -253,7 +283,7 @@ export class ViewDataPageComponent implements OnInit {
   }
 
   onBack(): void {
-    this.router.navigate(['/home']);
+    this.router.navigate(['../'], { relativeTo: this.route });
   }
 
   onSubmit() {

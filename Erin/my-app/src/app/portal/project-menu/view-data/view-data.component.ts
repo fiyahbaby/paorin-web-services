@@ -23,7 +23,7 @@ export class ViewDataComponent {
   async fetchData() {
     console.log(this.buildID);
     try {
-      const buildData = await this.portalService.getBuildData(this.buildID);
+      const buildData = await this.portalService.getBuildData(JSON.stringify(this.buildID));
       return buildData;
     } catch (error) {
       console.error('An error occurred while fetching build data:', error);
@@ -33,33 +33,31 @@ export class ViewDataComponent {
 
   onSubmit() {
     this.fetchData()
-      .then((buildData) => {
+      .then(() => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Build data retrieved successfully',
-          life: 3000
+          detail: 'Build ID exists',
+          life: 1000
         });
         setTimeout(() => {
           this.router.navigate(['view-data-page'], {
             relativeTo: this.route,
-            queryParams: { data: JSON.stringify(buildData) },
+            queryParams: { buildID: this.buildID },
           });
-        }, 2000);
-        window.scrollTo(0, 0);
+        }, 1000);
       })
       .catch((error) => {
-        console.error('An error occurred while fetching build data:', error);
+        console.error('Build ID does not exist', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'An error occurred while fetching build data',
-          life: 3000
+          detail: 'Build ID does not exist.',
+          life: 2000
         });
         window.scrollTo(0, 0);
       });
   }
-
 
   onBack(): void {
     this.router.navigate(['/home']);

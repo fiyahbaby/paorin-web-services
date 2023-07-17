@@ -119,37 +119,36 @@ def retrieveDbData(db, build_id):
     testList = []
     for doc in final_query:
         testDict = {
-            "Build ID": doc["build_id"],
-            "DNA": doc["device_dna"],
-            "Voltage": doc["voltage"],
-            "Run Type": doc["run_type"],
-            "Skew": doc["skew"],
-            "Board": doc["board"],
-            "Run Home": doc["RUN_HOME"],
-            "Log Dir.": doc["log_dir"],
-            "S-Suite": doc["ssuite"],
-            "Suite": doc["suite"],
-            "Test Name": doc["test"],
-            "Test Result": doc["status"],
-            "Max. Temp": doc["DB_PARAM__device_temp_max"],
-            "Min. Temp": doc["DB_PARAM__device_temp_min"],
-            "Run Time": doc["run_time"],
-            "VCC_BATT": doc["DB_PARAM__vcc_batt"],
-            "VCC_PMC": doc["DB_PARAM__vcc_pmc"],
-            "VCC_PSFP": doc["DB_PARAM__vcc_psfp"],
-            "VCC_PSLP": doc["DB_PARAM__vcc_pslp"],
-            "VCC_RAM": doc["DB_PARAM__vcc_ram"],
-            "VCC_SOC": doc["DB_PARAM__vcc_soc"],
-            "VCCAUX": doc["DB_PARAM__vccaux"],
-            "VCCAUX_PMC": doc["DB_PARAM__vccaux_pmc"],
-            "VCCAUX_SYSMON": doc["DB_PARAM__vccaux_sysmon"],
-            "VCCINT": doc["DB_PARAM__vccint"],
-            "VCCINT_PMC": doc["DB_PARAM__vccint_pmc"],
-            "Date/Time": doc["updated_on"],
+            "Build ID": doc.get("build_id"),
+            "DNA": doc.get("device_dna"),
+            "Voltage": doc.get("voltage"),
+            "Run Type": doc.get("run_type"),
+            "Skew": doc.get("skew"),
+            "Board": doc.get("board"),
+            "Run Home": doc.get("RUN_HOME"),
+            "Log Dir.": doc.get("log_dir"),
+            "S-Suite": doc.get("ssuite"),
+            "Suite": doc.get("suite"),
+            "Test Name": doc.get("test"),
+            "Test Result": doc.get("status"),
+            "Max. Temp": round(float(doc.get("DB_PARAM__device_temp_max")), 2),
+            "Min. Temp": round(float(doc.get("DB_PARAM__device_temp_min")), 2),
+            "Run Time": doc.get("run_time"),
+            "VCC_BATT": doc.get("DB_PARAM__vcc_batt"),
+            "VCC_PMC": doc.get("DB_PARAM__vcc_pmc"),
+            "VCC_PSFP": doc.get("DB_PARAM__vcc_psfp"),
+            "VCC_PSLP": doc.get("DB_PARAM__vcc_pslp"),
+            "VCC_RAM": doc.get("DB_PARAM__vcc_ram"),
+            "VCC_SOC": doc.get("DB_PARAM__vcc_soc"),
+            "VCCAUX": doc.get("DB_PARAM__vccaux"),
+            "VCCAUX_PMC": doc.get("DB_PARAM__vccaux_pmc"),
+            "VCCAUX_SYSMON": doc.get("DB_PARAM__vccaux_sysmon"),
+            "VCCINT": doc.get("DB_PARAM__vccint"),
+            "VCCINT_PMC": doc.get("DB_PARAM__vccint_pmc"),
+            "Date/Time": doc.get("updated_on"),
         }
+
         testList.append(testDict)
-        print(doc)
-        print("\n\n")
 
     for test in testList:
         for key, value in test.items():
@@ -159,7 +158,6 @@ def retrieveDbData(db, build_id):
                 test[key] = value.replace("[", "").replace("]", "")
 
     print(testList)
-
     return testList
 
 
@@ -167,7 +165,7 @@ def main():
     db = MongoClient(
         "mongodb://vncmgr:vncw0rld19@xsj-pvdbvnc02:27060,xsj-pvdbvnc03:27060,xsj-pvdbvnc04:27060/?replicaSet=acapprd"
     ).vncreg
-    build_id = "sival_PS-PVT_xapchar_20230209_18"
+    build_id = "sival_PS-PVT_xapchar_20230209_17"
     build_id = [build_id] if type(build_id) != list else build_id
 
     retrieveDbData(db, build_id)
