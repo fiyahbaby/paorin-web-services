@@ -66,41 +66,31 @@ export class ViewDataPageComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.buildID = params;
-      console.log(this.buildID);
-      this.fetchData()
-        .then((buildData) => {
-          this.buildData = buildData;
-          this.createBuildDataMap();
-          this.createTestResultMap();
-          this.sendData();
-          this.refParam = this.buildData[0];
-          this.testCount = this.buildData.length
-        })
-        .catch((error) => {
-          console.error('An error occurred while fetching build data:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'An error occurred while fetching build data',
-            life: 3000
-          });
-          window.scrollTo(0, 0);
-        });
+      this.fetchData();
     });
   }
 
-  async fetchData() {
-    try {
-      const buildData = await this.portalService.getBuildData(JSON.stringify(this.buildID));
-      return buildData;
-    } catch (error) {
-      console.error('An error occurred while fetching build data:', error);
-      throw error;
-    }
-  }
-
-  ngAfterViewInit(): void {
-    this.generateChart();
+  fetchData(): void {
+    this.portalService.getBuildData(JSON.stringify(this.buildID))
+      .then((buildData) => {
+        this.buildData = buildData;
+        this.createBuildDataMap();
+        this.createTestResultMap();
+        this.sendData();
+        this.refParam = this.buildData[0];
+        this.testCount = this.buildData.length;
+        this.generateChart();
+      })
+      .catch((error) => {
+        console.error('An error occurred while fetching build data:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'An error occurred while fetching build data',
+          life: 3000
+        });
+        window.scrollTo(0, 0);
+      });
   }
 
   ngOnDestroy(): void {
@@ -140,8 +130,6 @@ export class ViewDataPageComponent implements OnInit {
         console.error(error);
       });
   }
-
-
 
   sortNumericColumn(event: any): void {
     const column = event.field;
@@ -204,7 +192,6 @@ export class ViewDataPageComponent implements OnInit {
       }]
     };
 
-
     const passingPercentage = (passCount / this.testCount) * 100;
     this.passingPercentage = Math.round(passingPercentage);
 
@@ -246,7 +233,7 @@ export class ViewDataPageComponent implements OnInit {
           },
           y: {
             position: 'left',
-            beginAtZero: true,
+            beginAtZero: false,
             title: {
               display: true,
               text: 'Temperature (°C)',

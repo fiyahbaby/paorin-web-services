@@ -106,7 +106,6 @@ export class PortalService {
 
   async getBuildData(buildID: string): Promise<any> {
     const parsedBuildID = JSON.parse(buildID)['buildID'];
-    console.log(parsedBuildID);
     const url = `${await this.getBackendUrl()}/api/retrieveDbData/${parsedBuildID}`;
     const data = await this.http.get<any>(url).toPromise();
     return data;

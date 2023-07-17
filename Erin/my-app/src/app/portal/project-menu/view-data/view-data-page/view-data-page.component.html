@@ -4,7 +4,7 @@
     <p-card class="w-12 h-full card-header" id="project-p-card">
         <div class="w-full">
             <p-header>
-                <h1 class="w-full mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                <h1 class="w-full mt-0 mb-4 text-black-alpha-90" style="font-size: 18px">
                     Test Summary: {{buildID.buildID}}
                 </h1>
             </p-header>
@@ -96,7 +96,7 @@
             <div class="w-full">
                 <p-header>
                     <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
-                        Test Parameters
+                        Test Environment
                     </h1>
                 </p-header>
                 <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-striped p-datatable-gridlines">
@@ -109,7 +109,7 @@
                     <ng-template pTemplate="body" let-testParam>
                         <tr>
                             <td style="text-align: center">{{ testParam }}</td>
-                            <td style="text-align: left">{{ refParam[testParam] }}</td>
+                            <td style="text-align: left">{{ refParam?.[testParam] }}</td>
                         </tr>
                     </ng-template>
                 </p-table>
