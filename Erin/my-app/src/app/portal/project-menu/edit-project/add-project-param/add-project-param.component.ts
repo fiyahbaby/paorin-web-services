@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { PortalService } from 'src/app/portal/portal.service';
+// import * as Papa from 'papaparse';
 
 @Component({
   selector: 'app-add-project-param',
@@ -16,6 +17,8 @@ export class AddProjectParamComponent implements OnInit {
   addTempForm!: FormGroup;
   formHasChanges: boolean = false;
   uploadedFileName: string = '';
+  fileContent: string | undefined;
+  csvData: string[][] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -114,14 +117,15 @@ export class AddProjectParamComponent implements OnInit {
     temperatures.push(temperaturesFormGroup);
   }
 
-  handleFileUpload(event: any): void {
-    const uploadedFiles = event.files;
-    if (uploadedFiles && uploadedFiles.length > 0) {
-      this.uploadedFileName = uploadedFiles[0].name;
-      console.log(this.uploadedFileName)
-    } else {
-      this.uploadedFileName = '';
-      console.log(this.uploadedFileName)
+  handleFileUpload(files: File[]): void {
+    if (files && files.length > 0) {
+      const file = files[0];
+      this.uploadedFileName = files[0].name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.fileContent = reader.result as string;
+      };
+      reader.readAsText(file);
     }
   }
 
@@ -140,47 +144,85 @@ export class AddProjectParamComponent implements OnInit {
 
     this.formHasChanges = false;
     this.uploadedFileName = '';
+    this.fileContent = undefined;
   }
 
+
   onSubmit() {
-    if (!this.formHasChanges) {
+    if (!this.formHasChanges && !this.fileContent) {
       this.messageService.add({
         severity: 'error',
         summary: 'No Modifications',
-        detail: 'There are no changes made.',
+        detail: 'There are no changes made and no file selected.',
         life: 3000
       });
       window.scrollTo(0, 0);
       return;
     }
 
-    const unitValues = this.addUnitForm.value.units;
-    const tempValues = this.addTempForm.value.temperatures;
-    const voltageValues = this.addVoltageForm.value.voltages;
+    if (this.formHasChanges) {
+      const unitValues = this.addUnitForm.value.units;
+      const tempValues = this.addTempForm.value.temperatures;
+      const voltageValues = this.addVoltageForm.value.voltages;
 
-    const projectData = {
-      project_id: this.selectedProject.id,
-      voltages: voltageValues,
-      temperatures: tempValues,
-      units: unitValues
-    };
+      const projectData = {
+        project_id: this.selectedProject.id,
+        voltages: voltageValues,
+        temperatures: tempValues,
+        units: unitValues
+      };
 
-    this.portalService.addProjectParam(projectData).then(response => {
-      // Handle the response from the backend
-      this.router.navigate(['/home'], {
-        queryParams: { message: response }
-      });
-    })
-      .catch(error => {
-        console.error(error);
-        // Handle the error
-      });
+      this.portalService.addProjectParam(projectData).then(response => {
+        // this.router.navigate(['/home'], {
+        //   queryParams: { message: response }
+        // });
+      })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+
+    if (this.fileContent) {
+      const selectedProjectJson = JSON.stringify(this.selectedProject, null, 2);
+      const existingData = this.fileContent
+        .trim()
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '')
+        .map(line => line.split(/\s*,\s*/))
+        // .slice(1)
+        .map(([dc, voltage, temperature, ssuite, suite, Testname]) => ({ dc, voltage, temperature, ssuite, suite, Testname }));
+
+      const combinedData = [...existingData, this.selectedProject];
+      const combinedContent = JSON.stringify(combinedData, null, 2);
+
+      this.fileContent = combinedContent;
+      console.log(JSON.parse(combinedContent));
+
+      this.portalService.addTestList(JSON.parse(combinedContent)).then(response => {
+        console.log(response);
+      })
+        .catch(error => {
+          console.error(error);
+        });
+    }
 
     this.formHasChanges = false;
-    setTimeout(() => {
-      this.router.navigate(['/home']);
-    }, 2000);
+    this.fileContent = undefined;
+    this.uploadedFileName = '';
+
+    // this.messageService.add({
+    //   severity: 'success',
+    //   summary: 'Success',
+    //   detail: 'Parameters added successfully.',
+    //   life: 3000
+    // });
+
+    // setTimeout(() => {
+    //   this.router.navigate(['/home']);
+    // }, 2000);
   }
+
 
   onBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });

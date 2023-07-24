@@ -2,13 +2,15 @@ import json
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+import pytz
 from werkzeug.security import check_password_hash
 import socket
-from datetime import datetime
-import pytz
+from datetime import datetime, timezone
+from pytz import timezone
 from flask_migrate import Migrate
 from pymongo import MongoClient
 from mongodb_data_retrieval import retrieveDbData
+import itertools
 
 app = Flask(__name__)
 app.secret_key = b"mySecretKey"
@@ -34,6 +36,16 @@ class Projects(db.Model):
     block_id = db.Column(db.String(255))
     date_created = db.Column(db.String(255))
 
+    __table_args__ = (
+        db.UniqueConstraint(
+            "device_name",
+            "revision_id",
+            "test_type_id",
+            "block_id",
+            name="_unique_projects",
+        ),
+    )
+
     def __str__(self):
         return self.device_name
 
@@ -44,6 +56,10 @@ class Voltages(db.Model):
     name = db.Column(db.String(255))
     value = db.Column(db.Float)
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
+
+    __table_args__ = (
+        db.UniqueConstraint("name", "project_id", name="_unique_voltages"),
+    )
 
     def __str__(self):
         return self.name
@@ -56,21 +72,43 @@ class Temperatures(db.Model):
     value = db.Column(db.Float)
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
+    __table_args__ = (
+        db.UniqueConstraint("name", "project_id", name="_unique_temperatures"),
+    )
+
     def __str__(self):
-        return str(self.temperature)
+        return str(self.value)
 
 
-class Tests(db.Model):
+class TestList(db.Model):
     __tablename__ = "tests"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    s_suite = db.Column(db.String(255))
-    suite = db.Column(db.String(255))
-    name = db.Column(db.String(255))
-    dc = db.Column(db.String(255))
-    remarks = db.Column(db.String(255))
-    project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
-    voltage_id = db.Column(db.Integer, db.ForeignKey("voltages.id"))
-    temperature_id = db.Column(db.Integer, db.ForeignKey("temperatures.id"))
+    dc = db.Column(db.String(255), nullable=False)
+    s_suite = db.Column(db.String(255), nullable=False)
+    suite = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.id"), nullable=False)
+    voltage_id = db.Column(db.Integer, db.ForeignKey("voltages.id"), nullable=False)
+    temperature_id = db.Column(
+        db.Integer, db.ForeignKey("temperatures.id"), nullable=False
+    )
+
+    # Unique constraint on dc, s_suite, suite, name, project_id, voltage_id, and temperature_id
+    __table_args__ = (
+        db.UniqueConstraint(
+            "dc",
+            "s_suite",
+            "suite",
+            "name",
+            "project_id",
+            "voltage_id",
+            "temperature_id",
+            name="_unique_test_list",
+        ),
+    )
+
+    # Index on the name column for faster querying
+    __table_args__ += (db.Index("ix_test_list_name", "name"),)
 
     def __str__(self):
         return self.name
@@ -84,6 +122,12 @@ class Units(db.Model):
     remarks = db.Column(db.String(255))
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
+    __table_args__ = (
+        db.UniqueConstraint(
+            "process_corner", "two_d_name", "project_id", name="_unique_units"
+        ),
+    )
+
     def __str__(self):
         return self.two_d_name
 
@@ -91,17 +135,32 @@ class Units(db.Model):
 class BuildIDs(db.Model):
     __tablename__ = "build_ids"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    time_stamp = db.Column(db.String(255))
+    date_created = db.Column(
+        db.String(255),
+        default=lambda: datetime.now(timezone("Asia/Singapore")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        ),
+    )
     voltage_id = db.Column(db.Integer, db.ForeignKey("voltages.id"))
     temperature_id = db.Column(db.Integer, db.ForeignKey("temperatures.id"))
-    two_d_name = db.Column(db.String(255))
     test_id = db.Column(db.Integer, db.ForeignKey("tests.id"))
-    test_status = db.Column(db.String(255))
-    run_time = db.Column(db.String(255))
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
+    unit_id = db.Column(db.Integer, db.ForeignKey("units.id"))
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "date_created",
+            "voltage_id",
+            "temperature_id",
+            "unit_id",
+            "test_id",
+            "project_id",
+            name="_unique_build_ids",
+        ),
+    )
 
     def __str__(self):
-        return self.time_stamp
+        return self.id
 
 
 hostname = socket.gethostname()
@@ -172,7 +231,6 @@ def get_projects():
             "date_created": project.date_created,
         }
         projects_list.append(project_dict)
-        print(projects_list)
     return jsonify(projects_list)
 
 
@@ -331,7 +389,6 @@ def update_project_data():
             updated_unit.two_d_name = barcode
 
     for project in projects:
-        print(project)
         project_id = project["id"]
         device_name = project["name"]
         revision_id = project["revisionId"]
@@ -367,7 +424,7 @@ def delete_project(project_id):
     Voltages.query.filter_by(project_id=project_id).delete()
     Temperatures.query.filter_by(project_id=project_id).delete()
     Units.query.filter_by(project_id=project_id).delete()
-    Tests.query.filter_by(project_id=project_id).delete()
+    TestList.query.filter_by(project_id=project_id).delete()
     BuildIDs.query.filter_by(project_id=project_id).delete()
 
     db.session.delete(project)
@@ -394,11 +451,9 @@ def process_temp_limit():
     try:
         build_data = request.json
         temp = process_ref_temp(build_data)
-        print(temp)
         return jsonify(temp)
     except Exception as e:
         error_message = "Error processing build data: {}".format(str(e))
-        print(error_message)
         return jsonify({"error": error_message})
 
 
@@ -417,6 +472,154 @@ def process_ref_temp(data):
             if min_temp_item < min_temp:
                 min_temp = min_temp_item
     return {"Max. Temp": max_temp, "Min. Temp": min_temp}
+
+
+@app.route("/api/addTestList", methods=["POST"])
+def addTestList():
+    file_content = request.json
+    if file_content:
+        file_content = remove_carriage_return(file_content)
+        processed_tests, project_details = process_test_list(file_content)
+
+        project_id = project_details.get("id")
+        project = Projects.query.filter_by(id=project_id).first()
+        if not project:
+            return jsonify({"error": "Project not found"})
+
+        error_set = set()
+
+        processed_tests = processed_tests[1:]
+        for test in processed_tests:
+            voltage_name = test["voltage"]
+            temperature_name = test["temperature"]
+
+            # Fetch the voltage and temperature objects by searching for the exact matching names
+            voltage = Voltages.query.filter_by(
+                name=voltage_name, project_id=project_id
+            ).first()
+            temperature = Temperatures.query.filter_by(
+                value=temperature_name, project_id=project_id
+            ).first()
+
+            if not voltage:
+                error_set.add(f"Invalid voltage: {voltage_name}")
+            if not temperature:
+                error_set.add(f"Invalid temperature: {temperature_name}")
+
+        errors = list(error_set)
+
+        if errors:
+            return jsonify({"errors": errors})
+        else:
+            # All data is valid, now commit to the database
+            for test in processed_tests:
+                voltage_name = test["voltage"]
+                temperature_name = test["temperature"]
+                voltage = Voltages.query.filter_by(
+                    name=voltage_name, project_id=project_id
+                ).first()
+                temperature = Temperatures.query.filter_by(
+                    value=temperature_name, project_id=project_id
+                ).first()
+
+                new_test = TestList(
+                    dc=test["dc"],
+                    s_suite=test["ssuite"],
+                    suite=test["suite"],
+                    name=test["Testname"],
+                    project_id=project_id,
+                    voltage_id=voltage.id if voltage else None,
+                    temperature_id=temperature.id if temperature else None,
+                )
+                db.session.add(new_test)
+
+            db.session.commit()
+            return {"success": "File content uploaded without errors."}
+    else:
+        return {"error": "No file content uploaded."}
+
+
+def remove_carriage_return(data_list):
+    processed_data = [
+        {
+            key: value.rstrip("\r") if isinstance(value, str) else value
+            for key, value in item.items()
+        }
+        for item in data_list
+    ]
+    processed_data = [item for item in processed_data if any(item.values())]
+    return processed_data
+
+
+def process_test_list(test_list):
+    processed_tests = []
+    project_details = {}
+
+    for test in test_list:
+        if "id" in test:
+            project_details = test
+        else:
+            voltages = test.get("voltage", "").split("/")
+            temperatures = test.get("temperature", "").split("/")
+
+            voltage_temperature_combinations = list(
+                itertools.product(voltages, temperatures)
+            )
+
+            for voltage, temperature in voltage_temperature_combinations:
+                processed_test = {
+                    "dc": test["dc"],
+                    "voltage": voltage,
+                    "temperature": temperature,
+                    "ssuite": test["ssuite"],
+                    "suite": test["suite"],
+                    "Testname": test["Testname"],
+                }
+                processed_tests.append(processed_test)
+
+    return processed_tests, project_details
+
+
+@app.route("/api/processed_tests", methods=["GET"])
+def get_processed_tests():
+    project_id = request.args.get("project_id")
+
+    test_entries = TestList.query.filter_by(project_id=project_id).all()
+
+    processed_data = {}
+    for entry in test_entries:
+        # Combine the test name, voltage, and temperature into a single string key
+        voltage = Voltages.query.get(entry.voltage_id)
+        temperature = Temperatures.query.get(entry.temperature_id)
+        key = f"{entry.dc}/{entry.s_suite}/{entry.suite}/{entry.name}"
+
+        # Check if the key is already in the processed_data dictionary
+        if key in processed_data:
+            processed_data[key]["voltage"].add(voltage.name)
+            processed_data[key]["temperature"].add(temperature.value)
+        else:
+            processed_data[key] = {
+                "dc": entry.dc,
+                "s_suite": entry.s_suite,
+                "suite": entry.suite,
+                "Testname": entry.name,
+                "voltage": {voltage.name},
+                "temperature": {temperature.value},
+            }
+
+    result = [
+        {
+            "dc": entry["dc"],
+            "s_suite": entry["s_suite"],
+            "suite": entry["suite"],
+            "Testname": entry["Testname"],
+            "voltage": ", ".join(entry["voltage"]),
+            "temperature": ", ".join(map(str, entry["temperature"])),
+        }
+        for entry in processed_data.values()
+    ]
+
+    return jsonify(result)
 
 
 if __name__ == "__main__":

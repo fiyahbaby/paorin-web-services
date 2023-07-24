@@ -111,9 +111,20 @@ export class PortalService {
     return data;
   }
 
-
   async sendBuildData(buildData: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/processTempLimit`;
     return this.http.post(url, buildData).toPromise();
+  }
+
+  async addTestList(fileContent: string): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/addTestList`;
+    const response = this.http.post(url, fileContent).toPromise();
+    return response;
+  }
+
+  async getProcessedTests(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/processed_tests?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response;
   }
 }

@@ -114,8 +114,10 @@
         </p-accordionTab>
 
         <p-accordionTab header="Test List">
-          <p-fileUpload name="myfile[]" url="https://www.primefaces.org/cdn/api/upload.php" [multiple]="true"
-            accept="image/*" [maxFileSize]="1000000" (onSelect)="handleFileUpload($event)">
+          <p-fileUpload chooseLabel="Choose" accept=".xlsx,.csv" [maxFileSize]="1000000"
+            (onSelect)="handleFileUpload($event.files)">
+            <!-- <p-fileUpload mode="basic" chooseLabel="Choose" accept=".xlsx,.csv" [maxFileSize]="1000000"
+            (onSelect)="handleFileUpload($event.files)"> -->
             <ng-template pTemplate="toolbar">
               <div class="pt-3">Upload test list file.</div>
             </ng-template>

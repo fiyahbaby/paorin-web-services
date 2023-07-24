@@ -65,6 +65,36 @@
                         </p-accordionTab>
                     </p-accordion>
                 </p-tabPanel>
+                <p-tabPanel header="Tests" icon="pi-list">
+                    <p-table *ngIf="processedTests" [value]="processedTests" styleClass="p-datatable-gridlines"
+                        [scrollable]="true" scrollHeight="600px">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 1rem; text-align: center">#</th>
+                                <th style="width: 10rem; text-align: center">DC</th>
+                                <th style="width: 10rem; text-align: center">Suite</th>
+                                <th style="width: 10rem; text-align: center">SubSuite</th>
+                                <th style="width: 10rem; text-align: center">Test Name</th>
+                                <th style="width: 15rem; text-align: center">Voltages</th>
+                                <th style="width: 20rem; text-align: center">Temperatures</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-test let-rowIndex="rowIndex">
+                            <tr>
+                                <td [ngClass]="'custom-font-size'" style="text-align: center">{{ rowIndex + 1 }}</td>
+                                <td [ngClass]="'custom-font-size'" style="text-align: center">{{ test.dc }}</td>
+                                <td [ngClass]="'custom-font-size'" style="text-align: left">{{ test.s_suite }}</td>
+                                <td [ngClass]="'custom-font-size'" style="text-align: left">{{ test.suite }}</td>
+                                <td [ngClass]="'custom-font-size'" style="text-align: left">{{ test.Testname }}</td>
+                                <td [ngClass]="'custom-font-size'" style="width: 20rem; text-align: left">{{
+                                    test.voltage }}</td>
+                                <td [ngClass]="'custom-font-size'" style="width: 20rem; text-align: left">{{
+                                    test.temperature }}
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabPanel>
             </p-tabView>
         </div>
         <div class="w-full flex justify-content-end buttons-container bottom mt-3">

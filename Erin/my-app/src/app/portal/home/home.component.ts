@@ -29,7 +29,6 @@ export class HomeComponent implements OnInit {
           detail: this.message,
           life: 3000
         });
-        console.log(this.message);
       }
     });
   }

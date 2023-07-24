@@ -9,9 +9,11 @@ import { PortalService } from 'src/app/portal/portal.service';
 })
 export class ProjectPageComponent implements OnInit {
   selectedProject: any;
+  projectID: any;
   voltages: any[] = [];
   temperatures: any[] = [];
   units: any[] = [];
+  processedTests: any[] | undefined;
 
   constructor(
     private route: ActivatedRoute,
@@ -22,11 +24,23 @@ export class ProjectPageComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.selectedProject = JSON.parse(params['data']);
     });
+    this.projectID = this.selectedProject.id;
 
-    const projectData = await this.portalService.getProjectData(this.selectedProject.id);
+    const projectData = await this.portalService.getProjectData(this.projectID);
     this.voltages = projectData?.voltages || [];
     this.temperatures = projectData?.temperatures || [];
     this.units = projectData?.units || [];
+
+    this.getProcessedTests();
+  }
+
+  async getProcessedTests(): Promise<void> {
+    try {
+      this.processedTests = await this.portalService.getProcessedTests(this.projectID);
+    } catch (error) {
+      console.error('Error fetching processed tests:', error);
+    }
+    console.log(this.processedTests);
   }
 
   getVoltageData(): any[] {

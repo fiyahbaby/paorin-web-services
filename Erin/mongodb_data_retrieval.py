@@ -165,7 +165,7 @@ def main():
     db = MongoClient(
         "mongodb://vncmgr:vncw0rld19@xsj-pvdbvnc02:27060,xsj-pvdbvnc03:27060,xsj-pvdbvnc04:27060/?replicaSet=acapprd"
     ).vncreg
-    build_id = "sival_PS-PVT_xapchar_20230209_17"
+    build_id = "sival_PS-PVT_xapchar_20230310_19"
     build_id = [build_id] if type(build_id) != list else build_id
 
     retrieveDbData(db, build_id)

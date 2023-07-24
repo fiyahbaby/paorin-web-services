@@ -9,36 +9,36 @@
                 </h1>
             </p-header>
             <div class="mb-3 flex justify-content-between">
-                <div class="flex flex-column w-2" id="data-content">
+                <div class="flex flex-column w-15rem" id="data-content">
                     <div id="data-box" class="flex justify-content-between p-2">
-                        <div>
-                            <span class="headerText">No. of Tests</span>
+                        <div class="flex align-items-center">
+                            <span class="headerText">No. of Tests:</span>
                         </div>
-                        <div id="data-box-content" class="flex align-items-end">
+                        <div id="data-box-content" class="flex align-items-center">
                             <span>{{ testCount }}</span>
                         </div>
                     </div>
                     <div id="data-box" class="flex justify-content-between p-2">
-                        <div>
-                            <span class="headerText">Passing Rate</span>
+                        <div class="flex align-items-center">
+                            <span class="headerText">Passing Rate:</span>
                         </div>
-                        <div id="data-box-content" class="flex align-items-end">
+                        <div id="data-box-content" class="flex align-items-center">
                             <span>{{passingPercentage}}%</span>
                         </div>
                     </div>
                     <div id="data-box" class="flex justify-content-between p-2">
-                        <div>
-                            <span class="headerText">Max.Temp</span>
+                        <div class="flex align-items-center">
+                            <span class="headerText">Max.Temp:</span>
                         </div>
-                        <div id="data-box-content" class="flex align-items-end">
+                        <div id="data-box-content" class="flex align-items-center">
                             <span>{{ highestMaxTemp }}&deg;C</span>
                         </div>
                     </div>
                     <div id="data-box" class="flex justify-content-between p-2">
-                        <div>
-                            <span class="headerText">Min.Temp</span>
+                        <div class="flex align-items-center">
+                            <span class="headerText">Min.Temp:</span>
                         </div>
-                        <div id="data-box-content" class="flex align-items-end">
+                        <div id="data-box-content" class="flex align-items-center">
                             <span>{{ lowestMinTemp }}&deg;C</span>
                         </div>
                     </div>
@@ -46,12 +46,11 @@
                 <div class="doughnut-chart-container">
                     <canvas #chartCanvas></canvas>
                 </div>
-                <div class="chart-container w-6">
+                <div class="chart-container w-7">
                     <canvas #lineChartCanvas></canvas>
                 </div>
             </div>
         </div>
-
         <div class="w-full flex flex-column">
             <div class="w-full mb-3">
                 <p-header>
@@ -108,7 +107,7 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-testParam>
                         <tr>
-                            <td style="text-align: center">{{ testParam }}</td>
+                            <td style="text-align: left">{{ testParam }}</td>
                             <td style="text-align: left">{{ refParam?.[testParam] }}</td>
                         </tr>
                     </ng-template>
