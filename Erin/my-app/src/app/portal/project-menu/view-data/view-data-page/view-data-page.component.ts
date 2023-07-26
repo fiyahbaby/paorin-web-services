@@ -13,6 +13,14 @@ import { Chart, Tooltip } from 'chart.js/auto';
 export class ViewDataPageComponent implements OnInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
+  projects: any[] = [];
+  selectedProject: any;
+  projectVoltages: any[] = [];
+  selectedVoltage: any;
+  projectUnits: any[] = [];
+  selectedUnit: any;
+  projectTemps: any[] = [];
+  selectedTemp: any;
   buildID: any;
   buildData: any;
   testCount = 0;
@@ -68,6 +76,15 @@ export class ViewDataPageComponent implements OnInit {
       this.buildID = params;
       this.fetchData();
     });
+    this.fetchProjects();
+  }
+
+  private async fetchProjects() {
+    try {
+      this.projects = await this.portalService.getProjects();
+    } catch (error) {
+      console.log("Error retrieving project details.")
+    }
   }
 
   fetchData(): void {
@@ -273,7 +290,47 @@ export class ViewDataPageComponent implements OnInit {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
 
-  onSubmit() {
 
+  async onProjectSelect(event: any) {
+    this.selectedProject = event.data;
+
+    try {
+      const projectId = this.selectedProject.id;
+      const data = await this.portalService.getVoltagesAndTemperatures(projectId);
+
+      if (data) {
+        this.projectVoltages = data.voltages;
+        this.projectTemps = data.temperatures;
+        this.projectUnits = data.units;
+      } else {
+        console.log('No data available for selected project.');
+      }
+    } catch (error) {
+      console.error('Error retrieving voltages and temperatures:', error);
+    }
+  }
+
+  onSubmit() {
+    if (this.selectedProject && this.selectedVoltage && this.selectedTemp && this.selectedUnit) {
+      const combinedList = {
+        buildData: this.buildData,
+        project: this.selectedProject,
+        voltage: this.selectedVoltage,
+        temperature: this.selectedTemp,
+        unit: this.selectedUnit
+      };
+
+      this.portalService.addToProject(combinedList)
+        .then(response => {
+          console.log(response);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: response.message, life: 3000 });
+          window.scrollTo(0, 0);
+        })
+        .catch(error => {
+          console.error(error);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
+          window.scrollTo(0, 0);
+        });
+    }
   }
 }

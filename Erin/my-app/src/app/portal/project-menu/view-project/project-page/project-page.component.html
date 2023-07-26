@@ -7,6 +7,28 @@
                 <p-tabPanel header="Summary" icon="pi pi-info-circle">
                 </p-tabPanel>
                 <p-tabPanel header="Details" icon="pi pi-list">
+                    <div class="mb-3">
+                        <p-table [value]="[selectedProject]" styleClass="p-datatable-gridlines">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 20rem; text-align: center">Device</th>
+                                    <th style="width: 20rem; text-align: center">Revision</th>
+                                    <th style="width: 20rem; text-align: center">Test Type</th>
+                                    <th style="width: 20rem; text-align: center">Block</th>
+                                    <th style="width: 20rem; text-align: center">Date created</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-selectedProject>
+                                <tr>
+                                    <td style="text-align: center">{{selectedProject.name}}</td>
+                                    <td style="text-align: center">{{selectedProject.revisionId}}</td>
+                                    <td style="text-align: center">{{selectedProject.testTypeId}}</td>
+                                    <td style="text-align: center">{{selectedProject.blockId}}</td>
+                                    <td style="text-align: center">{{selectedProject.dateCreated}}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                     <p-accordion [multiple]="true" class="w-full mt-3">
                         <p-accordionTab header="Voltage">
                             <p-table [value]="getVoltageData()" styleClass="p-datatable-gridlines">

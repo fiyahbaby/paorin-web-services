@@ -127,4 +127,28 @@ export class PortalService {
     const response = this.http.get<any[]>(url).toPromise();
     return response;
   }
+
+  async getVoltagesAndTemperatures(projectId: number): Promise<{ voltages: any[]; temperatures: any[]; units: any[]; } | undefined> {
+    const url = `${await this.getBackendUrl()}/api/getVoltagesAndTemperatures?projectId=${projectId}`;
+    const response = await this.http.get<{ voltages: any[]; temperatures: any[]; units: any[]; }>(url).toPromise();
+    return response
+  }
+
+  async addToProject(combinedList: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/addToProject`;
+    const response = await this.http.post<any>(url, combinedList).toPromise();
+    return response;
+  }
+
+  async searchBuildID(buildID: string) {
+    const url = `${await this.getBackendUrl()}/api/searchBuildID/${buildID}`;
+    const response = await this.http.get<any>(url).toPromise();
+    return response
+  }
+
+  async deleteTestData(testID: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/deleteTestData/${testID}`;
+    const response = await this.http.delete<any>(url).toPromise();
+    return response;
+  }
 }

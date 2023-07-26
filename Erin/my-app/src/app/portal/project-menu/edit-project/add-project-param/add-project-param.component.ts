@@ -211,16 +211,16 @@ export class AddProjectParamComponent implements OnInit {
     this.fileContent = undefined;
     this.uploadedFileName = '';
 
-    // this.messageService.add({
-    //   severity: 'success',
-    //   summary: 'Success',
-    //   detail: 'Parameters added successfully.',
-    //   life: 3000
-    // });
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Parameters added successfully.',
+      life: 2000
+    });
 
-    // setTimeout(() => {
-    //   this.router.navigate(['/home']);
-    // }, 2000);
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 2000);
   }
 
 

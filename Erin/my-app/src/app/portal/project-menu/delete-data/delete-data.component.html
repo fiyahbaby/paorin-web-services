@@ -1,0 +1,174 @@
+<app-navbar></app-navbar>
+<p-messages></p-messages>
+<div id="delete-data">
+    <app-header formHeader="Delete Data" formSubHeader="Project Menu > Delete Data"></app-header>
+    <p-card class="w-12 h-full card-header" id="project-p-card">
+        <div class="w-full flex flex-row align-items-center">
+            <div class="flex flex-row mb-3 mt-2 w-full align-items-center">
+                <h1 class="text-black-alpha-90 m-0" style="font-size: 18px">
+                    Enter Build ID
+                </h1>
+                <app-form-label class="col-1"></app-form-label>
+                <input pInputText [(ngModel)]="buildID" name="buildID" type="text" class="col-4" />
+                <div class="flex justify-content-end buttons-container bottom">
+                    <ng-container *ngTemplateOutlet="searchbutton"></ng-container>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full mt-3">
+            <!-- Project Table -->
+            <ng-container *ngIf="project">
+                <div>
+                    <p-header>
+                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                            Project
+                        </h1>
+                    </p-header>
+                    <p-table [value]="project" styleClass="p-datatable-striped p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 20rem; text-align: center">Device</th>
+                                <th style="width: 20rem; text-align: center">Revision</th>
+                                <th style="width: 20rem; text-align: center">Test Type</th>
+                                <th style="width: 20rem; text-align: center">Block</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr>
+                                <td style="text-align: center">{{ item.device_name }}</td>
+                                <td style="text-align: center">{{ item.revision_id }}</td>
+                                <td style="text-align: center">{{ item.test_type_id }}</td>
+                                <td style="text-align: center">{{ item.block_id }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </ng-container>
+
+            <!-- Voltage Table -->
+            <ng-container *ngIf="voltage">
+                <div class="mt-3 w-6">
+                    <p-header>
+                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                            Voltage
+                        </h1>
+                    </p-header>
+                    <p-table [value]="voltage" styleClass="p-datatable-striped p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 20rem; text-align: center">Name</th>
+                                <th style="width: 20rem; text-align: center">Voltage Value</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-voltage>
+                            <tr>
+                                <td style="text-align: center">{{ voltage.name }}</td>
+                                <td style="text-align: center">{{ voltage.value }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </ng-container>
+
+            <!-- Temperature Table -->
+            <ng-container *ngIf="temp">
+                <div class="mt-3 mb-4 w-6">
+                    <p-header>
+                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                            Temperature
+                        </h1>
+                    </p-header>
+                    <p-table [value]="temp" styleClass="p-datatable-striped p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 20rem; text-align: center">Name</th>
+                                <th style="width: 20rem; text-align: center">Temperature Value (&deg;C)</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-temp>
+                            <tr>
+                                <td style="text-align: center">{{ temp.name }}</td>
+                                <td style="text-align: center">{{ temp.value }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="testInstances">
+                <p-accordion>
+                    <p-accordionTab header="Test Results">
+                        <div class="mt-3 w-full">
+                            <!-- <p-header>
+                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                            Test Results
+                        </h1>
+                    </p-header> -->
+                            <p-table [value]="testInstances[0]" [scrollable]="true" scrollHeight="500px"
+                                [resizableColumns]="true" styleClass="p-datatable-striped p-datatable-gridlines"
+                                class="data-table">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 20rem; text-align: center">S-Suite</th>
+                                        <th style="width: 20rem; text-align: center">Suite</th>
+                                        <th style="width: 20rem; text-align: center">Test Name</th>
+                                        <th style="width: 20rem; text-align: center">Test Result</th>
+                                        <th style="width: 20rem; text-align: center">Max. Temp</th>
+                                        <th style="width: 20rem; text-align: center">Min. Temp</th>
+                                        <th style="width: 20rem; text-align: center">Run Time</th>
+                                        <th style="width: 20rem; text-align: center">VCCINT</th>
+                                        <th style="width: 20rem; text-align: center">VCC_PMC</th>
+                                        <th style="width: 20rem; text-align: center">VCC_PSFP</th>
+                                        <!-- <th style="width: 20rem; text-align: center">VCC_PSLP</th> -->
+                                        <th style="width: 20rem; text-align: center">VCC_RAM</th>
+                                        <th style="width: 20rem; text-align: center">VCC_SOC</th>
+                                        <th style="width: 20rem; text-align: center">VCC_BATT</th>
+                                        <th style="width: 20rem; text-align: center">VCC_AUX</th>
+                                        <th style="width: 20rem; text-align: center">VCCAUX_PMC</th>
+                                        <th style="width: 20rem; text-align: center">VCCAUX_SYSMON</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-test>
+                                    <tr>
+                                        <td style="text-align: center">{{ test.s_suite }}</td>
+                                        <td style="text-align: center">{{ test.suite }}</td>
+                                        <td style="text-align: center">{{ test.test_name }}</td>
+                                        <td style="text-align: center">{{ test.result }}</td>
+                                        <td style="text-align: center">{{ test.max_temp }}</td>
+                                        <td style="text-align: center">{{ test.min_temp }}</td>
+                                        <td style="text-align: center">{{ test.run_time }}</td>
+                                        <td style="text-align: center">{{ test.vcc_int }}</td>
+                                        <td style="text-align: center">{{ test.vcc_pmc }}</td>
+                                        <td style="text-align: center">{{ test.vcc_psfp }}</td>
+                                        <!-- <td style="text-align: center">{{ testInstances.vcc_pslp }}</td> -->
+                                        <td style="text-align: center">{{ test.vcc_ram }}</td>
+                                        <td style="text-align: center">{{ test.vcc_soc}}</td>
+                                        <td style="text-align: center">{{ test.vcc_batt }}</td>
+                                        <td style="text-align: center">{{ test.vcc_aux }}</td>
+                                        <td style="text-align: center">{{ test.vccaux_pmc }}</td>
+                                        <td style="text-align: center">{{ test.vccaux_sysmon}}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </p-accordionTab>
+                </p-accordion>
+            </ng-container>
+
+
+            <div class="mt-3 flex justify-content-end buttons-container bottom">
+                <ng-container *ngTemplateOutlet="buttons"></ng-container>
+            </div>
+        </div>
+    </p-card>
+</div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+    <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>
+
+<ng-template #searchbutton>
+    <p-button label="Search" styleClass="p-button-success" type="button" (onClick)="onSearch()"></p-button>
+</ng-template>

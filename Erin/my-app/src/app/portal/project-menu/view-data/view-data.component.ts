@@ -21,7 +21,6 @@ export class ViewDataComponent {
   ) { }
 
   async fetchData() {
-    console.log(this.buildID);
     try {
       const buildData = await this.portalService.getBuildData(JSON.stringify(this.buildID));
       return buildData;

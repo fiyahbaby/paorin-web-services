@@ -39,7 +39,7 @@ export class ConfirmDeleteProjectComponent implements OnInit {
     this.portalService.deleteProject(this.selectedProject.id)
       .then(response => {
         this.messageService.add({ severity: 'success', summary: 'Success', detail: response.message });
-        // this.router.navigate(['../'], { relativeTo: this.route });
+        this.router.navigate(['../'], { relativeTo: this.route });
       })
       .catch(error => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'An error occurred while deleting the project.' });

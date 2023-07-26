@@ -11,6 +11,7 @@ from flask_migrate import Migrate
 from pymongo import MongoClient
 from mongodb_data_retrieval import retrieveDbData
 import itertools
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.secret_key = b"mySecretKey"
@@ -149,7 +150,6 @@ class BuildIDs(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            "date_created",
             "voltage_id",
             "temperature_id",
             "unit_id",
@@ -161,6 +161,51 @@ class BuildIDs(db.Model):
 
     def __str__(self):
         return self.id
+
+
+class TestInstances(db.Model):
+    __tablename__ = "test_instances"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.id"), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey("units.id"), nullable=False)
+    voltage_id = db.Column(db.Integer, db.ForeignKey("voltages.id"), nullable=False)
+    temperature_id = db.Column(
+        db.Integer, db.ForeignKey("temperatures.id"), nullable=False
+    )
+    test_id = db.Column(db.Integer, db.ForeignKey("build_ids.id"), nullable=False)
+    s_suite = db.Column(db.String(255), nullable=False)
+    suite = db.Column(db.String(255), nullable=False)
+    test_name = db.Column(db.String(255), nullable=False)
+    result = db.Column(db.String(255))
+    max_temp = db.Column(db.Float)
+    min_temp = db.Column(db.Float)
+    run_time = db.Column(db.Integer)
+    vcc_int = db.Column(db.Float)
+    vcc_pmc = db.Column(db.Float)
+    vcc_psfp = db.Column(db.Float)
+    vcc_ram = db.Column(db.Float)
+    vcc_soc = db.Column(db.Float)
+    vcc_batt = db.Column(db.Float)
+    vcc_aux = db.Column(db.Float)
+    vccaux_pmc = db.Column(db.Float)
+    vccaux_sysmon = db.Column(db.Float)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "project_id",
+            "unit_id",
+            "voltage_id",
+            "temperature_id",
+            "test_id",
+            "s_suite",
+            "suite",
+            "test_name",
+            name="_unique_test_instances",
+        ),
+    )
+
+    def __str__(self):
+        return str(self.id)
 
 
 hostname = socket.gethostname()
@@ -620,6 +665,247 @@ def get_processed_tests():
     ]
 
     return jsonify(result)
+
+
+@app.route("/api/getVoltagesAndTemperatures", methods=["GET"])
+def get_voltages_and_temperatures():
+    project_id = request.args.get("projectId")
+    if not project_id:
+        return jsonify({"error": "Missing 'projectId' parameter"})
+
+    project = Projects.query.filter_by(id=project_id).first()
+
+    if not project:
+        return jsonify({"error": "Project not found"})
+
+    voltages = Voltages.query.filter_by(project_id=project_id).all()
+    temperature_list = Temperatures.query.filter_by(project_id=project_id).all()
+    units = Units.query.filter_by(project_id=project_id).all()
+
+    # Convert the SQLAlchemy objects to dictionaries
+    voltages_list = [
+        {"id": voltage.id, "name": voltage.name, "value": voltage.value}
+        for voltage in voltages
+    ]
+    temperatures_list = [
+        {"id": temperature.id, "name": temperature.name, "value": temperature.value}
+        for temperature in temperature_list
+    ]
+
+    unit_list = [
+        {
+            "id": unit.id,
+            "process_corner": unit.process_corner,
+            "two_d_name": unit.two_d_name,
+        }
+        for unit in units
+    ]
+
+    result = {
+        "project": {
+            "id": project.id,
+            "device_name": project.device_name,
+            "revision_id": project.revision_id,
+            "test_type_id": project.test_type_id,
+            "block_id": project.block_id,
+            "date_created": project.date_created,
+        },
+        "voltages": voltages_list,
+        "temperatures": temperatures_list,
+        "units": unit_list,
+    }
+
+    return jsonify(result)
+
+
+@app.route("/api/addToProject", methods=["POST"])
+def add_to_project():
+    data = request.json
+
+    build_data = data.get("buildData", [])
+    selected_project = data.get("project", {})
+    selected_voltage = data.get("voltage", {})
+    selected_temperature = data.get("temperature", {})
+    selected_unit = data.get("unit", {})
+    project_id = selected_project.get("id")
+    voltage_id = selected_voltage.get("id")
+    temperature_id = selected_temperature.get("id")
+    unit_id = selected_unit.get("id")
+
+    updated_tests = 0
+    new_tests = 0
+    for test_data in build_data:
+        existing_test_instance = TestInstances.query.filter_by(
+            project_id=project_id,
+            unit_id=unit_id,
+            voltage_id=voltage_id,
+            temperature_id=temperature_id,
+            test_id=test_data["Build ID"],
+            s_suite=test_data["S-Suite"],
+            suite=test_data["Suite"],
+            test_name=test_data["Test Name"],
+        ).first()
+        print("\n", test_data)
+
+        if existing_test_instance:
+            # If the entry exists, update the values with the new data
+            existing_test_instance.project_id = test_data["Test Result"]
+            existing_test_instance.result = test_data["Test Result"]
+            existing_test_instance.result = test_data["Test Result"]
+            existing_test_instance.result = test_data["Test Result"]
+            existing_test_instance.max_temp = test_data["Max. Temp"]
+            existing_test_instance.min_temp = test_data["Min. Temp"]
+            existing_test_instance.run_time = test_data["Run Time"]
+            existing_test_instance.vcc_int = float(test_data["VCCINT"])
+            existing_test_instance.vcc_pmc = float(test_data["VCC_PMC"])
+            existing_test_instance.vcc_psfp = float(test_data["VCC_PSFP"])
+            existing_test_instance.vcc_ram = float(test_data["VCC_RAM"])
+            existing_test_instance.vcc_soc = float(test_data["VCC_SOC"])
+            existing_test_instance.vcc_batt = float(test_data["VCC_BATT"])
+            existing_test_instance.vcc_aux = float(test_data["VCCAUX"])
+            existing_test_instance.vccaux_pmc = float(test_data["VCCAUX_PMC"])
+            existing_test_instance.vccaux_sysmon = float(test_data["VCCAUX_SYSMON"])
+            updated_tests += 1
+        else:
+            # If the entry does not exist, create a new one
+            test_instance = TestInstances(
+                project_id=project_id,
+                unit_id=unit_id,
+                voltage_id=voltage_id,
+                temperature_id=temperature_id,
+                test_id=test_data["Build ID"],
+                s_suite=test_data["S-Suite"],
+                suite=test_data["Suite"],
+                test_name=test_data["Test Name"],
+                result=test_data["Test Result"],
+                max_temp=test_data["Max. Temp"],
+                min_temp=test_data["Min. Temp"],
+                run_time=test_data["Run Time"],
+                vcc_int=float(test_data["VCCINT"]),
+                vcc_pmc=float(test_data["VCC_PMC"]),
+                vcc_psfp=float(test_data["VCC_PSFP"]),
+                vcc_ram=float(test_data["VCC_PSLP"]),
+                vcc_soc=float(test_data["VCC_SOC"]),
+                vcc_batt=float(test_data["VCC_RAM"]),
+                vcc_aux=float(test_data["VCCAUX"]),
+                vccaux_pmc=float(test_data["VCCAUX_PMC"]),
+                vccaux_sysmon=float(test_data["VCCAUX_SYSMON"]),
+            )
+            db.session.add(test_instance)
+            new_tests += 1
+
+    buildID = BuildIDs(
+        project_id=project_id,
+        unit_id=unit_id,
+        voltage_id=voltage_id,
+        temperature_id=temperature_id,
+        test_id=build_data[0]["Build ID"],
+        date_created=datetime.now(timezone("Asia/Singapore")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        ),
+    )
+
+    try:
+        db.session.add(buildID)
+        db.session.commit()
+        message = f"{updated_tests} existing tests updated, {new_tests} new tests added, and BuildID entry added."
+    except IntegrityError:
+        db.session.rollback()
+        message = f"{updated_tests} existing tests updated, {new_tests} new tests added, but BuildID entry already exists."
+
+    return jsonify({"message": message})
+
+
+@app.route("/api/searchBuildID/<string:build_id>", methods=["GET"])
+def search_build_id(build_id):
+    test_instances = TestInstances.query.filter(TestInstances.test_id == build_id).all()
+    build_id = BuildIDs.query.filter_by(test_id=build_id).first()
+
+    if not test_instances and not build_id:
+        return jsonify({"message": "No data found for the given build ID"})
+
+    # Convert the SQLAlchemy objects to dictionaries
+    test_instances_list = [
+        {
+            "id": instance.id,
+            "project_id": instance.project_id,
+            "unit_id": instance.unit_id,
+            "voltage_id": instance.voltage_id,
+            "temperature_id": instance.temperature_id,
+            "test_id": instance.test_id,
+            "s_suite": instance.s_suite,
+            "suite": instance.suite,
+            "test_name": instance.test_name,
+            "result": instance.result,
+            "max_temp": instance.max_temp,
+            "min_temp": instance.min_temp,
+            "run_time": instance.run_time,
+            "vcc_int": instance.vcc_int,
+            "vcc_pmc": instance.vcc_pmc,
+            "vcc_psfp": instance.vcc_psfp,
+            "vcc_ram": instance.vcc_ram,
+            "vcc_soc": instance.vcc_soc,
+            "vcc_batt": instance.vcc_batt,
+            "vcc_aux": instance.vcc_aux,
+            "vccaux_pmc": instance.vccaux_pmc,
+            "vccaux_sysmon": instance.vccaux_sysmon,
+        }
+        for instance in test_instances
+    ]
+
+    build_id_data = {}
+    if build_id:
+        project = Projects.query.get(build_id.project_id)
+        voltage = Voltages.query.get(build_id.voltage_id)
+        temperature = Temperatures.query.get(build_id.temperature_id)
+        unit = Units.query.get(build_id.unit_id)
+
+    build_id_data["project"] = {
+        "device_name": project.device_name,
+        "revision_id": project.revision_id,
+        "test_type_id": project.test_type_id,
+        "block_id": project.block_id,
+        "date_created": project.date_created,
+    }
+
+    build_id_data["voltage"] = {
+        "name": voltage.name,
+        "value": voltage.value,
+    }
+
+    build_id_data["temperature"] = {
+        "name": temperature.name,
+        "value": temperature.value,
+    }
+
+    build_id_data["unit"] = {
+        "process_corner": unit.process_corner,
+        "two_d_name": unit.two_d_name,
+    }
+
+    return jsonify(
+        {"test_instances": test_instances_list, "build_id_data": build_id_data}
+    )
+
+
+@app.route("/api/deleteTestData/<string:test_id>", methods=["DELETE"])
+def delete_test_data(test_id):
+    try:
+        test_instances = TestInstances.query.filter(
+            TestInstances.test_id == test_id
+        ).all()
+        for instance in test_instances:
+            db.session.delete(instance)
+
+        build_id = BuildIDs.query.filter_by(test_id=test_id).first()
+        if build_id:
+            db.session.delete(build_id)
+
+        db.session.commit()
+        return jsonify({"message": "Data deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to delete data"})
 
 
 if __name__ == "__main__":

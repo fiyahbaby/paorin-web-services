@@ -10,7 +10,7 @@
             Select Project
           </h1>
         </p-header>
-        <p-table [value]="projects" [paginator]="true" [rows]="3" [showCurrentPageReport]="true"
+        <p-table [value]="projects" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
           (onRowSelect)="onRowSelect($event)" dataKey="id" styleClass="p-datatable-striped p-datatable-gridlines">
           <ng-template pTemplate="header">

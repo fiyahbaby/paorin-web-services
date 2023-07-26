@@ -50,6 +50,15 @@ const routes: Routes = [
           return ViewDataModule;
         },
       },
+      {
+        path: 'delete-data',
+        loadChildren: async () => {
+          const { DeleteDataModule } = await import(
+            './delete-data/delete-data.module'
+          );
+          return DeleteDataModule;
+        },
+      },
     ],
   },
 ];

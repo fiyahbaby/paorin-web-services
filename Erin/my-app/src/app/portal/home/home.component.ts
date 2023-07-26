@@ -50,6 +50,9 @@ export class HomeComponent implements OnInit {
       case 'viewData':
         this.router.navigate(['/project-menu/view-data']);
         break;
+      case 'deleteData':
+        this.router.navigate(['/project-menu/delete-data']);
+        break;
       default:
         break;
     }
