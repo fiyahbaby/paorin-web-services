@@ -37,7 +37,7 @@ export class DeleteDataComponent {
       await this.portalService.deleteTestData(this.testID);
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Data deleted successfully', life: 3000 });
       window.scrollTo(0, 0);
-      setTimeout(() => { this.router.navigate(['/home']); }, 3000);
+      // setTimeout(() => { this.router.navigate(['/home']); }, 3000);
     } catch (error) {
       console.error('Error deleting data:', error);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });

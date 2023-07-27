@@ -160,7 +160,7 @@ class BuildIDs(db.Model):
     )
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class TestInstances(db.Model):
@@ -481,10 +481,12 @@ def delete_project(project_id):
 @app.route("/api/retrieveDbData/<build_id>", methods=["GET"])
 def retrieve_data(build_id):
     if not build_id:
+        print(build_id, "does not exist.")
         return jsonify({"message": "Missing 'buildID' parameter"})
 
     try:
         result = retrieveDbData(mongoDB, build_id)
+        print(result)
         return jsonify(result)
     except Exception as e:
         print("Error retrieving data.")
@@ -508,14 +510,23 @@ def process_ref_temp(data):
 
     for item in data:
         if "Max. Temp" in item and "Min. Temp" in item:
-            max_temp_item = float(item["Max. Temp"])
-            min_temp_item = float(item["Min. Temp"])
+            max_temp_item = item["Max. Temp"]
+            min_temp_item = item["Min. Temp"]
 
-            if max_temp_item > max_temp:
-                max_temp = max_temp_item
+            if max_temp_item is not None:
+                max_temp_item = float(max_temp_item)
+                if max_temp_item > max_temp:
+                    max_temp = max_temp_item
 
-            if min_temp_item < min_temp:
-                min_temp = min_temp_item
+            if min_temp_item is not None:
+                min_temp_item = float(min_temp_item)
+                if min_temp_item < min_temp:
+                    min_temp = min_temp_item
+
+    # Check if any valid temperatures were found
+    if max_temp == float("-inf") or min_temp == float("inf"):
+        return {"Max. Temp": None, "Min. Temp": None}
+
     return {"Max. Temp": max_temp, "Min. Temp": min_temp}
 
 
@@ -756,15 +767,54 @@ def add_to_project():
             existing_test_instance.max_temp = test_data["Max. Temp"]
             existing_test_instance.min_temp = test_data["Min. Temp"]
             existing_test_instance.run_time = test_data["Run Time"]
-            existing_test_instance.vcc_int = float(test_data["VCCINT"])
-            existing_test_instance.vcc_pmc = float(test_data["VCC_PMC"])
-            existing_test_instance.vcc_psfp = float(test_data["VCC_PSFP"])
-            existing_test_instance.vcc_ram = float(test_data["VCC_RAM"])
-            existing_test_instance.vcc_soc = float(test_data["VCC_SOC"])
-            existing_test_instance.vcc_batt = float(test_data["VCC_BATT"])
-            existing_test_instance.vcc_aux = float(test_data["VCCAUX"])
-            existing_test_instance.vccaux_pmc = float(test_data["VCCAUX_PMC"])
-            existing_test_instance.vccaux_sysmon = float(test_data["VCCAUX_SYSMON"])
+
+            # Check and assign float values, handling None and 0 cases
+            existing_test_instance.vcc_int = (
+                float(test_data["VCCINT"])
+                if test_data["VCCINT"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_pmc = (
+                float(test_data["VCC_PMC"])
+                if test_data["VCC_PMC"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_psfp = (
+                float(test_data["VCC_PSFP"])
+                if test_data["VCC_PSFP"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_ram = (
+                float(test_data["VCC_RAM"])
+                if test_data["VCC_RAM"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_soc = (
+                float(test_data["VCC_SOC"])
+                if test_data["VCC_SOC"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_batt = (
+                float(test_data["VCC_BATT"])
+                if test_data["VCC_BATT"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vcc_aux = (
+                float(test_data["VCCAUX"])
+                if test_data["VCCAUX"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vccaux_pmc = (
+                float(test_data["VCCAUX_PMC"])
+                if test_data["VCCAUX_PMC"] not in (None, 0)
+                else None
+            )
+            existing_test_instance.vccaux_sysmon = (
+                float(test_data["VCCAUX_SYSMON"])
+                if test_data["VCCAUX_SYSMON"] not in (None, 0)
+                else None
+            )
+
             updated_tests += 1
         else:
             # If the entry does not exist, create a new one
@@ -781,15 +831,33 @@ def add_to_project():
                 max_temp=test_data["Max. Temp"],
                 min_temp=test_data["Min. Temp"],
                 run_time=test_data["Run Time"],
-                vcc_int=float(test_data["VCCINT"]),
-                vcc_pmc=float(test_data["VCC_PMC"]),
-                vcc_psfp=float(test_data["VCC_PSFP"]),
-                vcc_ram=float(test_data["VCC_PSLP"]),
-                vcc_soc=float(test_data["VCC_SOC"]),
-                vcc_batt=float(test_data["VCC_RAM"]),
-                vcc_aux=float(test_data["VCCAUX"]),
-                vccaux_pmc=float(test_data["VCCAUX_PMC"]),
-                vccaux_sysmon=float(test_data["VCCAUX_SYSMON"]),
+                vcc_int=float(test_data["VCCINT"])
+                if test_data["VCCINT"] not in (None, 0)
+                else None,
+                vcc_pmc=float(test_data["VCC_PMC"])
+                if test_data["VCC_PMC"] not in (None, 0)
+                else None,
+                vcc_psfp=float(test_data["VCC_PSFP"])
+                if test_data["VCC_PSFP"] not in (None, 0)
+                else None,
+                vcc_ram=float(test_data["VCC_RAM"])
+                if test_data["VCC_RAM"] not in (None, 0)
+                else None,
+                vcc_soc=float(test_data["VCC_SOC"])
+                if test_data["VCC_SOC"] not in (None, 0)
+                else None,
+                vcc_batt=float(test_data["VCC_BATT"])
+                if test_data["VCC_BATT"] not in (None, 0)
+                else None,
+                vcc_aux=float(test_data["VCCAUX"])
+                if test_data["VCCAUX"] not in (None, 0)
+                else None,
+                vccaux_pmc=float(test_data["VCCAUX_PMC"])
+                if test_data["VCCAUX_PMC"] not in (None, 0)
+                else None,
+                vccaux_sysmon=float(test_data["VCCAUX_SYSMON"])
+                if test_data["VCCAUX_SYSMON"] not in (None, 0)
+                else None,
             )
             db.session.add(test_instance)
             new_tests += 1
@@ -890,13 +958,16 @@ def search_build_id(build_id):
 
 @app.route("/api/deleteTestData/<string:test_id>", methods=["DELETE"])
 def delete_test_data(test_id):
+    print(test_id)
     try:
         test_instances = TestInstances.query.filter(
             TestInstances.test_id == test_id
         ).all()
         for instance in test_instances:
+            print(instance)
             db.session.delete(instance)
 
+        print(test_id)
         build_id = BuildIDs.query.filter_by(test_id=test_id).first()
         if build_id:
             db.session.delete(build_id)

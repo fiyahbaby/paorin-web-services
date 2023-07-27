@@ -59,10 +59,8 @@
                         Test Results
                     </h1>
                 </p-header>
-                <p-table [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" class="paramTable"
-                    [value]="buildData" styleClass="p-datatable-striped p-datatable-gridlines"
-                    (sortChange)="sortNumericColumn($event)">
+                <p-table [scrollable]="true" scrollHeight="600px" class="paramTable" [value]="buildData"
+                    styleClass="p-datatable-gridlines" (sortChange)="sortNumericColumn($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="text-align: center" *ngFor="let key of testResults" [pSortableColumn]="key">
@@ -99,7 +97,7 @@
                         Test Environment
                     </h1>
                 </p-header>
-                <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-striped p-datatable-gridlines">
+                <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-gridlines">
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 0%; text-align: center">Parameter</th>
@@ -125,8 +123,7 @@
                                 <p-table [value]="projects" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                                     selectionMode="single" [(selection)]="selectedProject" dataKey="id"
-                                    styleClass="p-datatable-striped p-datatable-gridlines"
-                                    (onRowSelect)="onProjectSelect($event)">
+                                    styleClass="p-datatable-gridlines" (onRowSelect)="onProjectSelect($event)">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 6rem; text-align: center">Select</th>
@@ -159,7 +156,7 @@
                                     [showCurrentPageReport]="true"
                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                                     selectionMode="single" [(selection)]="selectedVoltage" dataKey="id"
-                                    styleClass="p-datatable-striped p-datatable-gridlines">
+                                    styleClass="p-datatable-gridlines">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 2rem; text-align: center">Select</th>
@@ -189,7 +186,7 @@
                                     [showCurrentPageReport]="true"
                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                                     selectionMode="single" [(selection)]="selectedTemp" dataKey="id"
-                                    styleClass="p-datatable-striped p-datatable-gridlines">
+                                    styleClass="p-datatable-gridlines">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 2rem; text-align: center">Select</th>
@@ -211,7 +208,7 @@
                                     [showCurrentPageReport]="true"
                                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                                     selectionMode="single" [(selection)]="selectedUnit" dataKey="id"
-                                    styleClass="p-datatable-striped p-datatable-gridlines">
+                                    styleClass="p-datatable-gridlines">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 2rem; text-align: center">Select</th>

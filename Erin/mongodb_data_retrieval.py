@@ -118,6 +118,16 @@ def retrieveDbData(db, build_id):
 
     testList = []
     for doc in final_query:
+        max_temp_value = doc.get("DB_PARAM__device_temp_max")
+        min_temp_value = doc.get("DB_PARAM__device_temp_min")
+
+        # Convert values to float if they are not None
+        max_temp = (
+            round(float(max_temp_value), 2) if max_temp_value is not None else None
+        )
+        min_temp = (
+            round(float(min_temp_value), 2) if min_temp_value is not None else None
+        )
         testDict = {
             "Build ID": doc.get("build_id"),
             "DNA": doc.get("device_dna"),
@@ -131,8 +141,8 @@ def retrieveDbData(db, build_id):
             "Suite": doc.get("suite"),
             "Test Name": doc.get("test"),
             "Test Result": doc.get("status"),
-            "Max. Temp": round(float(doc.get("DB_PARAM__device_temp_max")), 2),
-            "Min. Temp": round(float(doc.get("DB_PARAM__device_temp_min")), 2),
+            "Max. Temp": max_temp,
+            "Min. Temp": min_temp,
             "Run Time": doc.get("run_time"),
             "VCC_BATT": doc.get("DB_PARAM__vcc_batt"),
             "VCC_PMC": doc.get("DB_PARAM__vcc_pmc"),
@@ -165,7 +175,7 @@ def main():
     db = MongoClient(
         "mongodb://vncmgr:vncw0rld19@xsj-pvdbvnc02:27060,xsj-pvdbvnc03:27060,xsj-pvdbvnc04:27060/?replicaSet=acapprd"
     ).vncreg
-    build_id = "sival_PS-PVT_xapchar_20230310_19"
+    build_id = "sival_PS-PVT_xapchar_20230113_22"
     build_id = [build_id] if type(build_id) != list else build_id
 
     retrieveDbData(db, build_id)
