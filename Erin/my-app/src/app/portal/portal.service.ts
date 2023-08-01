@@ -122,12 +122,6 @@ export class PortalService {
     return response;
   }
 
-  async getProcessedTests(projectId: number): Promise<any[] | undefined> {
-    const url = `${await this.getBackendUrl()}/api/processed_tests?project_id=${projectId}`;
-    const response = this.http.get<any[]>(url).toPromise();
-    return response;
-  }
-
   async getVoltagesAndTemperatures(projectId: number): Promise<{ voltages: any[]; temperatures: any[]; units: any[]; } | undefined> {
     const url = `${await this.getBackendUrl()}/api/getVoltagesAndTemperatures?projectId=${projectId}`;
     const response = await this.http.get<{ voltages: any[]; temperatures: any[]; units: any[]; }>(url).toPromise();
@@ -150,5 +144,23 @@ export class PortalService {
     const url = `${await this.getBackendUrl()}/api/deleteTestData/${testID}`;
     const response = await this.http.delete<any>(url).toPromise();
     return response;
+  }
+
+  async getProcessedTests(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/processed_tests?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response;
+  }
+
+  async getVoltageVsBlockData(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/voltageVsBlockData?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
+  }
+
+  async getVoltageVsCornerData(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/voltageVsCornerData?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
   }
 }

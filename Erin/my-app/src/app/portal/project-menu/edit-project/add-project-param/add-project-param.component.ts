@@ -173,9 +173,6 @@ export class AddProjectParamComponent implements OnInit {
       };
 
       this.portalService.addProjectParam(projectData).then(response => {
-        // this.router.navigate(['/home'], {
-        //   queryParams: { message: response }
-        // });
       })
         .catch(error => {
           console.error(error);
@@ -217,6 +214,7 @@ export class AddProjectParamComponent implements OnInit {
       detail: 'Parameters added successfully.',
       life: 2000
     });
+    window.scrollTo(0, 0);
 
     setTimeout(() => {
       this.router.navigate(['/home']);

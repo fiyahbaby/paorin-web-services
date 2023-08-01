@@ -486,7 +486,7 @@ def retrieve_data(build_id):
 
     try:
         result = retrieveDbData(mongoDB, build_id)
-        print(result)
+        # print(result)
         return jsonify(result)
     except Exception as e:
         print("Error retrieving data.")
@@ -977,6 +977,206 @@ def delete_test_data(test_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Failed to delete data"})
+
+
+@app.route("/api/voltageVsBlockData", methods=["GET"])
+def get_voltage_vs_block():
+    project_id = request.args.get("project_id")
+    if not project_id:
+        print("No project ID provided.")
+
+    try:
+        test_instances = TestInstances.query.filter(
+            TestInstances.project_id == project_id
+        ).all()
+
+        voltage_test_counts = calculate_total_test_cases(project_id)
+
+        voltage_results = {}
+        voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
+
+        for voltage in voltage_list:
+            voltage_name = voltage.name
+
+            result_map = {
+                "PASS": 0,
+                "FAIL": 0,
+                "NOT-RUN": voltage_test_counts[voltage_name],
+            }
+            for test in test_instances:
+                if test.voltage_id == voltage.id:
+                    if test.result == "PASS":
+                        result_map["PASS"] += 1
+                        result_map["NOT-RUN"] -= 1
+                    elif test.result == "FAIL":
+                        result_map["FAIL"] += 1
+                        result_map["NOT-RUN"] -= 1
+
+            total_tests = sum(result_map.values())
+            passing_rate = (
+                (result_map["PASS"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            failing_rate = (
+                (result_map["FAIL"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            not_run = (
+                (result_map["NOT-RUN"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            result_map["PASSING_RATE"] = round(passing_rate, 2)
+            result_map["FAILING_RATE"] = round(failing_rate, 2)
+            result_map["NOT_RUN"] = round(not_run, 2)
+
+            voltage_results[voltage_name] = result_map
+            print(voltage_results[voltage_name])
+
+        print(voltage_results)
+        return jsonify(voltage_results)
+
+    except Exception as e:
+        return jsonify({"message": "Failed to fetch data"})
+
+
+def calculate_total_test_cases(project_id):
+    unit_list = Units.query.filter(Units.project_id == project_id).all()
+    voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
+
+    unit_count = len(unit_list)
+    voltage_test_counts = {}
+
+    for voltage in voltage_list:
+        voltage_id = voltage.id
+        voltage_name = voltage.name
+
+        test_list = TestList.query.filter(TestList.voltage_id == voltage_id).all()
+        voltage_test_count = len(test_list)
+        total_test_count = voltage_test_count * unit_count
+        voltage_test_counts[voltage_name] = total_test_count
+
+    return voltage_test_counts
+
+
+@app.route("/api/voltageVsCornerData", methods=["GET"])
+def get_voltage_vs_corner():
+    project_id = request.args.get("project_id")
+    if not project_id:
+        print("No project ID provided.")
+
+    try:
+        test_instances = TestInstances.query.filter(
+            TestInstances.project_id == project_id
+        ).all()
+
+        voltage_test_counts = calculate_total_test_cases(project_id)
+
+        # Retrieve all unique process corners available for the project
+        units = Units.query.filter(Units.project_id == project_id).all()
+        unique_corners = set(unit.process_corner for unit in units)
+
+        voltage_vs_corner_results = {}
+        for corner_name in unique_corners:
+            voltage_vs_corner_results[corner_name] = {}
+            total_tests_for_corner = 0
+            total_passing_tests_for_corner = 0
+            total_failing_tests_for_corner = 0
+            total_not_run_tests_for_corner = 0
+
+            voltage_list = Voltages.query.filter(
+                Voltages.project_id == project_id
+            ).all()
+
+            for voltage in voltage_list:
+                voltage_name = voltage.name
+
+                result_map = {
+                    "PASS": 0,
+                    "FAIL": 0,
+                    "NOT-RUN": voltage_test_counts[voltage_name],
+                }
+
+                for test in test_instances:
+                    # Check if the unit belongs to the current corner
+                    unit = Units.query.get(test.unit_id)
+                    if (
+                        unit.process_corner == corner_name
+                        and test.voltage_id == voltage.id
+                    ):
+                        if test.result == "PASS":
+                            result_map["PASS"] += 1
+                            result_map["NOT-RUN"] -= 1
+                        elif test.result == "FAIL":
+                            result_map["FAIL"] += 1
+                            result_map["NOT-RUN"] -= 1
+
+                total_tests = sum(result_map.values())
+                total_tests_for_corner += total_tests
+                total_passing_tests_for_corner += result_map[
+                    "PASS"
+                ]  # Increment passing tests count for the corner
+                total_failing_tests_for_corner += result_map[
+                    "FAIL"
+                ]  # Increment failing tests count for the corner
+                total_not_run_tests_for_corner += result_map[
+                    "NOT-RUN"
+                ]  # Increment not_run tests count for the corner
+
+                passing_rate = (
+                    (result_map["PASS"] / total_tests) * 100 if total_tests > 0 else 0
+                )
+                failing_rate = (
+                    (result_map["FAIL"] / total_tests) * 100 if total_tests > 0 else 0
+                )
+                not_run = (
+                    (result_map["NOT-RUN"] / total_tests) * 100
+                    if total_tests > 0
+                    else 0
+                )
+                result_map["PASSING_RATE"] = round(passing_rate, 2)
+                result_map["FAILING_RATE"] = round(failing_rate, 2)
+                result_map["NOT_RUN"] = round(not_run, 2)
+
+                voltage_vs_corner_results[corner_name][voltage_name] = result_map
+
+            total_passing_percentage = (
+                (total_passing_tests_for_corner / total_tests_for_corner) * 100
+                if total_tests_for_corner > 0
+                else 0
+            )
+            total_failing_percentage = (
+                (total_failing_tests_for_corner / total_tests_for_corner) * 100
+                if total_tests_for_corner > 0
+                else 0
+            )
+            total_not_run_percentage = (
+                (total_not_run_tests_for_corner / total_tests_for_corner) * 100
+                if total_tests_for_corner > 0
+                else 0
+            )
+
+            voltage_vs_corner_results[corner_name][
+                "TOTAL_TESTS"
+            ] = total_tests_for_corner
+            voltage_vs_corner_results[corner_name][
+                "TOTAL_PASSING_TESTS"
+            ] = total_passing_tests_for_corner
+            voltage_vs_corner_results[corner_name][
+                "TOTAL_FAILING_TESTS"
+            ] = total_failing_tests_for_corner
+            voltage_vs_corner_results[corner_name][
+                "TOTAL_NOT_RUN_TESTS"
+            ] = total_not_run_tests_for_corner
+            voltage_vs_corner_results[corner_name]["TOTAL_PASSING_PERCENTAGE"] = round(
+                total_passing_percentage, 2
+            )
+            voltage_vs_corner_results[corner_name]["TOTAL_FAILING_PERCENTAGE"] = round(
+                total_failing_percentage, 2
+            )
+            voltage_vs_corner_results[corner_name]["TOTAL_NOT_RUN_PERCENTAGE"] = round(
+                total_not_run_percentage, 2
+            )
+        return jsonify(voltage_vs_corner_results)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 if __name__ == "__main__":

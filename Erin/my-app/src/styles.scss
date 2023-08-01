@@ -58,6 +58,16 @@ form {
   padding-bottom: 0%;
 }
 
+#chart-content {
+  box-shadow: 0 0 6px rgba($color: #000000, $alpha: 0.1);
+  border-radius: 5px;
+  .p-card-content {
+    align-items: start;
+    padding-top: 0%;
+    padding-bottom: 0%;
+  }
+}
+
 #project-page .p-card-content {
   padding-top: 0%;
   padding-bottom: 0%;

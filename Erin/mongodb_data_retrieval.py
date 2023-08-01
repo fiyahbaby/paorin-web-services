@@ -167,7 +167,7 @@ def retrieveDbData(db, build_id):
             elif isinstance(value, str) and "[" in value and "]" in value:
                 test[key] = value.replace("[", "").replace("]", "")
 
-    print(testList)
+    # print(testList)
     return testList
 
 

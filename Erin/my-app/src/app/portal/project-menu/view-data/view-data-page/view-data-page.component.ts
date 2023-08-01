@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService, SortEvent } from 'primeng/api';
 import { PortalService } from 'src/app/portal/portal.service';
 import { ChartModule } from 'primeng/chart';
-import { Chart, Tooltip } from 'chart.js/auto';
+import { Chart } from 'chart.js/auto';
 
 @Component({
   selector: 'app-view-data-page',
