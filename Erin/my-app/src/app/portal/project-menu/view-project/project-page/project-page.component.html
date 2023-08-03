@@ -5,15 +5,38 @@
         <p-tabView id="my-tabview">
             <p-tabPanel header="Summary">
                 <div class="flex flex-column">
-                    <p-card id="chart-content" [ngClass]="{'custom-align-start': true}" class="w-6 ml-3 mb-3">
+                    <p-card id="chart-content" class="w-6 ml-3 mb-3">
                         <div class="w-full">
                             <p-header>
                                 <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                    {{ selectedProject.blockId }} Block Summary
+                                    {{ selectedProject.blockId }} Summary
                                 </h1>
                             </p-header>
                             <div>
-                                <canvas #stackedBarChart></canvas>
+                                <canvas #stackedBarChart height="150"></canvas>
+                            </div>
+                            <div class="w-full mt-2">
+                                <p-table styleClass="p-datatable-gridlines" [value]="blockPercentagesData">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th style="width: 20rem; text-align: center">%</th>
+                                            <th style="width: 20rem; text-align: center"
+                                                *ngFor="let voltageName of voltageNames">
+                                                {{ voltageName }}
+                                            </th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-rowData>
+                                        <tr>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                getBlockLabel(rowData.block) }}</td>
+                                            <td style="width: 20rem; text-align: center"
+                                                *ngFor="let voltageName of voltageNames">
+                                                {{ rowData[voltageName] || 0 }}%
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
                             </div>
                         </div>
                     </p-card>
@@ -21,15 +44,14 @@
                         <div class="w-full">
                             <p-header>
                                 <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                    Voltage vs Corner Summary
+                                    Corner Summary
                                 </h1>
                             </p-header>
                             <div>
-                                <canvas #cornerProgressChart></canvas>
+                                <canvas #cornerProgressChart height="150"></canvas>
                             </div>
-                            <div *ngIf="voltageVsCornerData" class="w-full">
-                                <p-table [value]="voltageVsCornerData"
-                                    styleClass="p-datatable-striped p-datatable-gridlines">
+                            <div *ngIf="voltageVsCornerData" class="w-full mt-2">
+                                <p-table [value]="voltageVsCornerData" styleClass="p-datatable-gridlines">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="text-align: center">Corner</th>
@@ -136,8 +158,7 @@
                 </p-accordion>
             </p-tabPanel>
             <p-tabPanel header="Tests" icon="pi-list">
-                <p-table *ngIf="processedTests" [value]="processedTests" styleClass="p-datatable-gridlines"
-                    [scrollable]="true" scrollHeight="600px">
+                <p-table *ngIf="processedTests" [value]="processedTests" styleClass="p-datatable-gridlines">
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 1rem; text-align: center">#</th>
@@ -170,7 +191,6 @@
     <div class="w-full flex justify-content-end buttons-container bottom mt-3">
         <ng-container *ngTemplateOutlet="buttons"></ng-container>
     </div>
-    <!-- </p-card> -->
 </div>
 
 <ng-template #buttons>

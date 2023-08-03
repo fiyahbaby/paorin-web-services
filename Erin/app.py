@@ -1036,6 +1036,68 @@ def get_voltage_vs_block():
         return jsonify({"message": "Failed to fetch data"})
 
 
+@app.route("/api/getBlockPercentages", methods=["GET"])
+def get_block_percentages():
+    project_id = request.args.get("project_id")
+    if not project_id:
+        print("No project ID provided.")
+
+    try:
+        test_instances = TestInstances.query.filter(
+            TestInstances.project_id == project_id
+        ).all()
+
+        voltage_test_counts = calculate_total_test_cases(project_id)
+
+        passing_data = {}
+        failing_data = {}
+        not_run_data = {}
+        voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
+
+        for voltage in voltage_list:
+            voltage_name = voltage.name
+
+            result_map = {
+                "PASS": 0,
+                "FAIL": 0,
+                "NOT-RUN": voltage_test_counts[voltage_name],
+            }
+            for test in test_instances:
+                if test.voltage_id == voltage.id:
+                    if test.result == "PASS":
+                        result_map["PASS"] += 1
+                        result_map["NOT-RUN"] -= 1
+                    elif test.result == "FAIL":
+                        result_map["FAIL"] += 1
+                        result_map["NOT-RUN"] -= 1
+
+            total_tests = sum(result_map.values())
+            passing_rate = (
+                (result_map["PASS"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            failing_rate = (
+                (result_map["FAIL"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            not_run = (
+                (result_map["NOT-RUN"] / total_tests) * 100 if total_tests > 0 else 0
+            )
+            passing_data[voltage_name] = round(passing_rate, 2)
+            failing_data[voltage_name] = round(failing_rate, 2)
+            not_run_data[voltage_name] = round(not_run, 2)
+
+        response_data = {
+            "passing_data": passing_data,
+            "failing_data": failing_data,
+            "not_run_data": not_run_data,
+        }
+
+        print(response_data)
+        return jsonify(response_data)
+
+    except Exception as e:
+        return jsonify({"message": "Failed to fetch data"})
+
+
 def calculate_total_test_cases(project_id):
     unit_list = Units.query.filter(Units.project_id == project_id).all()
     voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
@@ -1055,6 +1117,25 @@ def calculate_total_test_cases(project_id):
     return voltage_test_counts
 
 
+def calculate_total_test_cases2(project_id):
+    unit_list = Units.query.filter(Units.project_id == project_id).all()
+    voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
+
+    unit_count = len(unit_list)
+    voltage_test_counts = {}
+
+    for voltage in voltage_list:
+        voltage_id = voltage.id
+        voltage_name = voltage.name
+
+        test_list = TestList.query.filter(TestList.voltage_id == voltage_id).all()
+        voltage_test_count = len(test_list)
+        total_test_count = voltage_test_count
+        voltage_test_counts[voltage_name] = total_test_count
+
+    return voltage_test_counts
+
+
 @app.route("/api/voltageVsCornerData", methods=["GET"])
 def get_voltage_vs_corner():
     project_id = request.args.get("project_id")
@@ -1066,7 +1147,7 @@ def get_voltage_vs_corner():
             TestInstances.project_id == project_id
         ).all()
 
-        voltage_test_counts = calculate_total_test_cases(project_id)
+        voltage_test_counts = calculate_total_test_cases2(project_id)
 
         # Retrieve all unique process corners available for the project
         units = Units.query.filter(Units.project_id == project_id).all()

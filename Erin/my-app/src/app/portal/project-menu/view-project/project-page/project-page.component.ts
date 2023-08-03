@@ -3,6 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PortalService } from 'src/app/portal/portal.service';
 import { Chart } from 'chart.js/auto';
 
+interface VoltageData {
+  label: string;
+  PASSING_RATE: number;
+  FAILING_RATE: number;
+  NOT_RUN: number;
+}
 
 @Component({
   selector: 'app-project-page',
@@ -11,18 +17,19 @@ import { Chart } from 'chart.js/auto';
 })
 export class ProjectPageComponent implements OnInit {
   @ViewChild('stackedBarChart') stackedBarChartRef!: ElementRef;
-  stackedBarChart: Chart | undefined;
   @ViewChild('cornerProgressChart') cornerProgressChartRef!: ElementRef;
+  stackedBarChart: Chart | undefined;
   cornerProgressChart: Chart | undefined;
   selectedProject: any;
   projectID: any;
+  processedTests: any[] | undefined;
+  blockPercentages: any;
+  blockPercentagesData: any[] = [];
+  voltageVsBlockData: any;
+  voltageVsCornerData: any[] | undefined;
   voltages: any[] = [];
   temperatures: any[] = [];
   units: any[] = [];
-  processedTests: any[] | undefined;
-  // voltageVsBlockData: any[] | undefined;
-  voltageVsBlockData: { [key: string]: any } | undefined;
-  voltageVsCornerData: any[] | undefined;
   voltageNames: string[] = [];
   cornerNames: string[] = [];
 
@@ -44,17 +51,16 @@ export class ProjectPageComponent implements OnInit {
     this.units = projectData?.units || [];
 
     this.getProcessedTests();
-    this.getVoltageVsBlockData();
-    this.getVoltageVsCornerData();
+    this.voltageNames = this.getVoltageNames();
   }
 
   async ngAfterViewInit(): Promise<void> {
     await this.getVoltageVsBlockData();
-    await this.getVoltageVsCornerData();
+    await this.getBlockPercentages();
     this.voltageVsBlockChart();
+    await this.getVoltageVsCornerData();
     this.createCornerProgressChart();
   }
-
 
   async getProcessedTests(): Promise<void> {
     try {
@@ -67,25 +73,60 @@ export class ProjectPageComponent implements OnInit {
   async getVoltageVsBlockData(): Promise<void> {
     try {
       this.voltageVsBlockData = await this.portalService.getVoltageVsBlockData(this.projectID);
+      const voltageVsBlockDataArray = Object.keys(this.voltageVsBlockData).map(key => ({
+        voltage: key,
+        PASSING_RATE: this.voltageVsBlockData[key].PASSING_RATE ?? 0,
+        FAILING_RATE: this.voltageVsBlockData[key].FAILING_RATE ?? 0,
+        NOT_RUN: this.voltageVsBlockData[key].NOT_RUN ?? 0,
+      }));
+      this.voltageVsBlockData = voltageVsBlockDataArray;
     } catch (error) {
       console.error('Error fetching voltage vs block data:', error);
     }
   }
 
+  async getBlockPercentages(): Promise<void> {
+    try {
+      this.blockPercentages = await this.portalService.getBlockPercentages(this.projectID);
+      console.log("blockPercentages", this.blockPercentages);
+
+      this.blockPercentagesData = Object.keys(this.blockPercentages).map(blockName => ({
+        block: blockName,
+        ...this.blockPercentages[blockName]
+      }));
+
+      console.table(this.blockPercentagesData);
+    } catch (error) {
+      console.error('Error fetching voltage vs block data:', error);
+    }
+  }
+
+
+  getBlockLabel(blockType: string): string {
+    switch (blockType) {
+      case 'passing_data':
+        return 'PASS';
+      case 'failing_data':
+        return 'FAIL';
+      case 'not_run_data':
+        return 'NOT-RUN';
+      default:
+        return '';
+    }
+  }
+
+
   async getVoltageVsCornerData(): Promise<void> {
     try {
       const voltageVsCornerData = await this.portalService.getVoltageVsCornerData(this.projectID);
-      console.log(voltageVsCornerData);
       if (voltageVsCornerData) {
         this.voltageVsCornerData = this.organizeVoltageVsCornerData(voltageVsCornerData);
-        console.log(this.voltageVsCornerData);
       } else {
         this.voltageVsCornerData = [];
       }
     } catch (error) {
       console.error('Error fetching voltage vs corner data:', error);
     }
-
   }
 
   getVoltageNames(): string[] {
@@ -113,10 +154,7 @@ export class ProjectPageComponent implements OnInit {
       return [];
     }
 
-    this.voltageNames = this.getVoltageNames();
-    console.log("Voltage Names: ", this.voltageNames);
     this.cornerNames = Object.keys(data);
-    console.log("Corner Names: ", this.cornerNames);
     const dataArray = [];
 
     for (const cornerName of this.cornerNames) {
@@ -137,7 +175,6 @@ export class ProjectPageComponent implements OnInit {
 
       dataArray.push(rowData);
     }
-    console.log("Data Array: ", dataArray);
     return dataArray;
   }
 
@@ -151,22 +188,10 @@ export class ProjectPageComponent implements OnInit {
       return;
     }
 
-    const voltageNames = Object.keys(this.voltageVsBlockData);
-
-    const passData = voltageNames.map((voltageName) => {
-      const voltageData = this.voltageVsBlockData![voltageName];
-      return voltageData.PASSING_RATE ?? 0;
-    });
-
-    const failData = voltageNames.map((voltageName) => {
-      const voltageData = this.voltageVsBlockData![voltageName];
-      return voltageData.FAILING_RATE ?? 0;
-    });
-
-    const notRunData = voltageNames.map((voltageName) => {
-      const voltageData = this.voltageVsBlockData![voltageName];
-      return voltageData.NOT_RUN ?? 0;
-    });
+    const voltageNames = this.voltageVsBlockData.map((voltageData: { voltage: any; }) => voltageData.voltage);
+    const passData = this.voltageVsBlockData.map((voltageData: { PASSING_RATE: any; }) => voltageData.PASSING_RATE ?? 0);
+    const failData = this.voltageVsBlockData.map((voltageData: { FAILING_RATE: any; }) => voltageData.FAILING_RATE ?? 0);
+    const notRunData = this.voltageVsBlockData.map((voltageData: { NOT_RUN: any; }) => voltageData.NOT_RUN ?? 0);
 
     const ctx = this.stackedBarChartRef.nativeElement.getContext('2d');
 
@@ -209,6 +234,7 @@ export class ProjectPageComponent implements OnInit {
       },
     });
   }
+
 
   createCornerProgressChart(): void {
     if (!this.voltageVsCornerData || this.voltageVsCornerData.length === 0) {
@@ -261,5 +287,4 @@ export class ProjectPageComponent implements OnInit {
       },
     });
   }
-
 }

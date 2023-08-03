@@ -158,6 +158,12 @@ export class PortalService {
     return response
   }
 
+  async getBlockPercentages(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/getBlockPercentages?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
+  }
+
   async getVoltageVsCornerData(projectId: number): Promise<any[] | undefined> {
     const url = `${await this.getBackendUrl()}/api/voltageVsCornerData?project_id=${projectId}`;
     const response = this.http.get<any[]>(url).toPromise();
