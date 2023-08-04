@@ -5,75 +5,173 @@
         <p-tabView id="my-tabview">
             <p-tabPanel header="Summary">
                 <div class="flex flex-column">
-                    <p-card id="chart-content" class="w-6 ml-3 mb-3">
-                        <div class="w-full">
-                            <p-header>
-                                <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                    {{ selectedProject.blockId }} Summary
-                                </h1>
-                            </p-header>
-                            <div>
-                                <canvas #stackedBarChart height="150"></canvas>
+                    <div class="flex flex-row">
+                        <p-card id="chart-content" class="w-6 ml-3 mb-3" *ngIf="projectStats">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        Project Summary
+                                    </h1>
+                                </p-header>
+                                <div class="w-full">
+                                    <div class="flex flex-row justify-content-evenly">
+                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
+                                            Total Test Count: {{ projectStats.total_test_count }}
+                                        </h2>
+                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
+                                            Total Pass: {{ projectStats.total_pass_count }}
+                                        </h2>
+                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
+                                            Total Fail: {{ projectStats.total_fail_count }}
+                                        </h2>
+                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
+                                            Total Not-Run: {{ projectStats.total_not_run_count }}
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="m-0 flex justify-content-center">
+                                    <canvas id="projectPieChart" #projectPieChart></canvas>
+                                </div>
+                                <div class="w-full mt-4">
+                                    <p-table styleClass="p-datatable-gridlines" [value]="[projectStats]">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 20rem; text-align: center">{{ selectedProject.blockId
+                                                    }}
+                                                </th>
+                                                <th style="width: 20rem; text-align: center">PASS</th>
+                                                <th style="width: 20rem; text-align: center">FAIL</th>
+                                                <th style="width: 20rem; text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body">
+                                            <tr>
+                                                <td style="width: fit-content; text-align: center">Progress</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.project_progress }}%</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.project_fail_rate }}%</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.project_not_run_rate }}%</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+                                </div>
                             </div>
-                            <div class="w-full mt-2">
-                                <p-table styleClass="p-datatable-gridlines" [value]="blockPercentagesData">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="width: 20rem; text-align: center">%</th>
-                                            <th style="width: 20rem; text-align: center"
-                                                *ngFor="let voltageName of voltageNames">
-                                                {{ voltageName }}
-                                            </th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-rowData>
-                                        <tr>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                getBlockLabel(rowData.block) }}</td>
-                                            <td style="width: 20rem; text-align: center"
-                                                *ngFor="let voltageName of voltageNames">
-                                                {{ rowData[voltageName] || 0 }}%
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        {{ selectedProject.blockId }} Summary
+                                    </h1>
+                                </p-header>
+                                <div>
+                                    <canvas #stackedBarChart height="150"></canvas>
+                                </div>
+                                <div class="w-full mt-4">
+                                    <p-table styleClass="p-datatable-gridlines" [value]="blockPercentagesData">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 20rem; text-align: center">%</th>
+                                                <th style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltageName of voltageNames">
+                                                    {{ voltageName }}
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-rowData>
+                                            <tr>
+                                                <td style="width: fit-content; text-align: center">{{
+                                                    getBlockLabel(rowData.block) }}</td>
+                                                <td style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltageName of voltageNames">
+                                                    {{ rowData[voltageName] || 0 }}%
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
                             </div>
-                        </div>
-                    </p-card>
-                    <p-card id="chart-content" class="w-6 ml-3 mb-3">
-                        <div class="w-full">
-                            <p-header>
-                                <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                    Corner Summary
-                                </h1>
-                            </p-header>
-                            <div>
-                                <canvas #cornerProgressChart height="150"></canvas>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row">
+                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        Corner Summary
+                                    </h1>
+                                </p-header>
+                                <div>
+                                    <canvas #cornerProgressChart height="150"></canvas>
+                                </div>
+                                <div *ngIf="voltageVsCornerData" class="w-full mt-2">
+                                    <p-table [value]="voltageVsCornerData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Corner</th>
+                                                <th style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltage of voltageNames">{{ voltage }}</th>
+                                                <th style="width: 20rem; text-align: center">Overall</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-rowData>
+                                            <tr>
+                                                <td style="text-align: center">{{ rowData.corner }}</td>
+                                                <td style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltage of voltageNames">{{
+                                                    rowData[voltage] }}%</td>
+                                                <td style="text-align: center">{{ calculateOverallPercentage(rowData)
+                                                    }}%
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
                             </div>
-                            <div *ngIf="voltageVsCornerData" class="w-full mt-2">
-                                <p-table [value]="voltageVsCornerData" styleClass="p-datatable-gridlines">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="text-align: center">Corner</th>
-                                            <th style="width: 20rem; text-align: center"
-                                                *ngFor="let voltage of voltageNames">{{ voltage }}</th>
-                                            <th style="width: 20rem; text-align: center">Overall</th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-rowData>
-                                        <tr>
-                                            <td style="text-align: center">{{ rowData.corner }}</td>
-                                            <td style="width: 20rem; text-align: center"
-                                                *ngFor="let voltage of voltageNames">{{
-                                                rowData[voltage] }}%</td>
-                                            <td style="text-align: center">{{ calculateOverallPercentage(rowData) }}%
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        Unit Summary
+                                    </h1>
+                                </p-header>
+                                <div>
+                                    <canvas #unitStatsChartData height="150"></canvas>
+                                </div>
+                                <div *ngIf="unitStats" class="w-full mt-2">
+                                    <p-table styleClass="p-datatable-gridlines" [value]="unitStats">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 5rem;text-align: center">Corner</th>
+                                                <th style="width: 10rem;text-align: center">2D</th>
+                                                <th style="width: 15rem; text-align: center">PASS</th>
+                                                <th style="width: 15rem; text-align: center">FAIL</th>
+                                                <th style="width: 15rem; text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-unitStat let-i="index">
+                                            <tr>
+                                                <td style="text-align: center">{{unitStat.process_corner}}</td>
+                                                <td style="text-align: center">{{ unitStat.two_d_name }}</td>
+                                                <td style="width: 15rem; text-align: center">{{ unitStat.data.pass_rate
+                                                    }}%</td>
+                                                <td style="width: 15rem; text-align: center">{{ unitStat.data.fail_rate
+                                                    }}%</td>
+                                                <td style="width: 15rem; text-align: center">{{
+                                                    unitStat.data.not_run_rate }}%</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+
+                                </div>
                             </div>
-                        </div>
-                    </p-card>
+                        </p-card>
+                    </div>
                 </div>
             </p-tabPanel>
             <p-tabPanel header=" Details" icon="pi pi-list">

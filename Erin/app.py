@@ -481,15 +481,12 @@ def delete_project(project_id):
 @app.route("/api/retrieveDbData/<build_id>", methods=["GET"])
 def retrieve_data(build_id):
     if not build_id:
-        print(build_id, "does not exist.")
         return jsonify({"message": "Missing 'buildID' parameter"})
 
     try:
         result = retrieveDbData(mongoDB, build_id)
-        # print(result)
         return jsonify(result)
     except Exception as e:
-        print("Error retrieving data.")
         return jsonify({"message": "No data found."})
 
 
@@ -756,7 +753,6 @@ def add_to_project():
             suite=test_data["Suite"],
             test_name=test_data["Test Name"],
         ).first()
-        print("\n", test_data)
 
         if existing_test_instance:
             # If the entry exists, update the values with the new data
@@ -958,16 +954,13 @@ def search_build_id(build_id):
 
 @app.route("/api/deleteTestData/<string:test_id>", methods=["DELETE"])
 def delete_test_data(test_id):
-    print(test_id)
     try:
         test_instances = TestInstances.query.filter(
             TestInstances.test_id == test_id
         ).all()
         for instance in test_instances:
-            print(instance)
             db.session.delete(instance)
 
-        print(test_id)
         build_id = BuildIDs.query.filter_by(test_id=test_id).first()
         if build_id:
             db.session.delete(build_id)
@@ -983,7 +976,7 @@ def delete_test_data(test_id):
 def get_voltage_vs_block():
     project_id = request.args.get("project_id")
     if not project_id:
-        print("No project ID provided.")
+        jsonify({"message": "No project ID provided."})
 
     try:
         test_instances = TestInstances.query.filter(
@@ -1029,7 +1022,6 @@ def get_voltage_vs_block():
             voltage_results[voltage_name] = result_map
             print(voltage_results[voltage_name])
 
-        print(voltage_results)
         return jsonify(voltage_results)
 
     except Exception as e:
@@ -1040,7 +1032,7 @@ def get_voltage_vs_block():
 def get_block_percentages():
     project_id = request.args.get("project_id")
     if not project_id:
-        print("No project ID provided.")
+        jsonify({"message": "No project ID provided."})
 
     try:
         test_instances = TestInstances.query.filter(
@@ -1091,7 +1083,6 @@ def get_block_percentages():
             "not_run_data": not_run_data,
         }
 
-        print(response_data)
         return jsonify(response_data)
 
     except Exception as e:
@@ -1099,18 +1090,17 @@ def get_block_percentages():
 
 
 def calculate_total_test_cases(project_id):
-    unit_list = Units.query.filter(Units.project_id == project_id).all()
-    voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
-
-    unit_count = len(unit_list)
+    unit_count = Units.query.filter(Units.project_id == project_id).count()
     voltage_test_counts = {}
 
+    voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
     for voltage in voltage_list:
         voltage_id = voltage.id
         voltage_name = voltage.name
 
-        test_list = TestList.query.filter(TestList.voltage_id == voltage_id).all()
-        voltage_test_count = len(test_list)
+        voltage_test_count = TestList.query.filter(
+            TestList.voltage_id == voltage_id
+        ).count()
         total_test_count = voltage_test_count * unit_count
         voltage_test_counts[voltage_name] = total_test_count
 
@@ -1121,7 +1111,6 @@ def calculate_total_test_cases2(project_id):
     unit_list = Units.query.filter(Units.project_id == project_id).all()
     voltage_list = Voltages.query.filter(Voltages.project_id == project_id).all()
 
-    unit_count = len(unit_list)
     voltage_test_counts = {}
 
     for voltage in voltage_list:
@@ -1136,11 +1125,52 @@ def calculate_total_test_cases2(project_id):
     return voltage_test_counts
 
 
+@app.route("/api/get_test_statistics", methods=["GET"])
+def get_test_statistics():
+    project_id = request.args.get("project_id")
+    if not project_id:
+        jsonify({"message": "No project ID provided."})
+    try:
+        unit_count = Units.query.filter(Units.project_id == project_id).count()
+        total_test_count = (
+            TestList.query.filter_by(project_id=project_id).count()
+        ) * unit_count
+        total_test_instance_count = TestInstances.query.filter_by(
+            project_id=project_id
+        ).count()
+
+        total_pass_count = TestInstances.query.filter_by(
+            project_id=project_id, result="PASS"
+        ).count()
+        total_fail_count = TestInstances.query.filter_by(
+            project_id=project_id, result="FAIL"
+        ).count()
+        total_not_run_count = total_test_count - total_pass_count - total_fail_count
+
+        response = {
+            "total_test_count": total_test_count,
+            "total_tests_run_count": total_test_instance_count,
+            "total_pass_count": total_pass_count,
+            "total_fail_count": total_fail_count,
+            "total_not_run_count": total_not_run_count,
+            "project_progress": round((total_pass_count / total_test_count) * 100, 2),
+            "project_fail_rate": round((total_fail_count / total_test_count) * 100, 2),
+            "project_not_run_rate": round(
+                (total_not_run_count / total_test_count) * 100, 2
+            ),
+        }
+        print("Project Stats: ", response)
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
 @app.route("/api/voltageVsCornerData", methods=["GET"])
 def get_voltage_vs_corner():
     project_id = request.args.get("project_id")
     if not project_id:
-        print("No project ID provided.")
+        jsonify({"message": "No project ID provided."})
 
     try:
         test_instances = TestInstances.query.filter(
@@ -1255,6 +1285,71 @@ def get_voltage_vs_corner():
                 total_not_run_percentage, 2
             )
         return jsonify(voltage_vs_corner_results)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@app.route("/api/get_unit_statistics", methods=["GET"])
+def get_unit_statistics():
+    project_id = request.args.get("project_id")
+    try:
+        # Get unit list of all the units with their process corners and two_d_name from Units table within project_id
+        unit_list = (
+            db.session.query(Units.id, Units.process_corner, Units.two_d_name)
+            .filter_by(project_id=project_id)
+            .all()
+        )
+
+        # Get total number of tests per unit from TestList table
+        total_test_count_per_unit = TestList.query.filter_by(
+            project_id=project_id
+        ).count()
+
+        unit_statistics = []
+        for unit in unit_list:
+            unit_id, process_corner, two_d_name = unit
+            total_pass_count = (
+                db.session.query(db.func.count(TestInstances.id))
+                .filter(
+                    TestInstances.unit_id == unit_id, TestInstances.result == "PASS"
+                )
+                .scalar()
+            )
+            total_fail_count = (
+                db.session.query(db.func.count(TestInstances.id))
+                .filter(
+                    TestInstances.unit_id == unit_id, TestInstances.result == "FAIL"
+                )
+                .scalar()
+            )
+            total_not_run_count = (
+                total_test_count_per_unit - total_pass_count - total_fail_count
+            )
+            pass_rate = round((total_pass_count / total_test_count_per_unit) * 100, 2)
+            fail_rate = round((total_fail_count / total_test_count_per_unit) * 100, 2)
+            not_run_rate = round(
+                (total_not_run_count / total_test_count_per_unit) * 100, 2
+            )
+
+            unit_data = {
+                "unit_id": unit_id,
+                "process_corner": process_corner,
+                "two_d_name": two_d_name,
+                "data": {
+                    "total_test_count": total_test_count_per_unit,
+                    "total_pass_count": total_pass_count,
+                    "total_fail_count": total_fail_count,
+                    "total_not_run_count": total_not_run_count,
+                    "pass_rate": pass_rate,
+                    "fail_rate": fail_rate,
+                    "not_run_rate": not_run_rate,
+                },
+            }
+            unit_statistics.append(unit_data)
+
+        print("\nunit_statistics: ", unit_statistics)
+        return jsonify(unit_statistics)
 
     except Exception as e:
         return jsonify({"error": str(e)})

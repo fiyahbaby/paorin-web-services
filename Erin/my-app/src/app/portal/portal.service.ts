@@ -169,4 +169,16 @@ export class PortalService {
     const response = this.http.get<any[]>(url).toPromise();
     return response
   }
+
+  async getProjectStats(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/get_test_statistics?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
+  }
+
+  async getUnitStats(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/get_unit_statistics?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
+  }
 }
