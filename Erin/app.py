@@ -94,7 +94,6 @@ class TestList(db.Model):
         db.Integer, db.ForeignKey("temperatures.id"), nullable=False
     )
 
-    # Unique constraint on dc, s_suite, suite, name, project_id, voltage_id, and temperature_id
     __table_args__ = (
         db.UniqueConstraint(
             "dc",
@@ -108,7 +107,6 @@ class TestList(db.Model):
         ),
     )
 
-    # Index on the name column for faster querying
     __table_args__ += (db.Index("ix_test_list_name", "name"),)
 
     def __str__(self):
@@ -120,6 +118,7 @@ class Units(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     process_corner = db.Column(db.String(255))
     two_d_name = db.Column(db.String(255))
+    device_dna = db.Column(db.String(255))
     remarks = db.Column(db.String(255))
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
@@ -306,7 +305,12 @@ def get_data():
     ]
     units = Units.query.filter_by(project_id=project.id).all()
     unit_list = [
-        {"id": u.id, "process_corner": u.process_corner, "two_d_name": u.two_d_name}
+        {
+            "id": u.id,
+            "process_corner": u.process_corner,
+            "two_d_name": u.two_d_name,
+            "device_dna": u.device_dna,
+        }
         for u in units
     ]
     combined_dict = {
@@ -380,6 +384,7 @@ def add_project_param():
                 u = Units(
                     process_corner=unit["processCorner"],
                     two_d_name=unit["barcode"],
+                    device_dna=unit["deviceDNA"],
                     project_id=project_id,
                 )
                 db.session.add(u)
@@ -425,13 +430,16 @@ def update_project_data():
         unit_id = unit.get("id")
         process_corner = unit.get("processCorner")
         barcode = unit.get("barCode")
+        device_dna = unit.get("deviceDNA")
         updated_unit = Units.query.get(unit_id)
         if updated_unit and (
             updated_unit.process_corner != process_corner
             or updated_unit.two_d_name != barcode
+            or updated_unit.device_dna != device_dna
         ):
             updated_unit.process_corner = process_corner
             updated_unit.two_d_name = barcode
+            updated_unit.device_dna = device_dna
 
     for project in projects:
         project_id = project["id"]
@@ -464,13 +472,14 @@ def delete_project(project_id):
     project = Projects.query.get(project_id)
 
     if not project:
-        return jsonify({"error": "Project not found"}), 404
+        return jsonify({"error": "Project not found"})
 
     Voltages.query.filter_by(project_id=project_id).delete()
     Temperatures.query.filter_by(project_id=project_id).delete()
     Units.query.filter_by(project_id=project_id).delete()
     TestList.query.filter_by(project_id=project_id).delete()
     BuildIDs.query.filter_by(project_id=project_id).delete()
+    TestInstances.query.filter_by(project_id=project_id).delete()
 
     db.session.delete(project)
     db.session.commit()
@@ -1020,7 +1029,6 @@ def get_voltage_vs_block():
             result_map["NOT_RUN"] = round(not_run, 2)
 
             voltage_results[voltage_name] = result_map
-            print(voltage_results[voltage_name])
 
         return jsonify(voltage_results)
 
@@ -1159,7 +1167,6 @@ def get_test_statistics():
                 (total_not_run_count / total_test_count) * 100, 2
             ),
         }
-        print("Project Stats: ", response)
         return jsonify(response)
 
     except Exception as e:
@@ -1195,13 +1202,17 @@ def get_voltage_vs_corner():
                 Voltages.project_id == project_id
             ).all()
 
+            unit_count = Units.query.filter(
+                Units.project_id == project_id, Units.process_corner == corner_name
+            ).count()
+
             for voltage in voltage_list:
                 voltage_name = voltage.name
 
                 result_map = {
                     "PASS": 0,
                     "FAIL": 0,
-                    "NOT-RUN": voltage_test_counts[voltage_name],
+                    "NOT-RUN": (voltage_test_counts[voltage_name]) * unit_count,
                 }
 
                 for test in test_instances:
@@ -1294,21 +1305,21 @@ def get_voltage_vs_corner():
 def get_unit_statistics():
     project_id = request.args.get("project_id")
     try:
-        # Get unit list of all the units with their process corners and two_d_name from Units table within project_id
         unit_list = (
-            db.session.query(Units.id, Units.process_corner, Units.two_d_name)
+            db.session.query(
+                Units.id, Units.process_corner, Units.two_d_name, Units.device_dna
+            )
             .filter_by(project_id=project_id)
             .all()
         )
 
-        # Get total number of tests per unit from TestList table
         total_test_count_per_unit = TestList.query.filter_by(
             project_id=project_id
         ).count()
 
         unit_statistics = []
         for unit in unit_list:
-            unit_id, process_corner, two_d_name = unit
+            unit_id, process_corner, two_d_name, device_dna = unit
             total_pass_count = (
                 db.session.query(db.func.count(TestInstances.id))
                 .filter(
@@ -1336,6 +1347,7 @@ def get_unit_statistics():
                 "unit_id": unit_id,
                 "process_corner": process_corner,
                 "two_d_name": two_d_name,
+                "device_dna": device_dna,
                 "data": {
                     "total_test_count": total_test_count_per_unit,
                     "total_pass_count": total_pass_count,
@@ -1348,7 +1360,6 @@ def get_unit_statistics():
             }
             unit_statistics.append(unit_data)
 
-        print("\nunit_statistics: ", unit_statistics)
         return jsonify(unit_statistics)
 
     except Exception as e:

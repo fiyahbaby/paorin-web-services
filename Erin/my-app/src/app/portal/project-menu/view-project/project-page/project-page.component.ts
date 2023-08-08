@@ -84,7 +84,6 @@ export class ProjectPageComponent implements OnInit {
   async getUnitStats(): Promise<void> {
     try {
       this.unitStats = await this.portalService.getUnitStats(this.projectID);
-      console.log("unitStats: ", this.unitStats);
     } catch (response) {
       console.error('Error fetching project stats:', response);
     }

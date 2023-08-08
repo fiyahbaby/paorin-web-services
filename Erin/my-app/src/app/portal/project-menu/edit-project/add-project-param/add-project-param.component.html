@@ -60,7 +60,7 @@
                       <input pInputText type="text" [formControl]="voltage.get('name')" class="w-full">
                     </td>
                     <td style="text-align: center">
-                      <input pInputText type="text" [formControl]="voltage.get('value')" class="w-6">
+                      <input pInputText type="text" [formControl]="voltage.get('value')" class="w-full">
                     </td>
                   </tr>
                 </ng-template>
@@ -92,7 +92,7 @@
                       <input pInputText type="text" [formControl]="temperature.get('name')" class="w-full">
                     </td>
                     <td style="text-align: center">
-                      <input pInputText type="text" [formControl]="temperature.get('value')" class="w-6">
+                      <input pInputText type="text" [formControl]="temperature.get('value')" class="w-full">
                     </td>
                   </tr>
                 </ng-template>
@@ -131,6 +131,7 @@
                     <th style="text-align: center; width: 5rem;">Number</th>
                     <th style="text-align: center; width: 10rem;">Process Corner</th>
                     <th style="text-align: center">2D Bar Code</th>
+                    <th style="text-align: center">Device DNA</th>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-unit let-i="index">
@@ -140,7 +141,10 @@
                       <input pInputText type="text" [formControl]="unit.get('processCorner')" class="w-full">
                     </td>
                     <td style="text-align: center">
-                      <input pInputText type="text" [formControl]="unit.get('barcode')" class="w-6">
+                      <input pInputText type="text" [formControl]="unit.get('barcode')" class="w-full">
+                    </td>
+                    <td style="text-align: center">
+                      <input pInputText type="text" [formControl]="unit.get('deviceDNA')" class="w-full">
                     </td>
                   </tr>
                 </ng-template>

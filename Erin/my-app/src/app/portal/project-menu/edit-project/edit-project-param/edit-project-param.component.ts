@@ -84,9 +84,12 @@ export class EditProjectParamComponent implements OnInit {
       .filter(unit => unit.isEditing)
       .map(unit => ({
         id: unit.id,
-        processCorner: unit.processCorner,
-        barCode: unit.barCode
+        processCorner: unit.process_corner,
+        barCode: unit.two_d_name,
+        deviceDNA: unit.device_dna
       }));
+
+    console.log("modifiedUnits: ", modifiedUnits);
 
     const isProjectModified = this.selectedProject.isEditing;
     const modifiedProject = this.selectedProject.isEditing ? [this.selectedProject] : [];

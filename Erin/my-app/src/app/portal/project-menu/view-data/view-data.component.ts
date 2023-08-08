@@ -31,38 +31,81 @@ export class ViewDataComponent {
   }
 
   onSubmit() {
-    this.fetchData()
-      .then(() => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Build ID exists',
-          life: 1000
-        });
-        setTimeout(() => {
-          this.router.navigate(['view-data-page'], {
-            relativeTo: this.route,
-            queryParams: { buildID: this.buildID },
+    const buildIds = this.buildID.trim().split(/\s*\n\s*/);
+
+    if (buildIds.length === 1) {
+      this.fetchDataForBuild(buildIds[0])
+        .then(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Build ID exists',
+            life: 1000
           });
-        }, 1000);
-      })
-      .catch((error) => {
-        console.error('Build ID does not exist', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Build ID does not exist.',
-          life: 2000
+          setTimeout(() => {
+            this.router.navigate(['view-data-page'], {
+              relativeTo: this.route,
+              queryParams: { buildID: this.buildID },
+            });
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error('Build ID does not exist', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Build ID does not exist.',
+            life: 2000
+          });
+          window.scrollTo(0, 0);
         });
-        window.scrollTo(0, 0);
-      });
+    } else if (buildIds.length > 1) {
+      Promise.all(buildIds.map(id => this.fetchDataForBuild(id)))
+        .then(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'All Build IDs exist',
+            life: 1000
+          });
+          setTimeout(() => {
+            this.router.navigate(['view-m-data-page'], {
+              relativeTo: this.route,
+              queryParams: { buildIDs: buildIds.join(',') },
+            });
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error('One or more Build IDs do not exist', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'One or more Build IDs do not exist.',
+            life: 2000
+          });
+          window.scrollTo(0, 0);
+        });
+    } else {
+      console.log("No build ID provided");
+    }
   }
+
+  async fetchDataForBuild(buildId: string) {
+    try {
+      const buildData = await this.portalService.getBuildData(JSON.stringify(buildId));
+      return buildData;
+    } catch (error) {
+      console.error('An error occurred while fetching build data for Build ID:', buildId, error);
+      throw error;
+    }
+  }
+
 
   onBack(): void {
     this.router.navigate(['/home']);
   }
 
-  // ngOnDestroy() {
-  //   this.subscriptions.forEach((subscription: { unsubscribe: () => any; }) => subscription.unsubscribe());
-  // }
+  ngOnDestroy() {
+    this.subscriptions.forEach((subscription: { unsubscribe: () => any; }) => subscription.unsubscribe());
+  }
 }

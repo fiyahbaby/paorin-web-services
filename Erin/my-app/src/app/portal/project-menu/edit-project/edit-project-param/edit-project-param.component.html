@@ -141,6 +141,7 @@
                                 <th style="width: 1rem; text-align: center">#</th>
                                 <th style="width: 20rem; text-align: center">Process Corner</th>
                                 <th style="width: 20rem; text-align: center">2D Bar Code</th>
+                                <th style="width: 20rem; text-align: center">Device DNA</th>
                                 <th style="width: 10rem; text-align: center" class="w-1">Actions</th>
                             </tr>
                         </ng-template>
@@ -153,6 +154,10 @@
                                 </td>
                                 <td style="text-align: center">
                                     <input pInputText type="text" class="col-6" [(ngModel)]="unit.two_d_name"
+                                        [disabled]="!unit.isEditing" />
+                                </td>
+                                <td style="text-align: center">
+                                    <input pInputText type="text" class="col-6" [(ngModel)]="unit.device_dna"
                                         [disabled]="!unit.isEditing" />
                                 </td>
                                 <td style="text-align: center">

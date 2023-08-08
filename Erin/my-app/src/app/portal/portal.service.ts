@@ -73,8 +73,6 @@ export class PortalService {
     return projectData;
   }
 
-
-
   async submitProjectData(projectData: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/createProjects`;
     const response = this.http.post(url, projectData).toPromise();
@@ -113,7 +111,8 @@ export class PortalService {
 
   async sendBuildData(buildData: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/processTempLimit`;
-    return this.http.post(url, buildData).toPromise();
+    const response = this.http.post(url, buildData).toPromise();
+    return response;
   }
 
   async addTestList(fileContent: string): Promise<any> {

@@ -1,0 +1,23 @@
+<app-navbar></app-navbar>
+<p-messages></p-messages>
+<div id="view-data-page">
+    <app-header formHeader="View Data Page" formSubHeader="Project Menu > View Data > View Multiple Data"></app-header>
+    <p-accordion [multiple]="true">
+        <p-accordionTab *ngFor="let buildID of buildIDsArray" header="Build ID: {{ buildID }}">
+            <ng-template pTemplate="content">
+                <app-data-tab [buildID]="buildID"></app-data-tab>
+            </ng-template>
+        </p-accordionTab>
+    </p-accordion>
+    <div class="flex justify-content-end buttons-container bottom mt-3">
+        <ng-container *ngTemplateOutlet="buttons"></ng-container>
+    </div>
+</div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+</ng-template>
+
+<ng-template #buttons2>
+    <p-button label="Submit" styleClass="p-button-success" type="submit" (onClick)="onSubmit()"></p-button>
+</ng-template>

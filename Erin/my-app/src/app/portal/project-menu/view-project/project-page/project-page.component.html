@@ -174,7 +174,7 @@
                     </div>
                 </div>
             </p-tabPanel>
-            <p-tabPanel header=" Details" icon="pi pi-list">
+            <p-tabPanel header="Details" icon="pi pi-list">
                 <div class="mb-3">
                     <p-table [value]="[selectedProject]" styleClass="p-datatable-gridlines">
                         <ng-template pTemplate="header">
@@ -242,6 +242,7 @@
                                     <th style="width: 1rem; text-align: center">#</th>
                                     <th style="width: 20rem; text-align: center">Process Corner</th>
                                     <th style="width: 20rem; text-align: center">2D Bar Code</th>
+                                    <th style="width: 20rem; text-align: center">Device DNA</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-unit let-rowIndex="rowIndex">
@@ -249,6 +250,7 @@
                                     <td style="text-align: center">{{ rowIndex + 1 }}</td>
                                     <td style="text-align: center">{{ unit.process_corner }}</td>
                                     <td style="text-align: center">{{ unit.two_d_name }}</td>
+                                    <td style="text-align: center">{{ unit.device_dna }}</td>
                                 </tr>
                             </ng-template>
                         </p-table>

@@ -69,6 +69,10 @@ form {
     padding-top: 0%;
     padding-bottom: 0%;
   }
+  .p-card-body {
+    box-shadow: 0 0 6px 0 rgba($color: #000000, $alpha: 0.1);
+    border-radius: 5px;
+  }
 }
 
 #project-page .p-card-content {
