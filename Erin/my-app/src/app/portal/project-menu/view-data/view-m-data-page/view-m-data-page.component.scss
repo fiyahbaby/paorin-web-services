@@ -5,3 +5,7 @@
 .buttons-container p-button {
   margin-left: 5px;
 }
+
+::ng-deep .p-accordion .p-accordion-header .p-accordion-header-link {
+  box-shadow: 0 0 2px 0 rgba($color: #000000, $alpha: 0.1);
+}

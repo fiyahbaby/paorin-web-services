@@ -37,14 +37,13 @@ export class DeleteDataComponent {
       await this.portalService.deleteTestData(this.testID);
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Data deleted successfully', life: 3000 });
       window.scrollTo(0, 0);
-      // setTimeout(() => { this.router.navigate(['/home']); }, 3000);
+      setTimeout(() => { this.router.navigate(['/home']); }, 3000);
     } catch (error) {
       console.error('Error deleting data:', error);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
       window.scrollTo(0, 0);
     }
   }
-
 
   async onSearch(): Promise<void> {
     try {
@@ -54,12 +53,7 @@ export class DeleteDataComponent {
       this.temp = [this.buildData.build_id_data.temperature];
       this.testInstances = [this.buildData.test_instances];
       this.testID = this.buildData.test_instances[0].test_id;
-      console.log('Project:', this.project);
-      console.log('Voltage:', this.voltage);
-      console.log('Temperature:', this.temp);
-      console.log('Test Instances:', this.testInstances);
-      console.log('Test ID:', this.testID);
-      this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Build data retrieved successfully. Please confirm decision before deleting.', life: 6000 });
+      this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Build data retrieved successfully. Please confirm decision before deleting.', life: 3000 });
     } catch (error) {
       console.error('Error searching build data:', error);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to retrieve build data', life: 3000 });

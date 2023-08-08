@@ -2,7 +2,7 @@
 <p-messages></p-messages>
 <div id="view-data-page">
     <app-header formHeader="View Data Page" formSubHeader="Project Menu > View Data > View Multiple Data"></app-header>
-    <p-accordion [multiple]="true">
+    <p-accordion [multiple]="true" id="view-m-data">
         <p-accordionTab *ngFor="let buildID of buildIDsArray" header="Build ID: {{ buildID }}">
             <ng-template pTemplate="content">
                 <app-data-tab [buildID]="buildID"></app-data-tab>

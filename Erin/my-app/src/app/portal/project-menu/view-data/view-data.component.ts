@@ -60,6 +60,19 @@ export class ViewDataComponent {
           window.scrollTo(0, 0);
         });
     } else if (buildIds.length > 1) {
+      const uniqueBuildIds = [...new Set(buildIds)];
+      if (uniqueBuildIds.length !== buildIds.length) {
+        console.error('Duplicate build IDs found');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Duplicate build IDs found.',
+          life: 2000
+        });
+        window.scrollTo(0, 0);
+        return;
+      }
+
       Promise.all(buildIds.map(id => this.fetchDataForBuild(id)))
         .then(() => {
           this.messageService.add({
@@ -99,7 +112,6 @@ export class ViewDataComponent {
       throw error;
     }
   }
-
 
   onBack(): void {
     this.router.navigate(['/home']);
