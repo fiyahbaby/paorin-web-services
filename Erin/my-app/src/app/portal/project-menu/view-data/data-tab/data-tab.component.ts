@@ -11,6 +11,7 @@ import { Chart } from 'chart.js/auto';
 })
 export class DataTabComponent implements OnInit {
   @Input() buildID: string | undefined;
+  @Input() combinedBuildData: any[] = [];
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
   buildData: any;
@@ -53,8 +54,22 @@ export class DataTabComponent implements OnInit {
   highestMaxTemp!: number;
   lowestMinTemp!: number;
   testCount = 0;
+  passCount = 0;
+  failCount = 0;
+  notRunCount = 0;
   passingPercentage = 0;
-
+  summaryData: { label: string, value: number }[] = [];
+  reccomendedData: any;
+  recommendedUnit: any;
+  recommendedProjectList: any;
+  recommendedVoltage: any;
+  recommendedTemp: any;
+  missingVar = '';
+  isExist = false;
+  selectedProject: any;
+  selectedVoltage: any;
+  selectedUnit: any;
+  selectedTemp: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -64,9 +79,17 @@ export class DataTabComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.fetchData();
-    // this.fetchProjects();    // for adding to project later on
+    this.loadData();
   }
+
+  loadData(): void {
+    if (this.buildID) {
+      this.fetchData();
+    } else if (this.combinedBuildData && this.combinedBuildData.length > 0) {
+      this.sendCombinedData();
+    }
+  }
+
 
   fetchData(): void {
     this.portalService.getBuildData(JSON.stringify({ "buildID": this.buildID }))
@@ -119,7 +142,7 @@ export class DataTabComponent implements OnInit {
   }
 
   sendData(): void {
-    this.portalService.sendBuildData(this.buildData)
+    this.portalService.processTempLimit(this.buildData)
       .then(response => {
         let { "Max. Temp": maxTemp, "Min. Temp": minTemp } = response;
         maxTemp = parseFloat(maxTemp).toFixed(2);
@@ -131,6 +154,45 @@ export class DataTabComponent implements OnInit {
       .catch(error => {
         console.error(error);
       });
+  }
+
+  sendCombinedData(): void {
+    this.portalService.processTempLimit(this.combinedBuildData)
+      .then(response => {
+        let { "Max. Temp": maxTemp, "Min. Temp": minTemp } = response;
+        maxTemp = parseFloat(maxTemp).toFixed(2);
+        minTemp = parseFloat(minTemp).toFixed(2);
+        this.refParam = { ...this.refParam, "Max. Temp": maxTemp, "Min. Temp": minTemp };
+        this.highestMaxTemp = parseFloat(maxTemp);
+        this.lowestMinTemp = parseFloat(minTemp);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    this.processCombinedData();
+    this.buildData = this.combinedBuildData;
+    this.refParam = this.buildData[0];
+  }
+
+  processCombinedData(): void {
+    this.testCount = this.combinedBuildData.length;
+    this.passCount = this.combinedBuildData.filter((item: any) => item['Test Result'] === 'PASS').length;
+    this.failCount = this.combinedBuildData.filter((item: any) => item['Test Result'] === 'FAIL').length;
+    this.notRunCount = this.combinedBuildData.filter((item: any) => item['Test Result'] === 'NOT-RUN').length;
+    this.summaryData = [
+      { label: 'Pass', value: this.passCount },
+      { label: 'Fail', value: this.failCount },
+      { label: 'Not-Run', value: this.notRunCount }
+    ];
+  }
+
+  getPercentage(count: number): number {
+    if (this.testCount === 0) {
+      return 0;
+    }
+
+    const percentValue = ((count / this.testCount) * 100).toFixed(2);
+    return parseFloat(percentValue);
   }
 
   generateChart(): void {
@@ -258,4 +320,5 @@ export class DataTabComponent implements OnInit {
       }
     });
   }
+
 }

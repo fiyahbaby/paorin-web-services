@@ -1,4 +1,5 @@
 import json
+import re
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +13,7 @@ from pymongo import MongoClient
 from mongodb_data_retrieval import retrieveDbData
 import itertools
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import and_, or_
 
 app = Flask(__name__)
 app.secret_key = b"mySecretKey"
@@ -536,6 +538,159 @@ def process_ref_temp(data):
     return {"Max. Temp": max_temp, "Min. Temp": min_temp}
 
 
+@app.route("/api/recomendData", methods=["POST"])
+def recommend_data():
+    try:
+        build_data = request.json
+        device_dna = build_data[0].get("DNA", "")
+
+        voltage_string = build_data[0].get("Voltage", "")
+        voltage_match = re.search(r"[\d.]+", voltage_string)
+        if voltage_match:
+            voltage = float(voltage_match.group())
+        else:
+            voltage = None
+
+        result = {}
+        result["temperatures"] = calculate_temperature_stats(build_data)
+
+        unit_list = Units.query.filter_by(device_dna=device_dna).all()
+        voltage_list = Voltages.query.filter_by(value=voltage).all()
+        units = []
+        unique_units = set()
+
+        for unit in unit_list:
+            if unit.two_d_name not in unique_units:
+                unique_units.add(unit.two_d_name)
+                unit_dict = {
+                    "id": unit.id,
+                    "project_id": unit.project_id,
+                    "processCorner": unit.process_corner,
+                    "two_d_name": unit.two_d_name,
+                    "device_dna": unit.device_dna,
+                }
+                units.append(unit_dict)
+        if units:
+            result["unit"] = units
+        else:
+            result["unit"] = "No units found."
+
+        voltages = []
+        for voltage in voltage_list:
+            voltage_dict = {
+                "id": voltage.id,
+                "project_id": voltage.project_id,
+                "name": voltage.name,
+                "value": voltage.value,
+            }
+            voltages.append(voltage_dict)
+
+        unique_voltages = set()
+        unique_voltage_dicts = []
+        for voltage in voltages:
+            voltage_key = (voltage["name"], voltage["value"])
+            if voltage_key not in unique_voltages:
+                unique_voltages.add(voltage_key)
+                unique_voltage_dicts.append(voltage)
+
+        if unique_voltage_dicts:
+            result["voltage"] = unique_voltage_dicts
+        else:
+            result["voltage"] = "No voltages found."
+
+        avg_temp = result["temperatures"]["Average Temp"]
+        tolerance = 15.0
+
+        similar_temps = Temperatures.query.filter(
+            Temperatures.value >= avg_temp - tolerance,
+            Temperatures.value <= avg_temp + tolerance,
+        ).all()
+
+        similar_temperatures = []
+        unique_temperatures = set()
+        for temp in similar_temps:
+            if temp.value not in unique_temperatures:
+                unique_temperatures.add(temp.value)
+                temp_dict = {
+                    "id": temp.id,
+                    "project_id": temp.project_id,
+                    "name": temp.name,
+                    "value": temp.value,
+                }
+                similar_temperatures.append(temp_dict)
+
+        if similar_temperatures:
+            result["similar_temp"] = similar_temperatures
+        else:
+            result["similar_temp"] = "No similar temperatures found."
+
+        common_project_ids = list(
+            set(temp["project_id"] for temp in similar_temperatures)
+            & set(unit["project_id"] for unit in units)
+            & set(voltage["project_id"] for voltage in voltages)
+        )
+
+        if common_project_ids:
+            project_details = []
+            for project_id in common_project_ids:
+                project = Projects.query.get(project_id)
+                if project:
+                    project_dict = {
+                        "id": project.id,
+                        "device_name": project.device_name,
+                        "revision_id": project.revision_id,
+                        "test_type_id": project.test_type_id,
+                        "block_id": project.block_id,
+                        "date_created": project.date_created,
+                    }
+                    project_details.append(project_dict)
+            result["recomended_projects"] = project_details
+        else:
+            result["common_project_ids"] = None
+
+        return jsonify(result)
+    except Exception as e:
+        error_message = "Error processing build data: {}".format(str(e))
+        return jsonify({"error": error_message})
+
+
+def calculate_temperature_stats(data):
+    total_max_temp = 0
+    total_min_temp = 0
+    count = 0
+
+    for item in data:
+        if "Max. Temp" in item and "Min. Temp" in item:
+            max_temp_item = item["Max. Temp"]
+            min_temp_item = item["Min. Temp"]
+
+            if max_temp_item is not None and min_temp_item is not None:
+                max_temp_item = float(max_temp_item)
+                total_max_temp += max_temp_item
+                min_temp_item = float(min_temp_item)
+                total_min_temp += min_temp_item
+                count += 1
+
+    if count > 0:
+        avg_max_temp = total_max_temp / count
+        avg_min_temp = total_min_temp / count
+        avg_temp = (avg_max_temp + avg_min_temp) / 2
+    else:
+        avg_max_temp = 0
+        avg_min_temp = 0
+        avg_temp = 0
+
+    result = {
+        "Total Max Temp": total_max_temp,
+        "Total Min Temp": total_min_temp,
+        "Average Max Temp": avg_max_temp,
+        "Average Min Temp": avg_min_temp,
+        "Average Temp": avg_temp,
+    }
+
+    return result
+
+
 @app.route("/api/addTestList", methods=["POST"])
 def addTestList():
     file_content = request.json
@@ -748,6 +903,15 @@ def add_to_project():
     voltage_id = selected_voltage.get("id")
     temperature_id = selected_temperature.get("id")
     unit_id = selected_unit.get("id")
+    print("\nbuild_data: ", build_data)
+    print("\nselected_project: ", selected_project)
+    print("\nselected_voltage: ", selected_voltage)
+    print("\nselected_temperature: ", selected_temperature)
+    print("\nselected_unit: ", selected_unit)
+    print("\nproject_id: ", project_id)
+    print("\nvoltage_id: ", voltage_id)
+    print("\ntemperature_id: ", temperature_id)
+    print("\nunit_id: ", unit_id)
 
     updated_tests = 0
     new_tests = 0
@@ -763,17 +927,15 @@ def add_to_project():
             test_name=test_data["Test Name"],
         ).first()
 
+        print("\ntest_data: ", test_data)
+        print("\nexisting_test_instance: ", existing_test_instance)
+
         if existing_test_instance:
-            # If the entry exists, update the values with the new data
-            existing_test_instance.project_id = test_data["Test Result"]
-            existing_test_instance.result = test_data["Test Result"]
-            existing_test_instance.result = test_data["Test Result"]
             existing_test_instance.result = test_data["Test Result"]
             existing_test_instance.max_temp = test_data["Max. Temp"]
             existing_test_instance.min_temp = test_data["Min. Temp"]
             existing_test_instance.run_time = test_data["Run Time"]
 
-            # Check and assign float values, handling None and 0 cases
             existing_test_instance.vcc_int = (
                 float(test_data["VCCINT"])
                 if test_data["VCCINT"] not in (None, 0)
@@ -822,7 +984,6 @@ def add_to_project():
 
             updated_tests += 1
         else:
-            # If the entry does not exist, create a new one
             test_instance = TestInstances(
                 project_id=project_id,
                 unit_id=unit_id,
@@ -867,24 +1028,30 @@ def add_to_project():
             db.session.add(test_instance)
             new_tests += 1
 
-    buildID = BuildIDs(
+    existing_build_id = BuildIDs.query.filter_by(
         project_id=project_id,
         unit_id=unit_id,
         voltage_id=voltage_id,
         temperature_id=temperature_id,
         test_id=build_data[0]["Build ID"],
-        date_created=datetime.now(timezone("Asia/Singapore")).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        ),
-    )
+    ).first()
 
-    try:
+    if existing_build_id:
+        print("Build ID exists.")
+        message = f"{updated_tests} existing tests updated, {new_tests} new tests added, BuildID entry already exists."
+    else:
+        buildID = BuildIDs(
+            project_id=project_id,
+            unit_id=unit_id,
+            voltage_id=voltage_id,
+            temperature_id=temperature_id,
+            test_id=build_data[0]["Build ID"],
+            date_created=datetime.now(timezone("Asia/Singapore")).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+        )
         db.session.add(buildID)
         db.session.commit()
-        message = f"{updated_tests} existing tests updated, {new_tests} new tests added, and BuildID entry added."
-    except IntegrityError:
-        db.session.rollback()
-        message = f"{updated_tests} existing tests updated, {new_tests} new tests added, but BuildID entry already exists."
 
     return jsonify({"message": message})
 

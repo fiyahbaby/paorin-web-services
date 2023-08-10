@@ -26,8 +26,9 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { MessageModule } from 'primeng/message';
 import { FileUploadModule } from 'primeng/fileupload';
 import { TabViewModule } from 'primeng/tabview';
-import { ChartModule } from 'primeng/chart';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { PanelModule } from 'primeng/panel';
 
 @NgModule({
   declarations: [FormLabelComponent, NavbarComponent, HeaderComponent, ErrorFieldMessageComponent],
@@ -56,7 +57,9 @@ import { ProgressBarModule } from 'primeng/progressbar';
     TagModule,
     FileUploadModule,
     TabViewModule,
-    ProgressBarModule
+    ProgressBarModule,
+    ProgressSpinnerModule,
+    PanelModule
   ],
   exports: [
     FormsModule,
@@ -87,7 +90,9 @@ import { ProgressBarModule } from 'primeng/progressbar';
     ErrorFieldMessageComponent,
     FileUploadModule,
     TabViewModule,
-    ProgressBarModule
+    ProgressBarModule,
+    ProgressSpinnerModule,
+    PanelModule
   ],
   providers: [],
 })

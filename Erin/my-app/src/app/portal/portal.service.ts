@@ -109,7 +109,13 @@ export class PortalService {
     return data;
   }
 
-  async sendBuildData(buildData: any): Promise<any> {
+  async getRecomendedData(buildData: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/recomendData`;
+    const response = this.http.post(url, buildData).toPromise();
+    return response;
+  }
+
+  async processTempLimit(buildData: any): Promise<any> {
     const url = `${await this.getBackendUrl()}/api/processTempLimit`;
     const response = this.http.post(url, buildData).toPromise();
     return response;

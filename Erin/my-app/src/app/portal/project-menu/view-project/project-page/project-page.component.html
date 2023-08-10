@@ -36,8 +36,7 @@
                                     <p-table styleClass="p-datatable-gridlines" [value]="[projectStats]">
                                         <ng-template pTemplate="header">
                                             <tr>
-                                                <th style="width: 20rem; text-align: center">{{ selectedProject.blockId
-                                                    }}
+                                                <th style="width: 20rem; text-align: center">Block
                                                 </th>
                                                 <th style="width: 20rem; text-align: center">PASS</th>
                                                 <th style="width: 20rem; text-align: center">FAIL</th>
@@ -46,7 +45,9 @@
                                         </ng-template>
                                         <ng-template pTemplate="body">
                                             <tr>
-                                                <td style="width: fit-content; text-align: center">Progress</td>
+                                                <td style="width: fit-content; text-align: center">{{
+                                                    selectedProject.blockId
+                                                    }}</td>
                                                 <td style="width: 20rem; text-align: center">{{
                                                     projectStats.project_progress }}%</td>
                                                 <td style="width: 20rem; text-align: center">{{
@@ -64,7 +65,7 @@
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                        {{ selectedProject.blockId }} Summary
+                                        Voltage Summary
                                     </h1>
                                 </p-header>
                                 <div>

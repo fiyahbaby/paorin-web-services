@@ -113,127 +113,252 @@
                 </p-table>
                 <div class="mt-3">
                     <p-accordion>
-                        <!-- <p-accordionTab header="Add to Project">
-                            <div class="card w-full">
-                                <p-header>
-                                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
-                                        Select Project
-                                    </h1>
-                                </p-header>
-                                <p-table [value]="projects" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
-                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                                    selectionMode="single" [(selection)]="selectedProject" dataKey="id"
-                                    styleClass="p-datatable-gridlines" (onRowSelect)="onProjectSelect($event)">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="width: 6rem; text-align: center">Select</th>
-                                            <th style="width: 20rem; text-align: center">Device</th>
-                                            <th style="width: 20rem; text-align: center">Revision</th>
-                                            <th style="width: 20rem; text-align: center">Test Type</th>
-                                            <th style="width: 20rem; text-align: center">Block</th>
-                                            <th style="width: 20rem; text-align: center">Date created</th>
+                        <p-accordionTab header="Add to Project">
+                            <ng-container *ngIf="isExist===true">
+                                <div class="card w-full">
+                                    <div>
+                                        <p-header>
+                                            <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                                Recommeded Project
+                                            </h1>
+                                        </p-header>
+                                        <div>
+                                            <p-table [value]="recommendedProjectList" styleClass="p-datatable-gridlines"
+                                                selectionMode="single" [(selection)]="selectedProject"
+                                                (onRowSelect)="onProjectSelect($event)">
+                                                <ng-template pTemplate="header">
+                                                    <tr>
+                                                        <th *ngIf="recommendedProjectList?.length > 1"
+                                                            style="width: 6rem; text-align: center">Select</th>
+                                                        <th style="width: 20rem; text-align: center">Device</th>
+                                                        <th style="width: 20rem; text-align: center">Revision</th>
+                                                        <th style="width: 20rem; text-align: center">Test Type</th>
+                                                        <th style="width: 20rem; text-align: center">Block</th>
+                                                        <th style="width: 20rem; text-align: center">Date created</th>
+                                                    </tr>
+                                                </ng-template>
+                                                <ng-template pTemplate="body" let-project>
+                                                    <tr>
+                                                        <td *ngIf="recommendedProjectList?.length > 1"
+                                                            style="text-align: center">
+                                                            <p-tableRadioButton [value]="project"></p-tableRadioButton>
+                                                        </td>
+                                                        <td style="text-align: center">{{ project.device_name }}</td>
+                                                        <td style="text-align: center">{{ project.revision_id }}</td>
+                                                        <td style="text-align: center">{{ project.test_type_id }}</td>
+                                                        <td style="text-align: center">{{ project.block_id }}</td>
+                                                        <td style="text-align: center">{{ project.date_created }}</td>
+                                                    </tr>
+                                                </ng-template>
+                                            </p-table>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 w-full">
+                                        <div class="flex flex-row gap-4">
+                                            <div>
+                                                <p-header>
+                                                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                                        Unit
+                                                    </h1>
+                                                </p-header>
+                                                <p-table [value]="recommendedUnit" styleClass="p-datatable-gridlines">
+                                                    <ng-template pTemplate="header">
+                                                        <tr>
+                                                            <th style="width: 20rem; text-align: center">Process Corner
+                                                            </th>
+                                                            <th style="width: 20rem; text-align: center">2D Bar Code
+                                                            </th>
+                                                            <th style="width: 20rem; text-align: center">Device DNA</th>
+                                                        </tr>
+                                                    </ng-template>
+                                                    <ng-template pTemplate="body" let-unit>
+                                                        <tr>
+                                                            <td style="text-align: center">{{ unit.processCorner }}</td>
+                                                            <td style="text-align: center">{{ unit.two_d_name }}</td>
+                                                            <td style="text-align: center">{{ unit.device_dna }}</td>
+                                                        </tr>
+                                                    </ng-template>
+                                                </p-table>
+                                            </div>
+                                            <div>
+                                                <p-header>
+                                                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                                        Voltage
+                                                    </h1>
+                                                </p-header>
+                                                <p-table [value]="recommendedVoltage"
+                                                    styleClass="p-datatable-gridlines">
+                                                    <ng-template pTemplate="header">
+                                                        <tr>
+                                                            <th style="width: 20rem; text-align: center">Name</th>
+                                                            <th style="width: 20rem; text-align: center">Value</th>
+                                                        </tr>
+                                                    </ng-template>
+                                                    <ng-template pTemplate="body" let-voltage>
+                                                        <tr>
+                                                            <td style="text-align: center">{{ voltage.name }}</td>
+                                                            <td style="text-align: center">{{ voltage.value }}</td>
+                                                        </tr>
+                                                    </ng-template>
+                                                </p-table>
+                                            </div>
+                                            <div>
+                                                <p-header>
+                                                    <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                                        Temperature
+                                                    </h1>
+                                                </p-header>
+                                                <p-table [value]="recommendedTemp" styleClass="p-datatable-gridlines">
+                                                    <ng-template pTemplate="header">
+                                                        <tr>
+                                                            <th style="width: 20rem; text-align: center">Name</th>
+                                                            <th style="width: 20rem; text-align: center">Value</th>
+                                                        </tr>
+                                                    </ng-template>
+                                                    <ng-template pTemplate="body" let-temp>
+                                                        <tr>
+                                                            <td style="text-align: center">{{ temp.name }}</td>
+                                                            <td style="text-align: center">{{ temp.value }}</td>
+                                                        </tr>
+                                                    </ng-template>
+                                                </p-table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-content-center buttons-container bottom mt-5">
+                                    <ng-container *ngTemplateOutlet="buttons2"></ng-container>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngIf="isExist===false">
+                                <div class="card w-full">
+                                    <p-header>
+                                        <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                            Select Project
+                                        </h1>
+                                    </p-header>
+                                    <p-table [value]="projects" [paginator]="true" [rows]="5"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                        selectionMode="single" [(selection)]="selectedProject" dataKey="id"
+                                        styleClass="p-datatable-gridlines" (onRowSelect)="onProjectSelect2($event)">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 6rem; text-align: center">Select</th>
+                                                <th style="width: 20rem; text-align: center">Device</th>
+                                                <th style="width: 20rem; text-align: center">Revision</th>
+                                                <th style="width: 20rem; text-align: center">Test Type</th>
+                                                <th style="width: 20rem; text-align: center">Block</th>
+                                                <th style="width: 20rem; text-align: center">Date created</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-project>
+                                            <tr>
+                                                <td style="text-align: center">
+                                                    <p-tableRadioButton [value]="project"></p-tableRadioButton>
+                                                </td>
+                                                <td style="text-align: center">{{ project.name }}</td>
+                                                <td style="text-align: center">{{ project.revisionId }}</td>
+                                                <td style="text-align: center">{{ project.testTypeId }}</td>
+                                                <td style="text-align: center">{{ project.blockId }}</td>
+                                                <td style="text-align: center">{{ project.dateCreated }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                    <p-header>
+                                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                            Select Voltage
+                                        </h1>
+                                    </p-header>
+                                    <p-table [value]="projectVoltages" [paginator]="true" [rows]="3"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                        selectionMode="single" [(selection)]="selectedVoltage" dataKey="id"
+                                        styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 2rem; text-align: center">Select</th>
+                                                <th style="width: 20rem; text-align: center">Name</th>
+                                                <th style="width: 20rem; text-align: center">Voltage Value (V)</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-voltage>
+                                            <tr>
+                                                <td style="text-align: center">
+                                                    <p-tableRadioButton [value]="voltage"></p-tableRadioButton>
+                                                </td>
+                                                <td style="text-align: center">{{ voltage.name }}</td>
+                                                <td style="text-align: center">{{ voltage.value }}</td>
+                                            </tr>
+                                        </ng-template>
+                                        <tr *ngIf="!selectedProject">
+                                            <td colspan="3" style="text-align: center">No project selected</td>
                                         </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-project>
-                                        <tr>
-                                            <td style="text-align: center">
-                                                <p-tableRadioButton [value]="project"></p-tableRadioButton>
-                                            </td>
-                                            <td style="text-align: center">{{ project.name }}</td>
-                                            <td style="text-align: center">{{ project.revisionId }}</td>
-                                            <td style="text-align: center">{{ project.testTypeId }}</td>
-                                            <td style="text-align: center">{{ project.blockId }}</td>
-                                            <td style="text-align: center">{{ project.dateCreated }}</td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                                <p-header>
-                                    <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
-                                        Select Voltage
-                                    </h1>
-                                </p-header>
-                                <p-table [value]="projectVoltages" [paginator]="true" [rows]="3"
-                                    [showCurrentPageReport]="true"
-                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                                    selectionMode="single" [(selection)]="selectedVoltage" dataKey="id"
-                                    styleClass="p-datatable-gridlines">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="width: 2rem; text-align: center">Select</th>
-                                            <th style="width: 20rem; text-align: center">Name</th>
-                                            <th style="width: 20rem; text-align: center">Voltage Value (V)</th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-voltage>
-                                        <tr>
-                                            <td style="text-align: center">
-                                                <p-tableRadioButton [value]="voltage"></p-tableRadioButton>
-                                            </td>
-                                            <td style="text-align: center">{{ voltage.name }}</td>
-                                            <td style="text-align: center">{{ voltage.value }}</td>
-                                        </tr>
-                                    </ng-template>
-                                    <tr *ngIf="!selectedProject">
-                                        <td colspan="3" style="text-align: center">No project selected</td>
-                                    </tr>
-                                </p-table>
-                                <p-header>
-                                    <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
-                                        Select Temperature
-                                    </h1>
-                                </p-header>
-                                <p-table [value]="projectTemps" [paginator]="true" [rows]="3"
-                                    [showCurrentPageReport]="true"
-                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                                    selectionMode="single" [(selection)]="selectedTemp" dataKey="id"
-                                    styleClass="p-datatable-gridlines">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="width: 2rem; text-align: center">Select</th>
-                                            <th style="width: 20rem; text-align: center">Name</th>
-                                            <th style="width: 20rem; text-align: center">Temperature Value (&deg;C)</th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-temp>
-                                        <tr>
-                                            <td style="text-align: center">
-                                                <p-tableRadioButton [value]="temp"></p-tableRadioButton>
-                                            </td>
-                                            <td style="text-align: center">{{ temp.name }}</td>
-                                            <td style="text-align: center">{{ temp.value }}</td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                                <p-table [value]="projectUnits" [paginator]="true" [rows]="3"
-                                    [showCurrentPageReport]="true"
-                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                                    selectionMode="single" [(selection)]="selectedUnit" dataKey="id"
-                                    styleClass="p-datatable-gridlines">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th style="width: 2rem; text-align: center">Select</th>
-                                            <th style="width: 20rem; text-align: center">Process Corner</th>
-                                            <th style="width: 20rem; text-align: center">2D Code</th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-unit>
-                                        <tr>
-                                            <td style="text-align: center">
-                                                <p-tableRadioButton [value]="unit"></p-tableRadioButton>
-                                            </td>
-                                            <td style="text-align: center">{{ unit.process_corner }}</td>
-                                            <td style="text-align: center">{{ unit.two_d_name }}</td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                            </div>
-                            <div class="flex justify-content-center buttons-container bottom mt-6">
-                                <ng-container *ngTemplateOutlet="buttons2"></ng-container>
-                            </div>
-                        </p-accordionTab> -->
+                                    </p-table>
+                                    <p-header>
+                                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                            Select Temperature
+                                        </h1>
+                                    </p-header>
+                                    <p-table [value]="projectTemps" [paginator]="true" [rows]="3"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                        selectionMode="single" [(selection)]="selectedTemp" dataKey="id"
+                                        styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 2rem; text-align: center">Select</th>
+                                                <th style="width: 20rem; text-align: center">Name</th>
+                                                <th style="width: 20rem; text-align: center">Temperature Value (&deg;C)
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-temp>
+                                            <tr>
+                                                <td style="text-align: center">
+                                                    <p-tableRadioButton [value]="temp"></p-tableRadioButton>
+                                                </td>
+                                                <td style="text-align: center">{{ temp.name }}</td>
+                                                <td style="text-align: center">{{ temp.value }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                    <p-header>
+                                        <h1 class="mt-4 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                            Select Unit
+                                        </h1>
+                                    </p-header>
+                                    <p-table [value]="projectUnits" [paginator]="true" [rows]="3"
+                                        [showCurrentPageReport]="true"
+                                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                                        selectionMode="single" [(selection)]="selectedUnit" dataKey="id"
+                                        styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 2rem; text-align: center">Select</th>
+                                                <th style="width: 20rem; text-align: center">Process Corner</th>
+                                                <th style="width: 20rem; text-align: center">2D Code</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-unit>
+                                            <tr>
+                                                <td style="text-align: center">
+                                                    <p-tableRadioButton [value]="unit"></p-tableRadioButton>
+                                                </td>
+                                                <td style="text-align: center">{{ unit.process_corner }}</td>
+                                                <td style="text-align: center">{{ unit.two_d_name }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                                <div class="flex justify-content-center buttons-container bottom mt-3">
+                                    <ng-container *ngTemplateOutlet="buttons2"></ng-container>
+                                </div>
+                            </ng-container>
+                        </p-accordionTab>
                     </p-accordion>
                 </div>
-                <div class="flex justify-content-end buttons-container bottom mt-3">
+                <div class="flex justify-content-end buttons-container bottom">
                     <ng-container *ngTemplateOutlet="buttons"></ng-container>
                 </div>
             </div>

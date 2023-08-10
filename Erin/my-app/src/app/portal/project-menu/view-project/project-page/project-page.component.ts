@@ -2,6 +2,9 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PortalService } from 'src/app/portal/portal.service';
 import { Chart, ChartData, ChartType } from 'chart.js/auto';
+import 'chartjs-plugin-datalabels';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+Chart.register(ChartDataLabels);
 
 @Component({
   selector: 'app-project-page',
@@ -208,12 +211,12 @@ export class ProjectPageComponent implements OnInit {
     const failData = this.voltageVsBlockData.map((voltageData: { FAILING_RATE: any; }) => voltageData.FAILING_RATE ?? 0);
     const notRunData = this.voltageVsBlockData.map((voltageData: { NOT_RUN: any; }) => voltageData.NOT_RUN ?? 0);
 
-    const ctx = this.stackedBarChartRef.nativeElement.getContext('2d');
 
     if (this.stackedBarChart) {
       this.stackedBarChart.destroy();
     }
 
+    const ctx = this.stackedBarChartRef.nativeElement.getContext('2d');
     this.stackedBarChart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -246,6 +249,25 @@ export class ProjectPageComponent implements OnInit {
             stacked: true,
           },
         },
+        plugins: {
+          datalabels: {
+            display: true,
+            font: {
+              // weight: 'bold',
+            },
+            offset: 0,
+            anchor: 'center',
+            align: 'end',
+            labels: {
+              value: {
+                color: 'black',
+                formatter: (value) => {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        }
       },
     });
   }
@@ -298,6 +320,25 @@ export class ProjectPageComponent implements OnInit {
             stacked: true,
           },
         },
+        plugins: {
+          datalabels: {
+            display: true,
+            font: {
+              // weight: 'bold',
+            },
+            offset: 0,
+            anchor: 'center',
+            align: 'end',
+            labels: {
+              value: {
+                color: 'black',
+                formatter: (value) => {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        }
       },
     });
   }
@@ -322,25 +363,33 @@ export class ProjectPageComponent implements OnInit {
       ],
     };
 
-    const pieChartOptions = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'right',
-        },
-      },
-    };
-
-    const pieChartCtx = this.projectPieChartRef.nativeElement.getContext('2d');
-
     if (this.projectPieChart) {
       this.projectPieChart.destroy();
     }
 
+    const pieChartCtx = this.projectPieChartRef.nativeElement.getContext('2d');
     this.projectPieChart = new Chart(pieChartCtx, {
       type: 'pie' as ChartType,
       data: pieChartData,
-      // options: pieChartOptions,
+      options: {
+        responsive: true,
+        plugins: {
+          datalabels: {
+            display: 'auto',
+            offset: 10,
+            anchor: 'center',
+            align: 'center',
+            labels: {
+              value: {
+                color: 'black',
+                formatter: (value) => {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        },
+      }
     });
   }
 
@@ -407,6 +456,19 @@ export class ProjectPageComponent implements OnInit {
           legend: {
             position: 'top',
           },
+          datalabels: {
+            display: 'auto',
+            anchor: 'center',
+            align: 'end',
+            labels: {
+              value: {
+                color: 'black',
+                formatter: (value) => {
+                  return value + '%';
+                }
+              }
+            }
+          }
         },
         scales: {
           x: {

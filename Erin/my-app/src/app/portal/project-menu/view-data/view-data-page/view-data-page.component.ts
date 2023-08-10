@@ -13,14 +13,21 @@ import { Chart } from 'chart.js/auto';
 export class ViewDataPageComponent implements OnInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
+  reccomendedData: any;
+  recommendedUnit: any;
+  recommendedProjectList: any;
+  recommendedVoltage: any;
+  recommendedTemp: any;
+  isExist = false;
+  missingVar = '';
   projects: any[] = [];
   selectedProject: any;
-  projectVoltages: any[] = [];
   selectedVoltage: any;
-  projectUnits: any[] = [];
   selectedUnit: any;
-  projectTemps: any[] = [];
   selectedTemp: any;
+  projectVoltages: any[] = [];
+  projectUnits: any[] = [];
+  projectTemps: any[] = [];
   buildID: any;
   buildData: any;
   testCount = 0;
@@ -76,7 +83,6 @@ export class ViewDataPageComponent implements OnInit {
       this.buildID = params;
       this.fetchData();
     });
-    this.fetchProjects();
   }
 
   private async fetchProjects() {
@@ -97,6 +103,7 @@ export class ViewDataPageComponent implements OnInit {
         this.refParam = this.buildData[0];
         this.testCount = this.buildData.length;
         this.generateChart();
+        this.getRecommendedData()
       })
       .catch((error) => {
         console.error('An error occurred while fetching build data:', error);
@@ -134,7 +141,7 @@ export class ViewDataPageComponent implements OnInit {
   }
 
   sendData(): void {
-    this.portalService.sendBuildData(this.buildData)
+    this.portalService.processTempLimit(this.buildData)
       .then(response => {
         let { "Max. Temp": maxTemp, "Min. Temp": minTemp } = response;
         maxTemp = parseFloat(maxTemp).toFixed(2);
@@ -142,6 +149,47 @@ export class ViewDataPageComponent implements OnInit {
         this.refParam = { ...this.refParam, "Max. Temp": maxTemp, "Min. Temp": minTemp };
         this.highestMaxTemp = parseFloat(maxTemp);
         this.lowestMinTemp = parseFloat(minTemp);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  getRecommendedData(): void {
+    this.portalService.getRecomendedData(this.buildData)
+      .then(response => {
+        this.reccomendedData = response;
+        console.log("this.reccomendedData: ", this.reccomendedData);
+        this.recommendedUnit = this.reccomendedData["unit"];
+        this.recommendedProjectList = this.reccomendedData["recomended_projects"];
+        this.recommendedVoltage = this.reccomendedData["voltage"];
+        this.recommendedTemp = this.reccomendedData["similar_temp"];
+
+        if (this.recommendedProjectList && this.recommendedVoltage && this.recommendedTemp) {
+          this.selectedProject = this.recommendedProjectList[0];
+          this.selectedUnit = this.recommendedUnit[0];
+          this.selectedVoltage = this.recommendedVoltage[0];
+          this.selectedTemp = this.recommendedTemp[0];
+          this.isExist = true;
+        }
+        else {
+          let missingVariables = "";
+          if (this.recommendedProjectList) {
+            missingVariables += "Project ";
+          }
+          if (this.recommendedUnit.length) {
+            missingVariables += "Unit ";
+          }
+          if (this.recommendedVoltage.length) {
+            missingVariables += "Voltage ";
+          }
+          if (this.recommendedTemp.length) {
+            missingVariables += "Temperature ";
+          }
+          this.missingVar = missingVariables;
+          this.isExist = false;
+          this.fetchProjects();
+        }
       })
       .catch(error => {
         console.error(error);
@@ -290,8 +338,11 @@ export class ViewDataPageComponent implements OnInit {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
 
-
   async onProjectSelect(event: any) {
+    this.selectedProject = event.data;
+  }
+
+  async onProjectSelect2(event: any) {
     this.selectedProject = event.data;
 
     try {
@@ -302,8 +353,6 @@ export class ViewDataPageComponent implements OnInit {
         this.projectVoltages = data.voltages;
         this.projectTemps = data.temperatures;
         this.projectUnits = data.units;
-      } else {
-        console.log('No data available for selected project.');
       }
     } catch (error) {
       console.error('Error retrieving voltages and temperatures:', error);
@@ -331,6 +380,10 @@ export class ViewDataPageComponent implements OnInit {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
           window.scrollTo(0, 0);
         });
+    }
+    else {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Please select a project.', life: 3000 });
+      window.scrollTo(0, 0);
     }
   }
 }
