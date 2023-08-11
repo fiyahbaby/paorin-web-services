@@ -10,13 +10,21 @@
                 </h1>
             </p-header>
             <div class="mb-3 flex justify-content-between">
-                <div class="flex flex-column w-15rem" id="data-content">
+                <div class="flex flex-column w-20rem" id="data-content">
                     <div id="data-box" class="flex justify-content-between p-2">
                         <div class="flex align-items-center">
                             <span class="headerText">No. of Tests:</span>
                         </div>
                         <div id="data-box-content" class="flex align-items-center">
                             <span>{{ testCount }}</span>
+                        </div>
+                    </div>
+                    <div id="data-box" class="flex justify-content-between p-2">
+                        <div class="flex align-items-center">
+                            <span class="headerText">Test Duration:</span>
+                        </div>
+                        <div id="data-box-content" class="flex align-items-center">
+                            <span>{{ testDuration}}</span>
                         </div>
                     </div>
                     <div id="data-box" class="flex justify-content-between p-2">
@@ -100,8 +108,8 @@
                 <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-gridlines">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th style="width: 0%; text-align: center">Parameter</th>
-                            <th style="width: 40rem; text-align: Left">Description</th>
+                            <th style="width: 7%; text-align: center">Parameter</th>
+                            <th style="width: 93%; text-align: Left">Description</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-testParam>
@@ -351,14 +359,14 @@
                                         </ng-template>
                                     </p-table>
                                 </div>
-                                <div class="flex justify-content-center buttons-container bottom mt-3">
+                                <div class="flex justify-content-center buttons-container bottom">
                                     <ng-container *ngTemplateOutlet="buttons2"></ng-container>
                                 </div>
                             </ng-container>
                         </p-accordionTab>
                     </p-accordion>
                 </div>
-                <div class="flex justify-content-end buttons-container bottom">
+                <div class="flex justify-content-end buttons-container bottom mt-3">
                     <ng-container *ngTemplateOutlet="buttons"></ng-container>
                 </div>
             </div>

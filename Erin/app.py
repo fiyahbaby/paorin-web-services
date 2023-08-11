@@ -1322,6 +1322,13 @@ def get_test_statistics():
         ).count()
         total_not_run_count = total_test_count - total_pass_count - total_fail_count
 
+        unique_test_count = (
+            db.session.query(TestList.dc, TestList.name)
+            .filter(TestList.project_id == project_id)
+            .distinct()
+            .count()
+        )
+
         response = {
             "total_test_count": total_test_count,
             "total_tests_run_count": total_test_instance_count,
@@ -1333,6 +1340,7 @@ def get_test_statistics():
             "project_not_run_rate": round(
                 (total_not_run_count / total_test_count) * 100, 2
             ),
+            "unique_test_count": unique_test_count,
         }
         return jsonify(response)
 

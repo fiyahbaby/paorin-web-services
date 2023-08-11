@@ -32,6 +32,7 @@ export class ViewDataPageComponent implements OnInit {
   buildData: any;
   testCount = 0;
   passingPercentage = 0;
+  testDuration: any;
   buildDataMap: { [key: string]: any } = {};
   testResultMap: { [key: string]: any } = {};
   refParam: any;
@@ -49,7 +50,7 @@ export class ViewDataPageComponent implements OnInit {
     "Voltage",
     "Max. Temp",
     "Min. Temp",
-    "Date/Time"
+    "Test Duration"
   ];
   testResults: any[] = [
     "S-Suite",
@@ -147,6 +148,8 @@ export class ViewDataPageComponent implements OnInit {
         maxTemp = parseFloat(maxTemp).toFixed(2);
         minTemp = parseFloat(minTemp).toFixed(2);
         this.refParam = { ...this.refParam, "Max. Temp": maxTemp, "Min. Temp": minTemp };
+        this.testDuration = this.refParam["Test Duration"];
+        console.log(this.testDuration);
         this.highestMaxTemp = parseFloat(maxTemp);
         this.lowestMinTemp = parseFloat(minTemp);
       })
@@ -261,7 +264,7 @@ export class ViewDataPageComponent implements OnInit {
     this.passingPercentage = Math.round(passingPercentage);
 
     new Chart(doughnutCanvas, {
-      type: 'doughnut',
+      type: 'pie',
       data: doughnutChartData
     });
 
@@ -284,6 +287,9 @@ export class ViewDataPageComponent implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          datalabels: {
+            display: false
+          },
           tooltip: {
             enabled: true,
             mode: 'index',

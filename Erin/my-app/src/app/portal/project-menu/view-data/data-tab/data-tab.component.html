@@ -1,136 +1,166 @@
-<ng-container *ngIf="combinedBuildData && !buildID">
-    <div class="w-full mb-3">
-        <div class="w-2 flex flex row justify-content-between">
-            <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
-                Total Test Count: {{ testCount }}
-            </h1>
+<div class="w-full ml-4">
+    <ng-container>
+        <div class="w-full">
+            <div class="mb-3 gap-4 flex justify-content-between">
+                <ng-container *ngIf="combinedBuildData && !buildID">
+                    <div class="w-6 mb-3">
+                        <div class="w-2 flex flex row justify-content-between">
+                            <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                Summary
+                            </h1>
+                        </div>
+                        <div class="w-full">
+                            <p-table [value]="combinedSummaryData" class="summaryTable"
+                                styleClass="p-datatable-gridlines">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 33%; text-align: center">Category</th>
+                                        <th style="width: 33%; text-align: center">Count</th>
+                                        <th style="width: 33%; text-align: center">Percentage (%)</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-summaryItem>
+                                    <tr>
+                                        <td style="text-align: center">{{ summaryItem.label }}</td>
+                                        <td style="text-align: center">{{ summaryItem.value }}</td>
+                                        <td style="text-align: center">{{ summaryItem.value2 !== 100 ?
+                                            summaryItem.value2 :
+                                            "-" }}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="singleBuildDataArray.length > 0 ">
+                    <div class="flex flex-column w-2" id="data-content">
+                        <p-header>
+                            <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                                Summary
+                            </h1>
+                        </p-header>
+                        <div id="data-box" class="flex justify-content-between">
+                            <div class="flex align-items-center">
+                                <span>No. of Tests:</span>
+                            </div>
+                            <div id="data-box-content" class="flex align-items-center">
+                                <span>{{ testCount }}</span>
+                            </div>
+                        </div>
+                        <div id="data-box" class="flex justify-content-between">
+                            <div class="flex align-items-center">
+                                <span class="headerText">Test Duration:</span>
+                            </div>
+                            <div id="data-box-content" class="flex align-items-center">
+                                <span>{{ testDuration}}</span>
+                            </div>
+                        </div>
+                        <div id="data-box" class="flex justify-content-between">
+                            <div class="flex align-items-center">
+                                <span>Passing Rate:</span>
+                            </div>
+                            <div id="data-box-content" class="flex align-items-center">
+                                <span>{{passingPercentage}}%</span>
+                            </div>
+                        </div>
+                        <div id="data-box" class="flex justify-content-between">
+                            <div class="flex align-items-center">
+                                <span>Max.Temp:</span>
+                            </div>
+                            <div id="data-box-content" class="flex align-items-center">
+                                <span>{{ highestMaxTemp }}&deg;C</span>
+                            </div>
+                        </div>
+                        <div id="data-box" class="flex justify-content-between">
+                            <div class="flex align-items-center">
+                                <span>Min.Temp:</span>
+                            </div>
+                            <div id="data-box-content" class="flex align-items-center">
+                                <span>{{ lowestMinTemp }}&deg;C</span>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="combinedBuildData.length > 0">
+                    <div class="doughnut-chart-container">
+                        <canvas #chartCanvas></canvas>
+                    </div>
+                    <div class="chart-container w-7">
+                        <canvas #lineChartCanvas></canvas>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="singleBuildDataArray.length > 0">
+                    <div class="doughnut-chart-container">
+                        <canvas #singleChartCanvas></canvas>
+                    </div>
+                    <div class="chart-container w-7">
+                        <canvas #singleLineChartCanvas></canvas>
+                    </div>
+                </ng-container>
+            </div>
         </div>
-        <div class="w-4">
-            <p-table [value]="summaryData" class="summaryTable" styleClass="p-datatable-gridlines">
+    </ng-container>
+    <div class="w-full flex flex-column">
+        <div class="w-full mb-3">
+            <p-header>
+                <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
+                    Test Results
+                </h1>
+            </p-header>
+            <p-table [scrollable]="true" scrollHeight="600px" class="paramTable"
+                [value]="combinedBuildData.length > 0 ? combinedBuildData : singleBuildDataArray"
+                styleClass="p-datatable-gridlines" (sortChange)="sortNumericColumn($event)">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 33%; text-align: center">Category</th>
-                        <th style="width: 33%; text-align: center">Count</th>
-                        <th style="width: 33%; text-align: center">Percentage</th>
+                        <th style="text-align: center" *ngFor="let key of testResults" [pSortableColumn]="key">
+                            {{ key }}
+                        </th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-summaryItem>
+                <ng-template pTemplate="body" let-dataItem>
                     <tr>
-                        <td style="text-align: center">{{ summaryItem.label }}</td>
-                        <td style="text-align: center">{{ summaryItem.value }}</td>
-                        <td style="text-align: center">{{ getPercentage(summaryItem.value) }}%</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-    </div>
-</ng-container>
-<ng-container *ngIf="buildID">
-    <div>
-        <div class="mb-3 flex justify-content-between">
-            <div class="flex flex-column w-15rem" id="data-content">
-                <div id="data-box" class="flex justify-content-between p-2">
-                    <div class="flex align-items-center">
-                        <span>No. of Tests:</span>
-                    </div>
-                    <div id="data-box-content" class="flex align-items-center">
-                        <span>{{ testCount }}</span>
-                    </div>
-                </div>
-                <div id="data-box" class="flex justify-content-between p-2">
-                    <div class="flex align-items-center">
-                        <span>Passing Rate:</span>
-                    </div>
-                    <div id="data-box-content" class="flex align-items-center">
-                        <span>{{passingPercentage}}%</span>
-                    </div>
-                </div>
-                <div id="data-box" class="flex justify-content-between p-2">
-                    <div class="flex align-items-center">
-                        <span>Max.Temp:</span>
-                    </div>
-                    <div id="data-box-content" class="flex align-items-center">
-                        <span>{{ highestMaxTemp }}&deg;C</span>
-                    </div>
-                </div>
-                <div id="data-box" class="flex justify-content-between p-2">
-                    <div class="flex align-items-center">
-                        <span>Min.Temp:</span>
-                    </div>
-                    <div id="data-box-content" class="flex align-items-center">
-                        <span>{{ lowestMinTemp }}&deg;C</span>
-                    </div>
-                </div>
-            </div>
-            <div class="doughnut-chart-container">
-                <canvas #chartCanvas></canvas>
-            </div>
-            <div class="chart-container w-7">
-                <canvas #lineChartCanvas></canvas>
-            </div>
-        </div>
-    </div>
-</ng-container>
-
-<div class="w-full flex flex-column">
-    <div class="w-full mb-3">
-        <p-header>
-            <h1 class="mt-0 mb-3 text-black-alpha-90" style="font-size: 18px">
-                Test Results
-            </h1>
-        </p-header>
-        <p-table [scrollable]="true" scrollHeight="600px" class="paramTable" [value]="buildData"
-            styleClass="p-datatable-gridlines" (sortChange)="sortNumericColumn($event)">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="text-align: center" *ngFor="let key of testResults" [pSortableColumn]="key">
-                        {{ key }}
-                    </th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-dataItem>
-                <tr>
-                    <td *ngFor="let key of testResults"
-                        [ngStyle]="{ 'text-align': key === 'Test Name' ? 'left' : 'center' }" [ngClass]="{
+                        <td *ngFor="let key of testResults"
+                            [ngStyle]="{ 'text-align': key === 'Test Name' ? 'left' : 'center' }" [ngClass]="{
                                     'green-text': dataItem[key] === 'PASS',
                                     'red-text': dataItem[key] === 'FAIL',
                                     'yellow-orange-text': dataItem[key] === 'NOT-RUN'
                                 }">
-                        <ng-container
-                            *ngIf="dataItem[key] !== undefined && dataItem[key] !== null && dataItem[key] !== ''">
-                            {{ dataItem[key] }}
-                        </ng-container>
-                        <ng-container
-                            *ngIf="dataItem[key] === undefined || dataItem[key] === null || dataItem[key] === ''">
-                            -
-                        </ng-container>
-                    </td>
-                </tr>
-            </ng-template>
+                            <ng-container
+                                *ngIf="dataItem[key] !== undefined && dataItem[key] !== null && dataItem[key] !== ''">
+                                {{ dataItem[key] }}
+                            </ng-container>
+                            <ng-container
+                                *ngIf="dataItem[key] === undefined || dataItem[key] === null || dataItem[key] === ''">
+                                -
+                            </ng-container>
+                        </td>
+                    </tr>
+                </ng-template>
 
-        </p-table>
+            </p-table>
+        </div>
     </div>
+    <ng-container *ngIf="buildID">
+        <div class="w-full">
+            <p-header>
+                <h1 class="mt-3 mb-3 text-black-alpha-90" style="font-size: 18px">
+                    Test Environment
+                </h1>
+            </p-header>
+            <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-gridlines">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 7%; text-align: center">Parameter</th>
+                        <th style="width: 93%; text-align: Left">Description</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-testParam>
+                    <tr>
+                        <td style="text-align: left">{{ testParam }}</td>
+                        <td style="text-align: left">{{ refParam?.[testParam] }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </ng-container>
 </div>
-<ng-container *ngIf="buildID">
-    <div class="w-full">
-        <p-header>
-            <h1 class="mt-3 mb-3 text-black-alpha-90" style="font-size: 18px">
-                Test Environment
-            </h1>
-        </p-header>
-        <p-table class="paramTable" [value]="testParam" styleClass="p-datatable-gridlines">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 0%; text-align: center">Parameter</th>
-                    <th style="width: 40rem; text-align: Left">Description</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-testParam>
-                <tr>
-                    <td style="text-align: left">{{ testParam }}</td>
-                    <td style="text-align: left">{{ refParam?.[testParam] }}</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-</ng-container>

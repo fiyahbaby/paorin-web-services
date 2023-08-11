@@ -2,6 +2,7 @@ import pandas as pd
 import pymongo
 from pymongo import MongoClient
 import xlsxwriter
+from datetime import datetime
 
 
 def retrieveDbData(db, build_id):
@@ -160,6 +161,11 @@ def retrieveDbData(db, build_id):
 
         testList.append(testDict)
 
+    time_duration = calculate_time_duration(testList)
+    if time_duration is not None:
+        for test in testList:
+            test["Test Duration"] = time_duration
+
     for test in testList:
         for key, value in test.items():
             if isinstance(value, list):
@@ -167,8 +173,43 @@ def retrieveDbData(db, build_id):
             elif isinstance(value, str) and "[" in value and "]" in value:
                 test[key] = value.replace("[", "").replace("]", "")
 
-    # print(testList)
     return testList
+
+
+def calculate_time_duration(test_list):
+    min_datetime = None
+    max_datetime = None
+
+    for test in test_list:
+        date_time = test.get("Date/Time")
+        if date_time and isinstance(date_time, datetime):
+            if min_datetime is None or date_time < min_datetime:
+                min_datetime = date_time
+            if max_datetime is None or date_time > max_datetime:
+                max_datetime = date_time
+
+    if min_datetime and max_datetime:
+        duration = max_datetime - min_datetime
+
+        # Calculate hours, minutes, and seconds
+        hours = duration.seconds // 3600
+        minutes = (duration.seconds // 60) % 60
+        seconds = duration.seconds % 60
+
+        if duration.days > 0:
+            hours += duration.days * 24
+
+        # Construct the formatted time duration string
+        if hours >= 1:
+            time_duration_str = f"{hours} hours, {minutes} mins, {seconds} secs"
+        elif minutes >= 1:
+            time_duration_str = f"{minutes} mins, {seconds} secs"
+        else:
+            time_duration_str = f"{seconds} secs"
+
+        return time_duration_str
+    else:
+        return None
 
 
 def main():
