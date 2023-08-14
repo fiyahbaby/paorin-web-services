@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PortalService } from 'src/app/portal/portal.service';
-import { Chart, ChartData, ChartType } from 'chart.js/auto';
+import { Chart, ChartData, ChartDataset, ChartOptions, ChartType } from 'chart.js/auto';
 import 'chartjs-plugin-datalabels';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 Chart.register(ChartDataLabels);
@@ -36,6 +36,18 @@ export class ProjectPageComponent implements OnInit {
   projectStats: any;
   projectPercentages: any;
   unitStats: any;
+  isVoltageSummaryPassEnabled: boolean = true;
+  isVoltageSummaryFailEnabled: boolean = true;
+  isVoltageSummaryNotRunEnabled: boolean = true;
+  isProjectSummaryPassEnabled: boolean = true;
+  isProjectSummaryFailEnabled: boolean = true;
+  isProjectSummaryNotRunEnabled: boolean = true;
+  isUnitSummaryPassEnabled: boolean = true;
+  isUnitSummaryFailEnabled: boolean = true;
+  isUnitSummaryNotRunEnabled: boolean = true;
+  isCornerSummaryPassEnabled: boolean = true;
+  isCornerSummaryFailEnabled: boolean = true;
+  isCornerSummaryNotRunEnabled: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -206,15 +218,111 @@ export class ProjectPageComponent implements OnInit {
       return;
     }
 
-    const voltageNames = this.voltageVsBlockData.map((voltageData: { voltage: any; }) => voltageData.voltage);
-    const passData = this.voltageVsBlockData.map((voltageData: { PASSING_RATE: any; }) => voltageData.PASSING_RATE ?? 0);
-    const failData = this.voltageVsBlockData.map((voltageData: { FAILING_RATE: any; }) => voltageData.FAILING_RATE ?? 0);
-    const notRunData = this.voltageVsBlockData.map((voltageData: { NOT_RUN: any; }) => voltageData.NOT_RUN ?? 0);
+    const voltageNames = this.voltageNames;
+    const data = this.voltageVsBlockData.map((voltageData: {
+      PASSING_RATE: any;
+      FAILING_RATE: any;
+      NOT_RUN: any;
+    }) => {
+      const totalValue = (
+        (this.isVoltageSummaryPassEnabled ? voltageData.PASSING_RATE : 0) +
+        (this.isVoltageSummaryFailEnabled ? voltageData.FAILING_RATE : 0) +
+        (this.isVoltageSummaryNotRunEnabled ? voltageData.NOT_RUN : 0)
+      );
+
+      return {
+        pass: this.isVoltageSummaryPassEnabled ? parseFloat(((voltageData.PASSING_RATE / totalValue) * 100).toFixed(2)) : 0,
+        fail: this.isVoltageSummaryFailEnabled ? parseFloat(((voltageData.FAILING_RATE / totalValue) * 100).toFixed(2)) : 0,
+        notRun: this.isVoltageSummaryNotRunEnabled ? parseFloat(((voltageData.NOT_RUN / totalValue) * 100).toFixed(2)) : 0,
+      };
+    });
+
+    const passData = data.map((item: { pass: any; }) => {
+      return isNaN(item.pass) ? 0 : item.pass;
+    });
+
+    const failData = data.map((item: { fail: any; }) => {
+      return isNaN(item.fail) ? 0 : item.fail;
+    });
+
+    const notRunData = data.map((item: { notRun: any; }) => {
+      return isNaN(item.notRun) ? 0 : item.notRun;
+    });
+
 
 
     if (this.stackedBarChart) {
       this.stackedBarChart.destroy();
     }
+
+    const chartOptions: ChartOptions<'bar'> = {
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+        },
+      },
+      plugins: {
+        datalabels: {
+          display: (context) => {
+            const value = context.dataset.data[context.dataIndex];
+            return value !== 0;
+          },
+          offset: 0,
+          anchor: 'center',
+          align: 'end',
+          labels: {
+            value: {
+              color: 'black',
+              formatter: (value, context) => {
+                const datasetIndex = context.datasetIndex;
+                if (datasetIndex === 0 && !this.isVoltageSummaryPassEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 1 && !this.isVoltageSummaryFailEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 2 && !this.isVoltageSummaryNotRunEnabled) {
+                  return '';
+                }
+                return value + '%';
+              },
+
+            },
+          },
+        },
+      },
+      interaction: {
+        intersect: false,
+      },
+    };
+
+    const legendOptions: ChartOptions<'bar'>['plugins'] = {
+      legend: {
+        onClick: (event, legendItem) => {
+          const datasetIndex = legendItem.datasetIndex;
+          if (datasetIndex === 0) {
+            this.isVoltageSummaryPassEnabled = !this.isVoltageSummaryPassEnabled;
+          } else if (datasetIndex === 1) {
+            this.isVoltageSummaryFailEnabled = !this.isVoltageSummaryFailEnabled;
+          } else if (datasetIndex === 2) {
+            this.isVoltageSummaryNotRunEnabled = !this.isVoltageSummaryNotRunEnabled;
+          }
+          this.voltageVsBlockChart();
+        },
+      },
+    };
+
+    const options: ChartOptions<'bar'> = {
+      ...chartOptions,
+      plugins: {
+        ...chartOptions.plugins,
+        ...legendOptions,
+      },
+    };
 
     const ctx = this.stackedBarChartRef.nativeElement.getContext('2d');
     this.stackedBarChart = new Chart(ctx, {
@@ -239,37 +347,9 @@ export class ProjectPageComponent implements OnInit {
           },
         ],
       },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            stacked: true,
-          },
-          y: {
-            stacked: true,
-          },
-        },
-        plugins: {
-          datalabels: {
-            display: true,
-            font: {
-              // weight: 'bold',
-            },
-            offset: 0,
-            anchor: 'center',
-            align: 'end',
-            labels: {
-              value: {
-                color: 'black',
-                formatter: (value) => {
-                  return value + '%';
-                }
-              }
-            }
-          }
-        }
-      },
+      options: options,
     });
+
   }
 
   createCornerProgressChart(): void {
@@ -278,15 +358,108 @@ export class ProjectPageComponent implements OnInit {
     }
 
     const cornerNames = this.voltageVsCornerData.map((item) => item.corner);
-    const passData = this.voltageVsCornerData.map((item) => item.TOTAL_PASSING_PERCENTAGE ?? 0);
-    const failData = this.voltageVsCornerData.map((item) => item.TOTAL_FAILING_PERCENTAGE ?? 0);
-    const notRunData = this.voltageVsCornerData.map((item) => item.TOTAL_NOT_RUN_PERCENTAGE ?? 0);
+    const unitStats = this.voltageVsCornerData.map((item) => {
+      const totalValue = (
+        (this.isCornerSummaryPassEnabled ? parseFloat(item.TOTAL_PASSING_PERCENTAGE ?? '0') : 0) +
+        (this.isCornerSummaryFailEnabled ? parseFloat(item.TOTAL_FAILING_PERCENTAGE ?? '0') : 0) +
+        (this.isCornerSummaryNotRunEnabled ? parseFloat(item.TOTAL_NOT_RUN_PERCENTAGE ?? '0') : 0)
+      );
+
+      return {
+        pass: this.isCornerSummaryPassEnabled ? parseFloat(((parseFloat(item.TOTAL_PASSING_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
+        fail: this.isCornerSummaryFailEnabled ? parseFloat(((parseFloat(item.TOTAL_FAILING_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
+        notRun: this.isCornerSummaryNotRunEnabled ? parseFloat(((parseFloat(item.TOTAL_NOT_RUN_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
+      };
+    });
+
+    const passData = unitStats.map((item) => {
+      return isNaN(item.pass) ? 0 : item.pass;
+    });
+
+    const failData = unitStats.map((item) => {
+      return isNaN(item.fail) ? 0 : item.fail;
+    });
+
+    const notRunData = unitStats.map((item) => {
+      return isNaN(item.notRun) ? 0 : item.notRun;
+    });
 
     const ctx = this.cornerProgressChartRef.nativeElement.getContext('2d');
 
     if (this.cornerProgressChart) {
       this.cornerProgressChart.destroy();
     }
+
+    const legendOptions: ChartOptions<'bar'>['plugins'] = {
+      legend: {
+        onClick: (event, legendItem) => {
+          const datasetIndex = legendItem.datasetIndex;
+          if (datasetIndex === 0) {
+            this.isCornerSummaryPassEnabled = !this.isCornerSummaryPassEnabled;
+          } else if (datasetIndex === 1) {
+            this.isCornerSummaryFailEnabled = !this.isCornerSummaryFailEnabled;
+          } else if (datasetIndex === 2) {
+            this.isCornerSummaryNotRunEnabled = !this.isCornerSummaryNotRunEnabled;
+          }
+          this.createCornerProgressChart();
+        },
+      },
+    };
+
+    const chartOptions: ChartOptions<'bar'> = {
+      // onClick: (event, chartElements) => {
+      //   const clickedIndex = chartElements[0].index;
+      // },
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+        },
+      },
+      plugins: {
+        datalabels: {
+          display: (context) => {
+            const value = context.dataset.data[context.dataIndex];
+            return value !== 0;
+          },
+          offset: 0,
+          anchor: 'center',
+          align: 'end',
+          labels: {
+            value: {
+              color: 'black',
+              formatter: (value, context) => {
+                const datasetIndex = context.datasetIndex;
+                if (datasetIndex === 0 && !this.isCornerSummaryPassEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 1 && !this.isCornerSummaryFailEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 2 && !this.isCornerSummaryNotRunEnabled) {
+                  return '';
+                }
+                return value + '%';
+              },
+            },
+          },
+        },
+      },
+      interaction: {
+        intersect: false,
+      },
+    };
+
+    const options: ChartOptions<'bar'> = {
+      ...chartOptions,
+      plugins: {
+        ...chartOptions.plugins,
+        ...legendOptions,
+      },
+    };
 
     this.cornerProgressChart = new Chart(ctx, {
       type: 'bar',
@@ -310,36 +483,7 @@ export class ProjectPageComponent implements OnInit {
           },
         ],
       },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            stacked: true,
-          },
-          y: {
-            stacked: true,
-          },
-        },
-        plugins: {
-          datalabels: {
-            display: true,
-            font: {
-              // weight: 'bold',
-            },
-            offset: 0,
-            anchor: 'center',
-            align: 'end',
-            labels: {
-              value: {
-                color: 'black',
-                formatter: (value) => {
-                  return value + '%';
-                }
-              }
-            }
-          }
-        }
-      },
+      options: options
     });
   }
 
@@ -349,53 +493,79 @@ export class ProjectPageComponent implements OnInit {
       return;
     }
 
-    const pieChartData: ChartData = {
-      labels: ['PASS', 'FAIL', 'NOT-RUN'],
-      datasets: [
-        {
-          data: [
-            this.projectStats.project_progress,
-            this.projectStats.project_fail_rate,
-            this.projectStats.project_not_run_rate,
-          ],
-          backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
-        },
-      ],
-    };
+    const projectData = this.projectStats;
+
+    const totalValue =
+      (this.isProjectSummaryPassEnabled ? projectData.project_progress : 0) +
+      (this.isProjectSummaryFailEnabled ? projectData.project_fail_rate : 0) +
+      (this.isProjectSummaryNotRunEnabled ? projectData.project_not_run_rate : 0);
+
+    const passData = this.isProjectSummaryPassEnabled ? parseFloat(((projectData.project_progress / totalValue) * 100).toFixed(2)) : 0;
+    const failData = this.isProjectSummaryFailEnabled ? parseFloat(((projectData.project_fail_rate / totalValue) * 100).toFixed(2)) : 0;
+    const notRunData = this.isProjectSummaryNotRunEnabled ? parseFloat(((projectData.project_not_run_rate / totalValue) * 100).toFixed(2)) : 0;
+    const pieChartCtx = this.projectPieChartRef.nativeElement.getContext('2d');
 
     if (this.projectPieChart) {
       this.projectPieChart.destroy();
     }
 
-    const pieChartCtx = this.projectPieChartRef.nativeElement.getContext('2d');
     this.projectPieChart = new Chart(pieChartCtx, {
       type: 'pie' as ChartType,
-      data: pieChartData,
+      data: {
+        labels: ['PASS', 'FAIL', 'NOT-RUN'],
+        datasets: [{
+          data: [passData, failData, notRunData],
+          backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+        }],
+      },
       options: {
         responsive: true,
         plugins: {
           datalabels: {
-            display: 'auto',
-            offset: 10,
-            anchor: 'center',
-            align: 'center',
-            labels: {
-              value: {
-                color: 'black',
-                formatter: (value) => {
-                  return value + '%';
-                }
+            display: (context) => {
+              const value = context.dataset.data[context.dataIndex];
+              return value !== 0;
+            },
+          },
+          legend: {
+            onClick: (event, legendItem) => {
+              const datasetIndex = legendItem.index;
+              if (datasetIndex === 0) {
+                this.isProjectSummaryPassEnabled = !this.isProjectSummaryPassEnabled;
+              } else if (datasetIndex === 1) {
+                this.isProjectSummaryFailEnabled = !this.isProjectSummaryFailEnabled;
+              } else if (datasetIndex === 2) {
+                this.isProjectSummaryNotRunEnabled = !this.isProjectSummaryNotRunEnabled;
               }
-            }
-          }
+              this.createProjectChart();
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const datasetIndex = context.datasetIndex;
+                const value = context.formattedValue;
+                if (datasetIndex === 0 && !this.isProjectSummaryPassEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 1 && !this.isProjectSummaryFailEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 2 && !this.isProjectSummaryNotRunEnabled) {
+                  return '';
+                }
+                return value + '%';
+              },
+            },
+          },
         },
-      }
+      },
     });
   }
 
-  prepareUnitStatsChartData(unitStats: any[]): any {
+  prepareUnitStatsChartData(unitStats: any[]): ChartData<'bar'> {
     const labels: string[] = [];
-    const datasets: any[] = [
+    const datasets: ChartDataset<'bar'>[] = [
       { label: 'PASS', data: [], backgroundColor: 'rgba(75, 192, 192, 0.6)' },
       { label: 'FAIL', data: [], backgroundColor: 'rgba(255, 99, 132, 0.6)' },
       { label: 'NOT-RUN', data: [], backgroundColor: 'rgba(255, 206, 86, 0.6)' },
@@ -403,9 +573,14 @@ export class ProjectPageComponent implements OnInit {
 
     for (const unit of unitStats) {
       labels.push(`${unit.two_d_name} - ${unit.process_corner}`);
-      datasets[0].data.push(unit.data.pass_rate);
-      datasets[1].data.push(unit.data.fail_rate);
-      datasets[2].data.push(unit.data.not_run_rate);
+      const totalValue =
+        (this.isUnitSummaryPassEnabled ? unit.data.pass_rate : 0) +
+        (this.isUnitSummaryFailEnabled ? unit.data.fail_rate : 0) +
+        (this.isUnitSummaryNotRunEnabled ? unit.data.not_run_rate : 0);
+      datasets[0].data.push(this.isUnitSummaryPassEnabled && totalValue !== 0 ? parseFloat(((unit.data.pass_rate / totalValue) * 100).toFixed(2)) : 0);
+      datasets[1].data.push(this.isUnitSummaryFailEnabled && totalValue !== 0 ? parseFloat(((unit.data.fail_rate / totalValue) * 100).toFixed(2)) : 0);
+      datasets[2].data.push(this.isUnitSummaryNotRunEnabled && totalValue !== 0 ? parseFloat(((unit.data.not_run_rate / totalValue) * 100).toFixed(2)) : 0);
+
     }
 
     return {
@@ -421,11 +596,41 @@ export class ProjectPageComponent implements OnInit {
 
     const unitStatsChartData = this.prepareUnitStatsChartData(this.unitStats);
 
-    const chartOptions = {
+    if (this.unitStatsChartData) {
+      this.unitStatsChartData.destroy();
+    }
+
+    const chartOptions: ChartOptions<'bar'> = {
       responsive: true,
       plugins: {
         legend: {
           position: 'top',
+        },
+        datalabels: {
+          display: (context) => {
+            const value = context.dataset.data[context.dataIndex];
+            return value !== 0;
+          },
+          anchor: 'center',
+          align: 'end',
+          labels: {
+            value: {
+              color: 'black',
+              formatter: (value, context) => {
+                const datasetIndex = context.datasetIndex;
+                if (datasetIndex === 0 && !this.isUnitSummaryPassEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 1 && !this.isUnitSummaryFailEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 2 && !this.isUnitSummaryNotRunEnabled) {
+                  return '';
+                }
+                return value + '%';
+              },
+            },
+          },
         },
       },
       scales: {
@@ -434,51 +639,39 @@ export class ProjectPageComponent implements OnInit {
         },
         y: {
           stacked: true,
-          ticks: {
-            beginAtZero: true,
-          },
         },
       },
     };
 
+    const legendOptions: ChartOptions<'bar'>['plugins'] = {
+      legend: {
+        onClick: (event, legendItem) => {
+          const datasetIndex = legendItem.datasetIndex;
+          if (datasetIndex === 0) {
+            this.isUnitSummaryPassEnabled = !this.isUnitSummaryPassEnabled;
+          } else if (datasetIndex === 1) {
+            this.isUnitSummaryFailEnabled = !this.isUnitSummaryFailEnabled;
+          } else if (datasetIndex === 2) {
+            this.isUnitSummaryNotRunEnabled = !this.isUnitSummaryNotRunEnabled;
+          }
+          this.createUnitStatsChart();
+        },
+      },
+    };
+
+    const options: ChartOptions<'bar'> = {
+      ...chartOptions,
+      plugins: {
+        ...chartOptions.plugins,
+        ...legendOptions,
+      },
+    };
+
     const unitStatsChartCtx = this.unitProgressChartRef.nativeElement.getContext('2d');
-
-    if (this.unitStatsChartData) {
-      this.unitStatsChartData.destroy();
-    }
-
     this.unitStatsChartData = new Chart(unitStatsChartCtx, {
       type: 'bar',
       data: unitStatsChartData,
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-          datalabels: {
-            display: 'auto',
-            anchor: 'center',
-            align: 'end',
-            labels: {
-              value: {
-                color: 'black',
-                formatter: (value) => {
-                  return value + '%';
-                }
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            stacked: true,
-          },
-          y: {
-            stacked: true,
-          },
-        },
-      },
+      options: options,
     });
   }
 }

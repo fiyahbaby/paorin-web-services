@@ -252,5 +252,10 @@ export class ViewMDataPageComponent implements OnInit {
     });
     this.singleTestParamMapCheck = true;
   }
+
+  onBack(): void {
+    this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
 }
 

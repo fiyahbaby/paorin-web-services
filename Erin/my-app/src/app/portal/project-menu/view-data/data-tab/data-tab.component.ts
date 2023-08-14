@@ -101,7 +101,6 @@ export class DataTabComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   mapTestParam(): void {
     this.highestMaxTemp = this.refParam['Max. Temp'];
     this.lowestMinTemp = this.refParam['Min. Temp'];

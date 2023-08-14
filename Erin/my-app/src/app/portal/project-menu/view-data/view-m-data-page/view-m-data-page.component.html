@@ -20,4 +20,11 @@
             </p-tabPanel>
         </ng-container>
     </p-tabView>
+    <div class="flex justify-content-end buttons-container bottom mt-3">
+        <ng-container *ngTemplateOutlet="buttons"></ng-container>
+    </div>
 </div>
+
+<ng-template #buttons>
+    <p-button label="Back" styleClass="p-button-danger" type="button" (onClick)="onBack()"></p-button>
+</ng-template>

@@ -1334,6 +1334,7 @@ def get_test_statistics():
             "total_tests_run_count": total_test_instance_count,
             "total_pass_count": total_pass_count,
             "total_fail_count": total_fail_count,
+            "total_run_count": total_test_count - total_not_run_count,
             "total_not_run_count": total_not_run_count,
             "project_progress": round((total_pass_count / total_test_count) * 100, 2),
             "project_fail_rate": round((total_fail_count / total_test_count) * 100, 2),
