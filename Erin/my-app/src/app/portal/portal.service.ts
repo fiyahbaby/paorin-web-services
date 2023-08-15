@@ -110,7 +110,7 @@ export class PortalService {
   }
 
   async getRecomendedData(buildData: any): Promise<any> {
-    const url = `${await this.getBackendUrl()}/api/recomendData`;
+    const url = `${await this.getBackendUrl()}/api/recommendData`;
     const response = this.http.post(url, buildData).toPromise();
     return response;
   }

@@ -130,36 +130,34 @@
                                                 Recommeded Project
                                             </h1>
                                         </p-header>
-                                        <div>
-                                            <p-table [value]="recommendedProjectList" styleClass="p-datatable-gridlines"
-                                                selectionMode="single" [(selection)]="selectedProject"
-                                                (onRowSelect)="onProjectSelect($event)">
-                                                <ng-template pTemplate="header">
-                                                    <tr>
-                                                        <th *ngIf="recommendedProjectList?.length > 1"
-                                                            style="width: 6rem; text-align: center">Select</th>
-                                                        <th style="width: 20rem; text-align: center">Device</th>
-                                                        <th style="width: 20rem; text-align: center">Revision</th>
-                                                        <th style="width: 20rem; text-align: center">Test Type</th>
-                                                        <th style="width: 20rem; text-align: center">Block</th>
-                                                        <th style="width: 20rem; text-align: center">Date created</th>
-                                                    </tr>
-                                                </ng-template>
-                                                <ng-template pTemplate="body" let-project>
-                                                    <tr>
-                                                        <td *ngIf="recommendedProjectList?.length > 1"
-                                                            style="text-align: center">
-                                                            <p-tableRadioButton [value]="project"></p-tableRadioButton>
-                                                        </td>
-                                                        <td style="text-align: center">{{ project.device_name }}</td>
-                                                        <td style="text-align: center">{{ project.revision_id }}</td>
-                                                        <td style="text-align: center">{{ project.test_type_id }}</td>
-                                                        <td style="text-align: center">{{ project.block_id }}</td>
-                                                        <td style="text-align: center">{{ project.date_created }}</td>
-                                                    </tr>
-                                                </ng-template>
-                                            </p-table>
-                                        </div>
+                                        <p-table [value]="recommendedProjectList" styleClass="p-datatable-gridlines"
+                                            selectionMode="single" [(selection)]="selectedProject"
+                                            (onRowSelect)="onProjectSelect($event)">
+                                            <ng-template pTemplate="header">
+                                                <tr>
+                                                    <th *ngIf="recommendedProjectList?.length > 1"
+                                                        style="width: 6rem; text-align: center">Select</th>
+                                                    <th style="width: 20rem; text-align: center">Device</th>
+                                                    <th style="width: 20rem; text-align: center">Revision</th>
+                                                    <th style="width: 20rem; text-align: center">Test Type</th>
+                                                    <th style="width: 20rem; text-align: center">Block</th>
+                                                    <th style="width: 20rem; text-align: center">Date created</th>
+                                                </tr>
+                                            </ng-template>
+                                            <ng-template pTemplate="body" let-project>
+                                                <tr>
+                                                    <td *ngIf="recommendedProjectList?.length > 1"
+                                                        style="text-align: center">
+                                                        <p-tableRadioButton [value]="project"></p-tableRadioButton>
+                                                    </td>
+                                                    <td style="text-align: center">{{ project.device_name }}</td>
+                                                    <td style="text-align: center">{{ project.revision_id }}</td>
+                                                    <td style="text-align: center">{{ project.test_type_id }}</td>
+                                                    <td style="text-align: center">{{ project.block_id }}</td>
+                                                    <td style="text-align: center">{{ project.date_created }}</td>
+                                                </tr>
+                                            </ng-template>
+                                        </p-table>
                                     </div>
                                     <div class="mt-5 w-full">
                                         <div class="flex flex-row gap-4">
@@ -369,6 +367,7 @@
                 <div class="flex justify-content-end buttons-container bottom mt-3">
                     <ng-container *ngTemplateOutlet="buttons"></ng-container>
                 </div>
+                <!-- <div id="boxPlot" class="w-6"></div> -->
             </div>
         </div>
     </p-card>

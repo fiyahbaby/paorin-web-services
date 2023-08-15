@@ -407,9 +407,14 @@ export class ProjectPageComponent implements OnInit {
     };
 
     const chartOptions: ChartOptions<'bar'> = {
-      // onClick: (event, chartElements) => {
-      //   const clickedIndex = chartElements[0].index;
-      // },
+      onClick: (event, chartElements) => {
+        const clickedIndex = chartElements[0].index;
+        const clickedCorner = cornerNames[clickedIndex];
+        const params = {
+          projectID: this.projectID,
+          summaryItem: clickedCorner,
+        }
+      },
       responsive: true,
       scales: {
         x: {

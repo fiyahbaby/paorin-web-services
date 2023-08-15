@@ -59,7 +59,7 @@ import { PanelModule } from 'primeng/panel';
     TabViewModule,
     ProgressBarModule,
     ProgressSpinnerModule,
-    PanelModule
+    PanelModule,
   ],
   exports: [
     FormsModule,

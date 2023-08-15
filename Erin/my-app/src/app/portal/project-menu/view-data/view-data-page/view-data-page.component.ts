@@ -1,9 +1,9 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService, SortEvent } from 'primeng/api';
 import { PortalService } from 'src/app/portal/portal.service';
-import { ChartModule } from 'primeng/chart';
 import { Chart } from 'chart.js/auto';
+import * as Plotly from 'plotly.js-dist-min';
 
 @Component({
   selector: 'app-view-data-page',
@@ -104,7 +104,8 @@ export class ViewDataPageComponent implements OnInit {
         this.refParam = this.buildData[0];
         this.testCount = this.buildData.length;
         this.generateChart();
-        this.getRecommendedData()
+        this.getRecommendedData();
+        this.generateBoxPlot();
       })
       .catch((error) => {
         console.error('An error occurred while fetching build data:', error);
@@ -149,7 +150,6 @@ export class ViewDataPageComponent implements OnInit {
         minTemp = parseFloat(minTemp).toFixed(2);
         this.refParam = { ...this.refParam, "Max. Temp": maxTemp, "Min. Temp": minTemp };
         this.testDuration = this.refParam["Test Duration"];
-        console.log(this.testDuration);
         this.highestMaxTemp = parseFloat(maxTemp);
         this.lowestMinTemp = parseFloat(minTemp);
       })
@@ -162,7 +162,6 @@ export class ViewDataPageComponent implements OnInit {
     this.portalService.getRecomendedData(this.buildData)
       .then(response => {
         this.reccomendedData = response;
-        console.log("this.reccomendedData: ", this.reccomendedData);
         this.recommendedUnit = this.reccomendedData["unit"];
         this.recommendedProjectList = this.reccomendedData["recomended_projects"];
         this.recommendedVoltage = this.reccomendedData["voltage"];
@@ -374,6 +373,7 @@ export class ViewDataPageComponent implements OnInit {
         temperature: this.selectedTemp,
         unit: this.selectedUnit
       };
+      console.log("combinedList: ", combinedList)
 
       this.portalService.addToProject(combinedList)
         .then(response => {
@@ -391,5 +391,31 @@ export class ViewDataPageComponent implements OnInit {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Please select a project.', life: 3000 });
       window.scrollTo(0, 0);
     }
+  }
+
+  generateBoxPlotData(): any[] {
+    const vccintData = this.buildData.map((dataItem: any) => dataItem['VCCINT']);
+    const boxPlotData = [{
+      y: vccintData,
+      type: 'box',
+      name: 'VCCINT',
+      boxpoints: 'all', // 'outliers' to show only outliers
+      // jitter: 0.3, // jitter amount for points
+      // pointpos: -1.8 // position of points in relation to box
+    }];
+    return boxPlotData;
+  }
+
+  generateBoxPlot(): void {
+    const boxPlotData = this.generateBoxPlotData();
+
+    const layout = {
+      title: 'Box Plot of VCCINT Values',
+      yaxis: {
+        title: 'VCCINT'
+      }
+    };
+
+    Plotly.newPlot('boxPlot', boxPlotData, layout);
   }
 }

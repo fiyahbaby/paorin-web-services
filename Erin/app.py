@@ -538,7 +538,7 @@ def process_ref_temp(data):
     return {"Max. Temp": max_temp, "Min. Temp": min_temp}
 
 
-@app.route("/api/recomendData", methods=["POST"])
+@app.route("/api/recommendData", methods=["POST"])
 def recommend_data():
     try:
         build_data = request.json
@@ -644,9 +644,11 @@ def recommend_data():
                         "date_created": project.date_created,
                     }
                     project_details.append(project_dict)
-            result["recomended_projects"] = project_details
+            result["recommended_projects"] = project_details
+            result["isRecommendExist"] = True
         else:
-            result["common_project_ids"] = None
+            result["recomended_projects"] = None
+            result["isRecommendExist"] = False
 
         return jsonify(result)
     except Exception as e:
@@ -903,15 +905,6 @@ def add_to_project():
     voltage_id = selected_voltage.get("id")
     temperature_id = selected_temperature.get("id")
     unit_id = selected_unit.get("id")
-    print("\nbuild_data: ", build_data)
-    print("\nselected_project: ", selected_project)
-    print("\nselected_voltage: ", selected_voltage)
-    print("\nselected_temperature: ", selected_temperature)
-    print("\nselected_unit: ", selected_unit)
-    print("\nproject_id: ", project_id)
-    print("\nvoltage_id: ", voltage_id)
-    print("\ntemperature_id: ", temperature_id)
-    print("\nunit_id: ", unit_id)
 
     updated_tests = 0
     new_tests = 0
@@ -926,9 +919,6 @@ def add_to_project():
             suite=test_data["Suite"],
             test_name=test_data["Test Name"],
         ).first()
-
-        print("\ntest_data: ", test_data)
-        print("\nexisting_test_instance: ", existing_test_instance)
 
         if existing_test_instance:
             existing_test_instance.result = test_data["Test Result"]

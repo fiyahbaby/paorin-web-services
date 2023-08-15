@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService, SortEvent } from 'primeng/api';
 import { PortalService } from 'src/app/portal/portal.service';
@@ -35,6 +35,7 @@ export class ViewMDataPageComponent implements OnInit {
   combinedSelectedData: { label: string, value: number }[] = [];
   combinedTestResultMap: { [key: string]: any } = {};
   testResults: any[] = [
+    "Build ID",
     "S-Suite",
     "Suite",
     "Test Name",
@@ -53,6 +54,9 @@ export class ViewMDataPageComponent implements OnInit {
     "VCCAUX_PMC",
     "VCCAUX_SYSMON",
   ];
+  recommededBuildIDData: any[] = [];
+  recommededBuildIDList: any[] = [];
+  notRecommededBuildIDList: any[] = [];
 
   // per build ID
   selectProjectList: any[] = [];
@@ -83,6 +87,7 @@ export class ViewMDataPageComponent implements OnInit {
     private router: Router,
     private portalService: PortalService,
     private messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -99,7 +104,7 @@ export class ViewMDataPageComponent implements OnInit {
     try {
       for (const buildID of this.buildIDsArray) {
         const buildData = await this.portalService.getBuildData(JSON.stringify({ "buildID": buildID }));
-        this.getRecommendedProject(buildData, buildID);
+        await this.getRecommendedProject(buildData, buildID);
         this.individualBuildData[buildID] = buildData;
         this.combinedData.push(...buildData);
       }
@@ -115,37 +120,23 @@ export class ViewMDataPageComponent implements OnInit {
     this.combinedDataCheck = true;
     this.processCombinedData();
     this.processSingleBuildData();
+    this.storeRecommededBuildIDs();
+    this.cdr.detectChanges();
   }
 
   async getRecommendedProject(buildData: any, buildID: string): Promise<void> {
     await this.portalService.getRecomendedData(buildData)
       .then(response => {
         this.reccomendedDataMap[buildID] = response;
-        this.recommendedProject[buildID] = response["recomended_projects"];
+        this.recommendedProject[buildID] = response["recommended_projects"];
         this.recommendedUnit[buildID] = response["unit"];
         this.recommendedVoltage[buildID] = response["voltage"];
         this.recommendedTemp[buildID] = response["similar_temp"];
 
         if (this.recommendedProject[buildID] && this.recommendedProject[buildID].length === 1 && this.recommendedVoltage[buildID].length === 1 && this.recommendedTemp[buildID].length === 1) {
-          this.isExist = true;
           this.isExistMap[buildID] = true;
         }
         else {
-          let missingVariables = "";
-          if (this.recommendedProject[buildID]) {
-            missingVariables += "Project ";
-          }
-          if (this.recommendedUnit[buildID].length) {
-            missingVariables += "Unit ";
-          }
-          if (this.recommendedVoltage[buildID].length) {
-            missingVariables += "Voltage ";
-          }
-          if (this.recommendedTemp[buildID].length) {
-            missingVariables += "Temperature ";
-          }
-          this.missingVar = missingVariables;
-          this.isExist = false;
           this.isExistMap[buildID] = false;
           this.fetchProjects();
         }
@@ -257,5 +248,62 @@ export class ViewMDataPageComponent implements OnInit {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
 
-}
+  async storeRecommededBuildIDs(): Promise<void> {
+    console.log(this.reccomendedDataMap);
+    for (const buildID of this.buildIDsArray) {
+      if (this.reccomendedDataMap[buildID] && this.reccomendedDataMap[buildID].isRecommendExist === true) {
+        this.recommededBuildIDData.push({
+          buildID: buildID,
+          buildData: [this.singleBuildDataMap[buildID][0]],
+          project: this.recommendedProject[buildID][0],
+          voltage: this.recommendedVoltage[buildID][0],
+          temperature: this.recommendedTemp[buildID][0],
+          unit: this.recommendedUnit[buildID][0]
+        });
+        this.recommededBuildIDList.push(buildID);
+      }
+      else {
+        this.notRecommededBuildIDList.push(buildID);
+      }
+    }
+    console.log("this.recommededBuildIDData", this.recommededBuildIDData);
+    console.log("this.recommededBuildIDList", this.recommededBuildIDList);
+  }
 
+  onSubmit(): void {
+    const promises: Promise<any>[] = [];
+    for (const buildID of this.recommededBuildIDList) {
+      const combinedList = {
+        buildData: [this.singleBuildDataMap[buildID][0]],
+        project: this.recommendedProject[buildID][0],
+        voltage: this.recommendedVoltage[buildID][0],
+        temperature: this.recommendedTemp[buildID][0],
+        unit: this.recommendedUnit[buildID][0]
+      };
+      const addToProjectPromise = this.portalService.addToProject(combinedList);
+      promises.push(addToProjectPromise);
+    }
+
+    Promise.all(promises)
+      .then(responses => {
+        console.log(responses);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'All items have been added successfully.',
+          life: 3000
+        });
+        window.scrollTo(0, 0);
+      })
+      .catch(errors => {
+        console.error(errors);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'An error occurred while adding items.',
+          life: 3000
+        });
+        window.scrollTo(0, 0);
+      });
+  }
+}

@@ -15,6 +15,7 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   @Input() combinedSummaryData: any[] = [];
   @Input() singleBuildData: any[] = [];
   @Input() refParam: any;
+  @Input() singleRecommendedData: any;
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
   @ViewChild('singleChartCanvas') singleChartCanvas!: ElementRef;
@@ -65,11 +66,15 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   passingPercentage = 0;
   reccomendedData: any;
   recommendedUnit: any;
-  recommendedProjectList: any;
+  recommendedProject: any;
   recommendedVoltage: any;
   recommendedTemp: any;
   missingVar = '';
   isExist = false;
+  projectList: any[] = [];
+  unitList: any[] = [];
+  tempList: any[] = [];
+  voltageList: any[] = [];
   selectedProject: any;
   selectedVoltage: any;
   selectedUnit: any;
@@ -85,11 +90,10 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    console.log(this.combinedSummaryData);
     if (this.singleBuildData.length > 0) {
       this.singleBuildDataArray = this.singleBuildData.flatMap(obj => Object.values(obj));
-      console.log(this.singleBuildDataArray);
       this.mapTestParam();
+      this.mapRecommendedData();
     }
   }
 
@@ -108,7 +112,6 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   }
 
   generateCombinedDataChart(chartBuildData: any[] = []): void {
-    console.log(chartBuildData);
     const doughnutCanvas = this.chartCanvas?.nativeElement.getContext('2d');
     const lineChartCanvas = this.lineChartCanvas?.nativeElement.getContext('2d');
 
@@ -223,7 +226,6 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   }
 
   generateSingleDataChart(): void {
-    console.log("HERE")
     const singleDataPieCanvas = this.singleChartCanvas?.nativeElement.getContext('2d');
     const singleDataLineChartCanvas = this.singleLineChartCanvas?.nativeElement.getContext('2d');
 
@@ -232,7 +234,6 @@ export class DataTabComponent implements OnInit, AfterViewInit {
     }
 
     this.testCount = this.singleBuildDataArray.length;
-    console.log(this.singleBuildDataArray);
     const passCount = this.singleBuildDataArray.filter((item: any) => item['Test Result'] === 'PASS').length;
     const failCount = this.singleBuildDataArray.filter((item: any) => item['Test Result'] === 'FAIL').length;
     const notRunCount = this.singleBuildDataArray.filter((item: any) => item['Test Result'] === 'NOT-RUN').length;
@@ -356,4 +357,69 @@ export class DataTabComponent implements OnInit, AfterViewInit {
     });
   }
 
+  mapRecommendedData(): void {
+    this.recommendedProject = this.singleRecommendedData['recommended_projects'];
+    this.recommendedUnit = this.singleRecommendedData['unit'];
+    this.recommendedVoltage = this.singleRecommendedData['voltage'];
+    this.recommendedTemp = this.singleRecommendedData['similar_temp'];
+
+    if (this.recommendedProject && this.recommendedProject.length == 1) {
+      this.selectedProject = this.recommendedProject;
+    }
+    else {
+      this.fetchProjects();
+    }
+  }
+
+  private async fetchProjects() {
+    try {
+      this.projectList = await this.portalService.getProjects();
+    } catch (error) {
+      console.log("Error retrieving project details.")
+    }
+  }
+
+  async onProjectSelect(event: any) {
+    this.selectedProject = event.data;
+
+    try {
+      const projectId = this.selectedProject.id;
+      const data = await this.portalService.getVoltagesAndTemperatures(projectId);
+
+      if (data) {
+        this.voltageList = data.voltages;
+        this.tempList = data.temperatures;
+        this.unitList = data.units;
+      }
+    } catch (error) {
+      console.error('Error retrieving voltages and temperatures:', error);
+    }
+  }
+
+  onSubmit() {
+    if (this.selectedProject && this.selectedVoltage && this.selectedTemp && this.selectedUnit) {
+      const combinedList = {
+        buildData: [this.singleBuildData[0][0]],
+        project: this.selectedProject,
+        voltage: this.selectedVoltage,
+        temperature: this.selectedTemp,
+        unit: this.selectedUnit
+      };
+
+      this.portalService.addToProject(combinedList)
+        .then(response => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: response.message, life: 3000 });
+          window.scrollTo(0, 0);
+        })
+        .catch(error => {
+          console.error(error);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
+          window.scrollTo(0, 0);
+        });
+    }
+    else {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Please select a project.', life: 3000 });
+      window.scrollTo(0, 0);
+    }
+  }
 }
