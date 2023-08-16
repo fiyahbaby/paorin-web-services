@@ -21,6 +21,7 @@
     "@types/chart.js": "^2.9.37",
     "chart.js": "^4.3.0",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "echarts": "^5.4.3",
     "exceljs": "^4.3.0",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.25.2",

@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService, SortEvent } from 'primeng/api';
 import { PortalService } from 'src/app/portal/portal.service';
 import { Chart } from 'chart.js/auto';
-import * as Plotly from 'plotly.js-dist-min';
+import * as echarts from 'echarts';
+type EChartsOption = echarts.EChartsOption;
 
 @Component({
   selector: 'app-view-data-page',
@@ -13,6 +14,10 @@ import * as Plotly from 'plotly.js-dist-min';
 export class ViewDataPageComponent implements OnInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef;
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
+  @ViewChild('voltageBoxPlot') voltageBoxPlot!: ElementRef;
+  @ViewChild('tempBoxPlot') tempBoxPlot!: ElementRef;
+  voltageBoxPlotChart!: echarts.ECharts;
+  tempBoxPlotChart!: echarts.ECharts;
   reccomendedData: any;
   recommendedUnit: any;
   recommendedProjectList: any;
@@ -71,6 +76,8 @@ export class ViewDataPageComponent implements OnInit {
     "VCCAUX_PMC",
     "VCCAUX_SYSMON",
   ];
+  voltageBoxPlotKeys: any[] = ['VCCINT', 'VCC_PMC', 'VCC_PSFP', 'VCC_PSLP', 'VCC_RAM', 'VCC_SOC'];
+  tempBoxPlotKeys: any[] = ['Max. Temp', 'Min. Temp'];
 
   constructor(
     private route: ActivatedRoute,
@@ -98,6 +105,7 @@ export class ViewDataPageComponent implements OnInit {
     this.portalService.getBuildData(JSON.stringify(this.buildID))
       .then((buildData) => {
         this.buildData = buildData;
+        console.log(buildData);
         this.createBuildDataMap();
         this.createTestResultMap();
         this.sendData();
@@ -105,7 +113,8 @@ export class ViewDataPageComponent implements OnInit {
         this.testCount = this.buildData.length;
         this.generateChart();
         this.getRecommendedData();
-        this.generateBoxPlot();
+        this.createVoltageBoxPlot();
+        this.createTempBoxPlot();
       })
       .catch((error) => {
         console.error('An error occurred while fetching build data:', error);
@@ -393,29 +402,341 @@ export class ViewDataPageComponent implements OnInit {
     }
   }
 
-  generateBoxPlotData(): any[] {
-    const vccintData = this.buildData.map((dataItem: any) => dataItem['VCCINT']);
-    const boxPlotData = [{
-      y: vccintData,
-      type: 'box',
-      name: 'VCCINT',
-      boxpoints: 'all', // 'outliers' to show only outliers
-      // jitter: 0.3, // jitter amount for points
-      // pointpos: -1.8 // position of points in relation to box
-    }];
-    return boxPlotData;
-  }
+  async createVoltageBoxPlot() {
+    var myChart = echarts.init(this.voltageBoxPlot.nativeElement);
+    var option: EChartsOption;
+    if (!Array.isArray(this.buildData)) {
+      console.error('buildData is not an array.');
+      return;
+    }
+    const data: any[] = [];
+    const boxPlotData: number[][] = [];
 
-  generateBoxPlot(): void {
-    const boxPlotData = this.generateBoxPlotData();
+    // Initialize an object to hold values for each key
+    const keyValues: { [key: string]: number[] } = {};
+    this.voltageBoxPlotKeys.forEach(key => {
+      keyValues[key] = [];
+    });
 
-    const layout = {
-      title: 'Box Plot of VCCINT Values',
-      yaxis: {
-        title: 'VCCINT'
+    await Promise.all(this.buildData.map(async item => {
+      if (!this.voltageBoxPlotKeys.some(key => item[key] === null || item[key] === undefined || item[key] === 0)) {
+        const dataPoint: any = { 'Test Name': item['Test Name'] };
+        await Promise.all(this.voltageBoxPlotKeys.map(async key => {
+          const value = item[key];
+          const numericValue = parseFloat(value);
+
+          dataPoint[key] = numericValue;
+
+          keyValues[key].push(numericValue);
+        }));
+
+        data.push(dataPoint);
       }
-    };
+    }));
 
-    Plotly.newPlot('boxPlot', boxPlotData, layout);
+    this.voltageBoxPlotKeys.forEach(key => {
+      boxPlotData.push(keyValues[key]);
+    });
+
+    const validData = boxPlotData.filter(subArray => subArray.length > 0);
+    const minDataValue = ((validData.reduce((min, subArray) => {
+      const minValueInSubArray = Math.min(...subArray);
+      return Math.min(min, minValueInSubArray);
+    }, Infinity) * 0.995).toFixed(2));
+
+    const maxDataValue = (validData.reduce((max, subArray) => {
+      const maxValueInSubArray = Math.max(...subArray);
+      return Math.max(max, maxValueInSubArray);
+    }, -Infinity) * 1).toFixed(2);
+
+    console.log('minDataValue: ', minDataValue);
+    console.log('maxDataValue: ', maxDataValue);
+    option = {
+      title: [
+        {
+          text: 'Voltage Analysis',
+          left: 'center'
+        },
+      ],
+      dataset: [
+        {
+          source: boxPlotData
+        },
+        {
+          transform: {
+            type: 'boxplot',
+            config: { itemNameFormatter: 'expr {value}' }
+          }
+        },
+        {
+          fromDatasetIndex: 1,
+          fromTransformResult: 1
+        }
+      ],
+      tooltip: {
+        trigger: 'item',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '10%',
+        right: '10%',
+        bottom: '15%'
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: this.voltageBoxPlotKeys,
+        splitArea: {
+          show: false
+        },
+        splitLine: {
+          show: true
+        },
+        axisLabel: {
+          interval: 0
+        }
+
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Voltage (V)',
+        splitArea: {
+          show: true
+        },
+        min: minDataValue,
+        max: maxDataValue
+      },
+      series: [
+        {
+          name: 'boxplot',
+          type: 'boxplot',
+          data: boxPlotData,
+          tooltip: {
+            formatter: function (param: any) {
+              const statsLabels = ['Upper', 'Q3', 'Median', 'Q1', 'Lower'];
+
+              // Calculate the index range for statistics values
+              const startIndex = 1;
+              const endIndex = startIndex + statsLabels.length - 1;
+
+              let tooltipContent = statsLabels.map((label, index) => {
+                return `${label}: ${param.data[index + startIndex]}`;
+              }).join('<br/>');
+
+              // Calculate the min and max values dynamically
+              const statsData = param.data.slice(startIndex, endIndex + 1);
+              const minValue = Math.min(...statsData);
+              const maxValue = Math.max(...statsData);
+
+              // Include Min and Max values in the tooltip
+              tooltipContent += `<br/><br/>Min: ${minValue}<br/>Max: ${maxValue}`;
+
+              return tooltipContent;
+            }
+          },
+        },
+        {
+          name: 'outlier',
+          type: 'scatter',
+          datasetIndex: 0,
+          dimensions: this.voltageBoxPlotKeys,
+          encode: {
+            x: this.voltageBoxPlotKeys,
+            y: this.voltageBoxPlotKeys
+          },
+          data: boxPlotData,
+          symbolSize: 10,
+          itemStyle: {
+            color: 'rgba(255, 0, 0, 0.5)',
+          },
+          tooltip: {
+            formatter: function (param: any) {
+              const testName = param.data['Test Name'];
+              return `${testName}`;
+            }
+          }
+
+        }
+      ]
+
+    };
+    option && myChart.setOption(option);
   }
+
+  createTempBoxPlot(): void {
+    var myChart = echarts.init(this.tempBoxPlot.nativeElement);
+    var option: EChartsOption;
+
+    if (!Array.isArray(this.buildData)) {
+      console.error('buildData is not an array.');
+      return;
+    }
+
+    // const data: number[][] = this.tempBoxPlotKeys.map(() => []);
+    const data: any[] = [];
+    const boxPlotData: number[][] = [];
+    const keyValues: { [key: string]: number[] } = {};
+    this.tempBoxPlotKeys.forEach(key => {
+      keyValues[key] = [];
+    });
+    this.buildData.forEach(item => {
+      if (!this.tempBoxPlotKeys.some(key => item[key] === null || item[key] === undefined || item[key] === 0)) {
+        const dataPoint: any = { 'Test Name': item['Test Name'] };
+        this.tempBoxPlotKeys.forEach(tempKey => { // Use a different variable name for the inner loop
+          const value = item[tempKey];
+          const numericValue = parseFloat(value);
+          dataPoint[tempKey] = numericValue;
+          keyValues[tempKey].push(numericValue);
+        });
+        data.push(dataPoint);
+      }
+    });
+
+    this.tempBoxPlotKeys.forEach(key => {
+      boxPlotData.push(keyValues[key]);
+    });
+
+    console.log(data);
+
+    const validData = boxPlotData.filter(subArray => subArray.length > 0);
+    console.log(validData);
+    const minDataValue = (
+      validData.reduce((min, subArray) => {
+        const minValueInSubArray = Math.min(...subArray);
+        return Math.min(min, minValueInSubArray);
+      }, Infinity) *
+      1.02
+    ).toFixed(2);
+
+    const maxDataValue = (
+      validData.reduce((max, subArray) => {
+        const maxValueInSubArray = Math.max(...subArray);
+        return Math.max(max, maxValueInSubArray);
+      }, -Infinity) *
+      1.02
+    ).toFixed(2);
+
+    console.log('minDataValue: ', minDataValue);
+    console.log('maxDataValue: ', maxDataValue);
+
+    option = {
+      title: [
+        {
+          text: 'Temperature Analysis',
+          left: 'center',
+        },
+      ],
+      dataset: [
+        {
+          source: boxPlotData,
+        },
+        {
+          transform: {
+            type: 'boxplot',
+            config: { itemNameFormatter: 'expr {value}' },
+          },
+        },
+        {
+          fromDatasetIndex: 1,
+          fromTransformResult: 1,
+        },
+      ],
+      tooltip: {
+        trigger: 'item',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '10%',
+        right: '10%',
+        bottom: '15%',
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: this.tempBoxPlotKeys,
+        splitArea: {
+          show: false,
+        },
+        splitLine: {
+          show: true,
+        },
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Temperature',
+        splitArea: {
+          show: true,
+        },
+        min: minDataValue,
+        max: maxDataValue,
+        axisLabel: {
+          formatter: '{value}',
+        },
+        axisTick: {
+          show: true,
+          length: 5,
+          lineStyle: {
+            color: 'red',
+          },
+        },
+
+      },
+      series: [
+        {
+          name: 'boxplot',
+          type: 'boxplot',
+          data: boxPlotData,
+          tooltip: {
+            formatter: function (param: any) {
+              const statsLabels = ['Upper', 'Q3', 'Median', 'Q1', 'Lower'];
+
+              const startIndex = 1;
+              const endIndex = startIndex + statsLabels.length - 1;
+
+              let tooltipContent = statsLabels
+                .map((label, index) => {
+                  return `${label}: ${param.data[index + startIndex]}`;
+                })
+                .join('<br/>');
+
+              const statsData = param.data.slice(startIndex, endIndex + 1);
+              const minValue = Math.min(...statsData);
+              const maxValue = Math.max(...statsData);
+
+              tooltipContent += `<br/><br/>Min: ${minValue}<br/>Max: ${maxValue}`;
+
+              return tooltipContent;
+            },
+          },
+        },
+        {
+          name: 'outlier',
+          type: 'scatter',
+          datasetIndex: 0,
+          dimensions: this.tempBoxPlotKeys,
+          encode: {
+            x: this.tempBoxPlotKeys,
+            y: this.tempBoxPlotKeys,
+          },
+          data: boxPlotData,
+          symbolSize: 10,
+          itemStyle: {
+            color: 'rgba(255, 0, 0, 0.8)',
+          },
+          tooltip: {
+            formatter: function (param: any) {
+              const testName = param.data['Test Name'];
+              return `${testName}`;
+            }
+          }
+        },
+      ],
+    };
+    option && myChart.setOption(option);
+  }
+
 }

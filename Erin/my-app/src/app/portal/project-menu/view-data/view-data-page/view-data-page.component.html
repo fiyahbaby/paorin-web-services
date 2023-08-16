@@ -60,6 +60,10 @@
                 </div>
             </div>
         </div>
+        <div class="w-full flex flex-row">
+            <div #voltageBoxPlot style="width: 60%; height: 400px;"></div>
+            <div #tempBoxPlot style="width: 40%; height: 400px;"></div>
+        </div>
         <div class="w-full flex flex-column">
             <div class="w-full mb-3">
                 <p-header>
@@ -364,10 +368,9 @@
                         </p-accordionTab>
                     </p-accordion>
                 </div>
-                <div class="flex justify-content-end buttons-container bottom mt-3">
-                    <ng-container *ngTemplateOutlet="buttons"></ng-container>
-                </div>
-                <!-- <div id="boxPlot" class="w-6"></div> -->
+            </div>
+            <div class="flex justify-content-end buttons-container bottom mt-3">
+                <ng-container *ngTemplateOutlet="buttons"></ng-container>
             </div>
         </div>
     </p-card>
