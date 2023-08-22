@@ -51,6 +51,15 @@ const routes: Routes = [
         },
       },
       {
+        path: 'view-data/view-data-page',
+        loadChildren: async () => {
+          const { ViewDataPageModule } = await import(
+            './view-data/view-data-page/view-data.module'
+          );
+          return ViewDataPageModule;
+        },
+      },
+      {
         path: 'delete-data',
         loadChildren: async () => {
           const { DeleteDataModule } = await import(

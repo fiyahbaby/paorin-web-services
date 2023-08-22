@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SelectItem } from 'primeng/api';
 import { AuthService } from 'src/app/app-common/auth-service/auth.service';
 import { FormCommonService } from 'src/app/app-common/form-common/form-common.service';
 import { PortalService } from '../../portal.service';
 import { MessageService } from 'primeng/api';
-import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-view-project',

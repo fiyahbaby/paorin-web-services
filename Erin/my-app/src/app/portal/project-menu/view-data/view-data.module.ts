@@ -7,7 +7,7 @@ import { ViewMDataPageComponent } from './view-m-data-page/view-m-data-page.comp
 import { DataTabComponent } from './data-tab/data-tab.component';
 
 @NgModule({
-  declarations: [ViewDataComponent, ViewDataPageComponent, ViewMDataPageComponent, DataTabComponent],
+  declarations: [ViewDataComponent, ViewMDataPageComponent, DataTabComponent],
   imports: [ViewDataRoutingModule, FormCommonModule],
 })
 export class ViewDataModule { }

@@ -103,7 +103,7 @@ export class PortalService {
   }
 
   async getBuildData(buildID: string): Promise<any> {
-    const parsedBuildID = JSON.parse(buildID)['buildID'];
+    const parsedBuildID = await JSON.parse(buildID)['buildID'];
     const url = `${await this.getBackendUrl()}/api/retrieveDbData/${parsedBuildID}`;
     const data = await this.http.get<any>(url).toPromise();
     return data;
@@ -185,5 +185,11 @@ export class PortalService {
     const url = `${await this.getBackendUrl()}/api/get_unit_statistics?project_id=${projectId}`;
     const response = this.http.get<any[]>(url).toPromise();
     return response
+  }
+
+  async retrieveItemSummary(summaryData: any): Promise<any> {
+    const url = `${await this.getBackendUrl()}/api/retrieveItemSummary`;
+    const response = await this.http.get<any>(url, { params: summaryData }).toPromise();
+    return response;
   }
 }

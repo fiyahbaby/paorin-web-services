@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DeleteProjectComponent } from './delete-project.component';
 import { AuthGuard } from 'src/app/app-common/auth-service/auth-guard';
+import { DeleteProjectComponent } from './delete-project.component';
 import { ConfirmDeleteProjectComponent } from './confirm-delete-project/confirm-delete-project.component';
 
 const routes: Routes = [

@@ -217,39 +217,58 @@ export class ProjectPageComponent implements OnInit {
     if (!this.voltageVsBlockData) {
       return;
     }
-
+    console.log(this.voltageVsBlockData);
     const voltageNames = this.voltageNames;
-    const data = this.voltageVsBlockData.map((voltageData: {
-      PASSING_RATE: any;
-      FAILING_RATE: any;
-      NOT_RUN: any;
-    }) => {
-      const totalValue = (
-        (this.isVoltageSummaryPassEnabled ? voltageData.PASSING_RATE : 0) +
-        (this.isVoltageSummaryFailEnabled ? voltageData.FAILING_RATE : 0) +
-        (this.isVoltageSummaryNotRunEnabled ? voltageData.NOT_RUN : 0)
-      );
+    const data = voltageNames.map((voltageName: string) => {
+      const voltageData = this.voltageVsBlockData.find((data: { voltage: string; }) => data.voltage === voltageName);
 
-      return {
-        pass: this.isVoltageSummaryPassEnabled ? parseFloat(((voltageData.PASSING_RATE / totalValue) * 100).toFixed(2)) : 0,
-        fail: this.isVoltageSummaryFailEnabled ? parseFloat(((voltageData.FAILING_RATE / totalValue) * 100).toFixed(2)) : 0,
-        notRun: this.isVoltageSummaryNotRunEnabled ? parseFloat(((voltageData.NOT_RUN / totalValue) * 100).toFixed(2)) : 0,
-      };
+      if (voltageData) {
+        const totalValue = (
+          (this.isVoltageSummaryPassEnabled ? voltageData.PASSING_RATE : 0) +
+          (this.isVoltageSummaryFailEnabled ? voltageData.FAILING_RATE : 0) +
+          (this.isVoltageSummaryNotRunEnabled ? voltageData.NOT_RUN : 0)
+        );
+        return {
+          pass: this.isVoltageSummaryPassEnabled ? parseFloat(((voltageData.PASSING_RATE / totalValue) * 100).toFixed(2)) : 0,
+          fail: this.isVoltageSummaryFailEnabled ? parseFloat(((voltageData.FAILING_RATE / totalValue) * 100).toFixed(2)) : 0,
+          notRun: this.isVoltageSummaryNotRunEnabled ? parseFloat(((voltageData.NOT_RUN / totalValue) * 100).toFixed(2)) : 0,
+        };
+      } else {
+        return {
+          pass: 0,
+          fail: 0,
+          notRun: 0,
+        };
+      }
     });
 
-    const passData = data.map((item: { pass: any; }) => {
-      return isNaN(item.pass) ? 0 : item.pass;
+    console.log(data);
+
+    const passData = voltageNames.map(voltageName => {
+      const index = this.voltageNames.indexOf(voltageName);
+      if (index !== -1) {
+        return isNaN(data[index]?.pass) ? 0 : data[index].pass;
+      }
+      return 0;
     });
 
-    const failData = data.map((item: { fail: any; }) => {
-      return isNaN(item.fail) ? 0 : item.fail;
+    const failData = voltageNames.map(voltageName => {
+      const index = this.voltageNames.indexOf(voltageName);
+      if (index !== -1) {
+        return isNaN(data[index]?.fail) ? 0 : data[index].fail;
+      }
+      return 0;
     });
 
-    const notRunData = data.map((item: { notRun: any; }) => {
-      return isNaN(item.notRun) ? 0 : item.notRun;
+    const notRunData = voltageNames.map(voltageName => {
+      const index = this.voltageNames.indexOf(voltageName);
+      if (index !== -1) {
+        return isNaN(data[index]?.notRun) ? 0 : data[index].notRun;
+      }
+      return 0;
     });
-
-
+    console.log(voltageNames);
+    console.log(passData, failData, notRunData);
 
     if (this.stackedBarChart) {
       this.stackedBarChart.destroy();
@@ -267,6 +286,7 @@ export class ProjectPageComponent implements OnInit {
       },
       plugins: {
         datalabels: {
+          color: 'black',
           display: (context) => {
             const value = context.dataset.data[context.dataIndex];
             return value !== 0;
@@ -413,7 +433,15 @@ export class ProjectPageComponent implements OnInit {
         const params = {
           projectID: this.projectID,
           summaryItem: clickedCorner,
+          category: 'corner'
         }
+        this.router.navigate(['item-summary'], {
+          relativeTo: this.route,
+          queryParams:
+          {
+            data: JSON.stringify(params),
+          }
+        });
       },
       responsive: true,
       scales: {
@@ -493,7 +521,6 @@ export class ProjectPageComponent implements OnInit {
   }
 
   createProjectChart(): void {
-    // Create the pie chart
     if (!this.projectStats) {
       return;
     }
@@ -527,6 +554,7 @@ export class ProjectPageComponent implements OnInit {
         responsive: true,
         plugins: {
           datalabels: {
+            color: 'black',
             display: (context) => {
               const value = context.dataset.data[context.dataIndex];
               return value !== 0;
@@ -577,7 +605,8 @@ export class ProjectPageComponent implements OnInit {
     ];
 
     for (const unit of unitStats) {
-      labels.push(`${unit.two_d_name} - ${unit.process_corner}`);
+      const truncatedUnitName = unit.two_d_name.substring(unit.two_d_name.length - 4);
+      labels.push(`${truncatedUnitName} - ${unit.process_corner}`);
       const totalValue =
         (this.isUnitSummaryPassEnabled ? unit.data.pass_rate : 0) +
         (this.isUnitSummaryFailEnabled ? unit.data.fail_rate : 0) +

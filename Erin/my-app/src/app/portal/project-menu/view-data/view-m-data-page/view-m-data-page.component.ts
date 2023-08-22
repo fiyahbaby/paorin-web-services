@@ -24,7 +24,7 @@ export class ViewMDataPageComponent implements OnInit {
   recommendedVoltage: { [key: string]: any } = {};
   recommendedTemp: { [key: string]: any } = {};
   isExistMap: { [buildID: string]: boolean } = {};
-  isExist = false;
+  isExist = 0;
   missingVar = '';
   combinedTestCount = 0;
   combinedPassCount = 0;
@@ -132,9 +132,9 @@ export class ViewMDataPageComponent implements OnInit {
         this.recommendedUnit[buildID] = response["unit"];
         this.recommendedVoltage[buildID] = response["voltage"];
         this.recommendedTemp[buildID] = response["similar_temp"];
-
-        if (this.recommendedProject[buildID] && this.recommendedProject[buildID].length === 1 && this.recommendedVoltage[buildID].length === 1 && this.recommendedTemp[buildID].length === 1) {
+        if (this.recommendedProject[buildID] && this.recommendedProject[buildID].length === 1 && this.recommendedVoltage[buildID].length === 1 && this.recommendedTemp[buildID].length === 1 && this.recommendedUnit[buildID].length === 1) {
           this.isExistMap[buildID] = true;
+          this.isExist++;
         }
         else {
           this.isExistMap[buildID] = false;
@@ -144,7 +144,6 @@ export class ViewMDataPageComponent implements OnInit {
   }
 
   async processCombinedData(): Promise<void> {
-    // get counts, percentages
     this.combinedTestCount = this.combinedData.length;
     this.combinedPassCount = this.combinedData.filter((item: any) => item['Test Result'] === 'PASS').length;
     this.combinedFailCount = this.combinedData.filter((item: any) => item['Test Result'] === 'FAIL').length;
@@ -157,7 +156,6 @@ export class ViewMDataPageComponent implements OnInit {
     ];
     this.summaryCheck = true;
 
-    // map test results for viewing
     this.combinedTestResultMap = this.combinedData.map((dataItem: any) => {
       const itemMap: { [key: string]: any } = {};
       this.testResults.forEach((param) => {
@@ -217,12 +215,12 @@ export class ViewMDataPageComponent implements OnInit {
       this.testResults.forEach((param) => {
         if (param in data) {
           if (data[param] === null || data[param] === "null") {
-            formattedData[param] = "NULL";
+            formattedData[param] = null;
           } else {
             formattedData[param] = data[param];
           }
         } else {
-          formattedData[param] = "NULL";
+          formattedData[param] = null;
         }
       });
       this.singleBuildDataMap[buildID][index] = formattedData;
@@ -249,7 +247,6 @@ export class ViewMDataPageComponent implements OnInit {
   }
 
   async storeRecommededBuildIDs(): Promise<void> {
-    console.log(this.reccomendedDataMap);
     for (const buildID of this.buildIDsArray) {
       if (this.reccomendedDataMap[buildID] && this.reccomendedDataMap[buildID].isRecommendExist === true) {
         this.recommededBuildIDData.push({
@@ -266,27 +263,27 @@ export class ViewMDataPageComponent implements OnInit {
         this.notRecommededBuildIDList.push(buildID);
       }
     }
-    console.log("this.recommededBuildIDData", this.recommededBuildIDData);
-    console.log("this.recommededBuildIDList", this.recommededBuildIDList);
   }
 
   onSubmit(): void {
     const promises: Promise<any>[] = [];
     for (const buildID of this.recommededBuildIDList) {
+      const buildDataMap = this.singleBuildDataMap[buildID];
+      const buildDataArray = Object.values(buildDataMap);
       const combinedList = {
-        buildData: [this.singleBuildDataMap[buildID][0]],
+        buildData: buildDataArray,
         project: this.recommendedProject[buildID][0],
         voltage: this.recommendedVoltage[buildID][0],
         temperature: this.recommendedTemp[buildID][0],
         unit: this.recommendedUnit[buildID][0]
       };
+
       const addToProjectPromise = this.portalService.addToProject(combinedList);
       promises.push(addToProjectPromise);
     }
 
     Promise.all(promises)
       .then(responses => {
-        console.log(responses);
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
@@ -306,4 +303,6 @@ export class ViewMDataPageComponent implements OnInit {
         window.scrollTo(0, 0);
       });
   }
+
+
 }

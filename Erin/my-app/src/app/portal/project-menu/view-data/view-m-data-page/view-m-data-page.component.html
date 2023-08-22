@@ -8,7 +8,7 @@
                 <ng-template pTemplate="content">
                     <app-data-tab *ngIf="combinedData && combinedData.length > 0" [combinedBuildData]="combinedData"
                         [combinedSummaryData]="combinedSummaryData"></app-data-tab>
-                    <ng-container *ngIf="recommededBuildIDData.length > 0">
+                    <ng-container *ngIf="recommededBuildIDData.length > 0 && isExist > 0">
                         <div class="mt-3">
                             <p-accordion>
                                 <p-accordionTab header="Add to Project">
@@ -19,11 +19,11 @@
                                         <p-table [value]="recommededBuildIDData" styleClass="p-datatable-gridlines">
                                             <ng-template pTemplate="header">
                                                 <tr>
-                                                    <th style="width: 30rem; text-align: center">Build ID</th>
+                                                    <th style="width: 20rem; text-align: center">Build ID</th>
                                                     <th style="width: 10rem; text-align: center">Device</th>
                                                     <th style="width: 10rem; text-align: center">Block</th>
                                                     <th style="width: 10rem; text-align: center">Revision</th>
-                                                    <th style="width: 10rem; text-align: center">Unit</th>
+                                                    <th style="width: 15rem; text-align: center">Unit</th>
                                                     <th style="width: 10rem; text-align: center">Voltage</th>
                                                     <th style="width: 10rem; text-align: center">Temperature</th>
                                                 </tr>

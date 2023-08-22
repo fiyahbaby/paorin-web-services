@@ -69,6 +69,7 @@ export class DataTabComponent implements OnInit, AfterViewInit {
   recommendedProject: any;
   recommendedVoltage: any;
   recommendedTemp: any;
+  recommendFlag = false;
   missingVar = '';
   isExist = false;
   projectList: any[] = [];
@@ -141,9 +142,6 @@ export class DataTabComponent implements OnInit, AfterViewInit {
           color: '#ffffff',
           fontFamily: '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'
         },
-        onCreated: function () {
-          console.log('Text element rendered');
-        }
       }]
     };
 
@@ -362,9 +360,12 @@ export class DataTabComponent implements OnInit, AfterViewInit {
     this.recommendedUnit = this.singleRecommendedData['unit'];
     this.recommendedVoltage = this.singleRecommendedData['voltage'];
     this.recommendedTemp = this.singleRecommendedData['similar_temp'];
-
-    if (this.recommendedProject && this.recommendedProject.length == 1) {
-      this.selectedProject = this.recommendedProject;
+    if (this.recommendedProject && this.recommendedTemp && this.recommendedVoltage && this.recommendedUnit) {
+      if (this.recommendedProject.length === 1 && this.recommendedTemp.length === 1 && this.recommendedVoltage.length === 1 && this.recommendedUnit.length === 1) {
+        this.selectedProject = this.recommendedProject;
+        this.recommendFlag = true;
+        console.log('true');
+      }
     }
     else {
       this.fetchProjects();

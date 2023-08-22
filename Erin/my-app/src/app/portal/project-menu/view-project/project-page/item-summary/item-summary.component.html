@@ -1,0 +1,181 @@
+<app-navbar></app-navbar>
+<div id="item-summary">
+    <app-header formHeader="Corner Summary"
+        formSubHeader="Project Menu > View Project > Project Dashboard > Corner Summary"></app-header>
+    <div class="w-full">
+        <p-tabView>
+            <p-tabPanel header="Summary">
+                <div class="flex flex-column">
+                    <div class="flex flex-row ml-3">
+                        <p-card id="chart-content" class="w-6">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Corner Summary
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas id="cornerChart" #cornerProgressChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="[summaryData?.corner_test_results]"
+                                        styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Corner</th>
+                                                <th style="text-align: center">TOTAL</th>
+                                                <th style="text-align: center">PASS</th>
+                                                <th style="text-align: center">FAIL</th>
+                                                <th style="text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-data>
+                                            <tr>
+                                                <td style="width: 20% ; text-align: center">{{ summaryData.summary_item
+                                                    }}
+                                                <td style="width: 20% ; text-align: center">{{
+                                                    data.total_corner_test_count }}
+                                                <td style="width: 20% ; text-align: center">{{ data.pass_count }}
+                                                <td style="width: 20% ; text-align: center">{{ data.fail_count }}
+                                                <td style="width: 20% ; text-align: center">{{ data.pass_count }}
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 ml-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Voltage Summary
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas width="600" height="300" #cornerVsVoltageChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="cornerVsVoltageTableData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center" *ngFor="let header of headers">{{ header
+                                                    }}</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-row>
+                                            <tr>
+                                                <td style="text-align: center" *ngFor="let cell of row">{{ cell }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row ml-3 mt-3">
+                        <p-card id="chart-content" class="w-6">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Unit Summary
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas width="600" height="300" #unitProgressChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="unitProgressData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 40% ; text-align: center">Name</th>
+                                                <th style="width: 20% ; text-align: center">PASS</th>
+                                                <th style="width: 20% ; text-align: center">FAIL</th>
+                                                <th style="width: 20% ; text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-data>
+                                            <tr>
+                                                <td style="text-align: center">{{ data.Name }}</td>
+                                                <td style="text-align: center">{{ data.PASS }}</td>
+                                                <td style="text-align: center">{{ data.FAIL }}</td>
+                                                <td style="text-align: center">{{ data['NOT-RUN'] }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 ml-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Temperature Summary
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas width="600" height="300" #tempProgressChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="temperatureData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Temperature</th>
+                                                <th style="width: 25% ; text-align: center">PASS</th>
+                                                <th style="width: 25% ; text-align: center">FAIL</th>
+                                                <th style="width: 25% ; text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-row>
+                                            <tr>
+                                                <td style="text-align: center">{{ row[0] }}</td>
+                                                <td style="text-align: center">{{ row[1] }}</td>
+                                                <td style="text-align: center">{{ row[2] }}</td>
+                                                <td style="text-align: center">{{ row[3] }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row ml-3 mt-3">
+                        <p-card id="chart-content" class="w-full">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Recent Tests
+                                    </h1>
+                                </p-header>
+                                <p-table [value]="testInstancesData" styleClass="p-datatable-gridlines">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th style="text-align: center">Build ID</th>
+                                            <th style="text-align: center">Unit</th>
+                                            <th style="text-align: center">Voltage</th>
+                                            <th style="text-align: center">Temperature</th>
+                                            <th style="text-align: center">Passing Percentage</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-testInstance>
+                                        <tr>
+                                            <td style="text-align: left; cursor: pointer;"
+                                                (click)="navigateToViewData(testInstance['Build ID'])">{{
+                                                testInstance['Build ID']
+                                                }}</td>
+                                            <td style="text-align: center">{{ testInstance['Unit'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Voltage'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Temp'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Passing Percentage'] }}</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </p-card>
+                    </div>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>

@@ -16,8 +16,10 @@ export class ViewDataPageComponent implements OnInit {
   @ViewChild('lineChartCanvas') lineChartCanvas!: ElementRef;
   @ViewChild('voltageBoxPlot') voltageBoxPlot!: ElementRef;
   @ViewChild('tempBoxPlot') tempBoxPlot!: ElementRef;
+  @ViewChild('runTimeBoxPlot') runTimeBoxPlot!: ElementRef;
   voltageBoxPlotChart!: echarts.ECharts;
   tempBoxPlotChart!: echarts.ECharts;
+  runTimeBoxPlotChart!: echarts.ECharts;
   reccomendedData: any;
   recommendedUnit: any;
   recommendedProjectList: any;
@@ -105,7 +107,6 @@ export class ViewDataPageComponent implements OnInit {
     this.portalService.getBuildData(JSON.stringify(this.buildID))
       .then((buildData) => {
         this.buildData = buildData;
-        console.log(buildData);
         this.createBuildDataMap();
         this.createTestResultMap();
         this.sendData();
@@ -115,6 +116,7 @@ export class ViewDataPageComponent implements OnInit {
         this.getRecommendedData();
         this.createVoltageBoxPlot();
         this.createTempBoxPlot();
+        this.createRunTimeBoxPlot();
       })
       .catch((error) => {
         console.error('An error occurred while fetching build data:', error);
@@ -184,20 +186,6 @@ export class ViewDataPageComponent implements OnInit {
           this.isExist = true;
         }
         else {
-          let missingVariables = "";
-          if (this.recommendedProjectList) {
-            missingVariables += "Project ";
-          }
-          if (this.recommendedUnit.length) {
-            missingVariables += "Unit ";
-          }
-          if (this.recommendedVoltage.length) {
-            missingVariables += "Voltage ";
-          }
-          if (this.recommendedTemp.length) {
-            missingVariables += "Temperature ";
-          }
-          this.missingVar = missingVariables;
           this.isExist = false;
           this.fetchProjects();
         }
@@ -382,7 +370,6 @@ export class ViewDataPageComponent implements OnInit {
         temperature: this.selectedTemp,
         unit: this.selectedUnit
       };
-      console.log("combinedList: ", combinedList)
 
       this.portalService.addToProject(combinedList)
         .then(response => {
@@ -412,7 +399,6 @@ export class ViewDataPageComponent implements OnInit {
     const data: any[] = [];
     const boxPlotData: number[][] = [];
 
-    // Initialize an object to hold values for each key
     const keyValues: { [key: string]: number[] } = {};
     this.voltageBoxPlotKeys.forEach(key => {
       keyValues[key] = [];
@@ -438,26 +424,49 @@ export class ViewDataPageComponent implements OnInit {
       boxPlotData.push(keyValues[key]);
     });
 
+    boxPlotData.forEach(subArray => {
+      subArray.sort((a, b) => a - b);
+    });
+
     const validData = boxPlotData.filter(subArray => subArray.length > 0);
-    const minDataValue = ((validData.reduce((min, subArray) => {
-      const minValueInSubArray = Math.min(...subArray);
-      return Math.min(min, minValueInSubArray);
-    }, Infinity) * 0.995).toFixed(2));
+    const iqrMultiplier = 1.5;
+    const iqrData = validData.map(subArray => {
+      const sortedArray = subArray.slice().sort((a, b) => a - b);
+      const q1Index = Math.floor(sortedArray.length * 0.25);
+      const q3Index = Math.floor(sortedArray.length * 0.75);
+      const q1 = sortedArray[q1Index];
+      const q3 = sortedArray[q3Index];
+      const iqr = q3 - q1;
+      return { q1, q3, iqr };
+    });
 
-    const maxDataValue = (validData.reduce((max, subArray) => {
-      const maxValueInSubArray = Math.max(...subArray);
-      return Math.max(max, maxValueInSubArray);
-    }, -Infinity) * 1).toFixed(2);
+    const lowerBounds = iqrData.map(data => {
+      const multiplier = data.q1 < 0 ? 0.995 : 1.005;
+      return data.q1 - iqrMultiplier * data.iqr * multiplier;
+    });
 
-    console.log('minDataValue: ', minDataValue);
-    console.log('maxDataValue: ', maxDataValue);
+    const upperBounds = iqrData.map(data => {
+      const multiplier = data.q3 < 0 ? 0.995 : 1.005;
+      return data.q3 + iqrMultiplier * data.iqr * multiplier;
+    });
+
+    const minDataValue = (
+      Math.min(
+        validData.reduce((min, subArray) => Math.min(...subArray, min), Infinity),
+        ...lowerBounds
+      ) * 0.995
+    ).toFixed(2);
+
+    const maxDataValue = (
+      Math.max(
+        validData.reduce((max, subArray) => Math.max(...subArray, max), -Infinity),
+        ...upperBounds
+      ) * 1
+    ).toFixed(2);
+
+
+    const voltageBoxPlotKeys = this.voltageBoxPlotKeys;
     option = {
-      title: [
-        {
-          text: 'Voltage Analysis',
-          left: 'center'
-        },
-      ],
       dataset: [
         {
           source: boxPlotData
@@ -465,7 +474,7 @@ export class ViewDataPageComponent implements OnInit {
         {
           transform: {
             type: 'boxplot',
-            config: { itemNameFormatter: 'expr {value}' }
+            config: { itemNameFormatter: this.voltageBoxPlotKeys }
           }
         },
         {
@@ -479,29 +488,22 @@ export class ViewDataPageComponent implements OnInit {
           type: 'shadow'
         }
       },
-      grid: {
-        left: '10%',
-        right: '10%',
-        bottom: '15%'
-      },
       xAxis: {
         type: 'category',
         boundaryGap: true,
-        data: this.voltageBoxPlotKeys,
-        splitArea: {
-          show: false
-        },
+        nameGap: 30,
         splitLine: {
           show: true
         },
         axisLabel: {
-          interval: 0
-        }
-
+          formatter: function (value: string, index: number) {
+            return voltageBoxPlotKeys[index];
+          }
+        },
       },
       yAxis: {
         type: 'value',
-        name: 'Voltage (V)',
+        name: 'Temperaure (°C)',
         splitArea: {
           show: true
         },
@@ -512,60 +514,36 @@ export class ViewDataPageComponent implements OnInit {
         {
           name: 'boxplot',
           type: 'boxplot',
-          data: boxPlotData,
+          datasetIndex: 1,
           tooltip: {
             formatter: function (param: any) {
               const statsLabels = ['Upper', 'Q3', 'Median', 'Q1', 'Lower'];
-
-              // Calculate the index range for statistics values
               const startIndex = 1;
               const endIndex = startIndex + statsLabels.length - 1;
 
-              let tooltipContent = statsLabels.map((label, index) => {
-                return `${label}: ${param.data[index + startIndex]}`;
-              }).join('<br/>');
-
-              // Calculate the min and max values dynamically
-              const statsData = param.data.slice(startIndex, endIndex + 1);
-              const minValue = Math.min(...statsData);
-              const maxValue = Math.max(...statsData);
-
-              // Include Min and Max values in the tooltip
-              tooltipContent += `<br/><br/>Min: ${minValue}<br/>Max: ${maxValue}`;
-
+              let tooltipContent = statsLabels
+                .map((label, index) => {
+                  return `${label}: ${param.data[endIndex - index].toFixed(3)}`;
+                })
+                .join('<br/>');
               return tooltipContent;
             }
-          },
+          }
         },
         {
           name: 'outlier',
           type: 'scatter',
-          datasetIndex: 0,
-          dimensions: this.voltageBoxPlotKeys,
-          encode: {
-            x: this.voltageBoxPlotKeys,
-            y: this.voltageBoxPlotKeys
-          },
-          data: boxPlotData,
-          symbolSize: 10,
+          datasetIndex: 2,
           itemStyle: {
             color: 'rgba(255, 0, 0, 0.5)',
-          },
-          tooltip: {
-            formatter: function (param: any) {
-              const testName = param.data['Test Name'];
-              return `${testName}`;
-            }
           }
-
         }
       ]
-
     };
     option && myChart.setOption(option);
   }
 
-  createTempBoxPlot(): void {
+  async createTempBoxPlot(): Promise<void> {
     var myChart = echarts.init(this.tempBoxPlot.nativeElement);
     var option: EChartsOption;
 
@@ -574,74 +552,80 @@ export class ViewDataPageComponent implements OnInit {
       return;
     }
 
-    // const data: number[][] = this.tempBoxPlotKeys.map(() => []);
     const data: any[] = [];
     const boxPlotData: number[][] = [];
     const keyValues: { [key: string]: number[] } = {};
     this.tempBoxPlotKeys.forEach(key => {
       keyValues[key] = [];
     });
-    this.buildData.forEach(item => {
+    await Promise.all(this.buildData.map(async item => {
       if (!this.tempBoxPlotKeys.some(key => item[key] === null || item[key] === undefined || item[key] === 0)) {
         const dataPoint: any = { 'Test Name': item['Test Name'] };
-        this.tempBoxPlotKeys.forEach(tempKey => { // Use a different variable name for the inner loop
+        await Promise.all(this.tempBoxPlotKeys.map(async tempKey => {
           const value = item[tempKey];
           const numericValue = parseFloat(value);
           dataPoint[tempKey] = numericValue;
           keyValues[tempKey].push(numericValue);
-        });
+        }));
         data.push(dataPoint);
       }
-    });
+    }));
 
     this.tempBoxPlotKeys.forEach(key => {
       boxPlotData.push(keyValues[key]);
     });
 
-    console.log(data);
+    boxPlotData.forEach(subArray => {
+      subArray.sort((a, b) => a - b);
+    });
 
     const validData = boxPlotData.filter(subArray => subArray.length > 0);
-    console.log(validData);
-    const minDataValue = (
-      validData.reduce((min, subArray) => {
-        const minValueInSubArray = Math.min(...subArray);
-        return Math.min(min, minValueInSubArray);
-      }, Infinity) *
-      1.02
+    const iqrMultiplier = 1.5;
+    const iqrData = validData.map(subArray => {
+      const sortedArray = subArray.slice().sort((a, b) => a - b);
+      const q1Index = Math.floor(sortedArray.length * 0.25);
+      const q3Index = Math.floor(sortedArray.length * 0.75);
+      const q1 = sortedArray[q1Index];
+      const q3 = sortedArray[q3Index];
+      const iqr = q3 - q1;
+      return { q1, q3, iqr };
+    });
+
+    const lowerBounds = iqrData.map(data => {
+      const multiplier = data.q1 < 0 ? 0.98 : 1.02;
+      return data.q1 - iqrMultiplier * data.iqr * multiplier;
+    });
+
+    const upperBounds = iqrData.map(data => {
+      const multiplier = data.q3 < 0 ? 0.98 : 1.02;
+      return data.q3 + iqrMultiplier * data.iqr * multiplier;
+    });
+
+    const minDataValue = Math.min(
+      validData.reduce((min, subArray) => Math.min(...subArray, min), Infinity),
+      ...lowerBounds
     ).toFixed(2);
 
-    const maxDataValue = (
-      validData.reduce((max, subArray) => {
-        const maxValueInSubArray = Math.max(...subArray);
-        return Math.max(max, maxValueInSubArray);
-      }, -Infinity) *
-      1.02
+    const maxDataValue = Math.max(
+      validData.reduce((max, subArray) => Math.max(...subArray, max), -Infinity),
+      ...upperBounds
     ).toFixed(2);
-
-    console.log('minDataValue: ', minDataValue);
-    console.log('maxDataValue: ', maxDataValue);
 
     option = {
-      title: [
-        {
-          text: 'Temperature Analysis',
-          left: 'center',
-        },
-      ],
       dataset: [
         {
-          source: boxPlotData,
+          source: boxPlotData
         },
         {
           transform: {
             type: 'boxplot',
-            config: { itemNameFormatter: 'expr {value}' },
-          },
+            config: { itemNameFormatter: this.tempBoxPlotKeys }
+          }
         },
         {
           fromDatasetIndex: 1,
-          fromTransformResult: 1,
-        },
+          fromTransformResult: 1
+        }
       ],
       tooltip: {
         trigger: 'item',
@@ -649,94 +633,167 @@ export class ViewDataPageComponent implements OnInit {
           type: 'shadow'
         }
       },
-      grid: {
-        left: '10%',
-        right: '10%',
-        bottom: '15%',
-      },
       xAxis: {
         type: 'category',
         boundaryGap: true,
-        data: this.tempBoxPlotKeys,
-        splitArea: {
-          show: false,
-        },
+        nameGap: 30,
         splitLine: {
-          show: true,
+          show: true
+        },
+        axisLabel: {
+          formatter: function (value, index) {
+            if (index === 0) {
+              return 'Max. Temp';
+            } else if (index === 1) {
+              return 'Min. Temp';
+            }
+            return value;
+          }
         },
       },
       yAxis: {
         type: 'value',
-        name: 'Temperature',
+        name: 'Temperature (°C)',
         splitArea: {
-          show: true,
+          show: true
         },
         min: minDataValue,
-        max: maxDataValue,
-        axisLabel: {
-          formatter: '{value}',
-        },
-        axisTick: {
-          show: true,
-          length: 5,
-          lineStyle: {
-            color: 'red',
-          },
-        },
-
+        max: maxDataValue
       },
       series: [
         {
           name: 'boxplot',
           type: 'boxplot',
-          data: boxPlotData,
+          datasetIndex: 1,
           tooltip: {
             formatter: function (param: any) {
               const statsLabels = ['Upper', 'Q3', 'Median', 'Q1', 'Lower'];
-
               const startIndex = 1;
               const endIndex = startIndex + statsLabels.length - 1;
 
               let tooltipContent = statsLabels
                 .map((label, index) => {
-                  return `${label}: ${param.data[index + startIndex]}`;
+                  return `${label}: ${param.data[endIndex - index].toFixed(3)}`;
                 })
                 .join('<br/>');
-
-              const statsData = param.data.slice(startIndex, endIndex + 1);
-              const minValue = Math.min(...statsData);
-              const maxValue = Math.max(...statsData);
-
-              tooltipContent += `<br/><br/>Min: ${minValue}<br/>Max: ${maxValue}`;
-
               return tooltipContent;
-            },
-          },
+            }
+          }
         },
         {
           name: 'outlier',
           type: 'scatter',
-          datasetIndex: 0,
-          dimensions: this.tempBoxPlotKeys,
-          encode: {
-            x: this.tempBoxPlotKeys,
-            y: this.tempBoxPlotKeys,
-          },
-          data: boxPlotData,
-          symbolSize: 10,
+          datasetIndex: 2,
           itemStyle: {
-            color: 'rgba(255, 0, 0, 0.8)',
-          },
-          tooltip: {
-            formatter: function (param: any) {
-              const testName = param.data['Test Name'];
-              return `${testName}`;
-            }
+            color: 'rgba(255, 0, 0, 0.5)',
           }
-        },
-      ],
+        }
+      ]
     };
     option && myChart.setOption(option);
   }
 
+  async createRunTimeBoxPlot(): Promise<void> {
+    var myChart = echarts.init(this.runTimeBoxPlot.nativeElement);
+    var option: EChartsOption;
+
+    if (!Array.isArray(this.buildData)) {
+      console.error('buildData is not an array.');
+      return;
+    }
+
+    const runTimeData: number[] = [];
+    await Promise.all(this.buildData.map(async item => {
+      const runTimeValue = parseFloat(item["Run Time"]);
+      runTimeData.push(runTimeValue);
+    }));
+    const iqrMultiplier = 1.5;
+    const sortedRunTimeData = runTimeData.slice().sort((a, b) => a - b);
+    const q1Index = Math.floor(sortedRunTimeData.length * 0.25);
+    const q3Index = Math.floor(sortedRunTimeData.length * 0.75);
+    const q1 = sortedRunTimeData[q1Index];
+    const q3 = sortedRunTimeData[q3Index];
+    const iqr = q3 - q1;
+    const lowerBound = q1 - iqrMultiplier * iqr;
+    const upperBound = q3 + iqrMultiplier * iqr;
+    const maxRunTime = Math.max(...runTimeData);
+    const minRunTime = Math.min(...runTimeData);
+
+    let finalMaxRunTime = 0;
+    let finalMinRunTime = 0;
+
+    if (minRunTime > 0 && maxRunTime > 0) {
+      finalMaxRunTime = parseFloat((minRunTime * 0.95).toFixed(2));
+      finalMinRunTime = parseFloat((maxRunTime * 1.05).toFixed(2));
+    } else if (minRunTime < 0 && maxRunTime < 0) {
+      finalMaxRunTime = parseFloat((minRunTime * 1.05).toFixed(2));
+      finalMinRunTime = parseFloat((maxRunTime * 0.95).toFixed(2));
+    }
+
+    option = {
+      dataset: [
+        {
+          source: [sortedRunTimeData]
+        },
+        {
+          transform: {
+            type: 'boxplot',
+            config: { itemNameFormatter: this.tempBoxPlotKeys }
+          }
+        },
+        {
+          fromDatasetIndex: 1,
+          fromTransformResult: 1
+        }
+      ],
+      tooltip: {
+        trigger: 'item',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      xAxis: {
+        type: 'category',
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Run Time (s)',
+        splitArea: {
+          show: true
+        },
+        min: finalMaxRunTime,
+        max: finalMinRunTime
+      },
+      series: [
+        {
+          name: 'boxplot',
+          type: 'boxplot',
+          datasetIndex: 1,
+          tooltip: {
+            formatter: function (param: any) {
+              const statsLabels = ['Upper', 'Q3', 'Median', 'Q1', 'Lower'];
+              const startIndex = 1;
+              const endIndex = startIndex + statsLabels.length - 1;
+
+              let tooltipContent = statsLabels
+                .map((label, index) => {
+                  return `${label}: ${param.data[endIndex - index].toFixed(3)}`;
+                })
+                .join('<br/>');
+              return tooltipContent;
+            }
+          }
+        },
+        {
+          name: 'outlier',
+          type: 'scatter',
+          datasetIndex: 2,
+          itemStyle: {
+            color: 'rgba(255, 0, 0, 0.5)',
+          }
+        }
+      ]
+    };
+    option && myChart.setOption(option);
+  }
 }

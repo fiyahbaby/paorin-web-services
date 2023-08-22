@@ -162,7 +162,7 @@
     </ng-container>
     <div class="mt-3">
         <p-accordion>
-            <ng-container *ngIf="singleRecommendedData && singleRecommendedData?.recommended_projects">
+            <ng-container *ngIf="singleRecommendedData && recommendFlag === true">
                 <p-accordionTab header="Recommended Project">
                     <div class="card w-full">
                         <p-table [value]="recommendedProject" styleClass="p-datatable-gridlines">
@@ -259,7 +259,7 @@
                     </div>
                 </p-accordionTab>
             </ng-container>
-            <ng-container *ngIf="singleRecommendedData && !singleRecommendedData?.recommended_projects">
+            <ng-container *ngIf="singleRecommendedData && recommendFlag === false">
                 <p-accordionTab header="Select Project">
                     <p-table [value]="projectList" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
                         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"

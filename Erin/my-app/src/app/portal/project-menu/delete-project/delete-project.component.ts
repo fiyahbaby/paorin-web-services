@@ -42,7 +42,6 @@ export class DeleteProjectComponent implements OnInit {
       });
       window.scrollTo(0, 0);
     } else {
-      console.log(selectedProject)
       this.router.navigate(['confirm-delete-project'], {
         relativeTo: this.route,
         queryParams: { data: selectedProject },

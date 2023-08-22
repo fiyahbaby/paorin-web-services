@@ -60,9 +60,35 @@
                 </div>
             </div>
         </div>
-        <div class="w-full flex flex-row">
-            <div #voltageBoxPlot style="width: 60%; height: 400px;"></div>
-            <div #tempBoxPlot style="width: 40%; height: 400px;"></div>
+        <div class="w-full mb-3">
+            <p-accordion>
+                <p-accordionTab header="Analysis">
+                    <div class="w-full flex flex-column">
+                        <div class="w-full flex flex-row mt-3">
+                            <div class="flex flex-column w-full align-items-center">
+                                <h1 class="mt-0 -mb-4 text-black-alpha-90" style="font-size: 18px">
+                                    Voltage
+                                </h1>
+                                <div #voltageBoxPlot style="width: 100%; height: 400px;"></div>
+                            </div>
+                        </div>
+                        <div class="w-full flex flex-row">
+                            <div class="flex flex-column w-full align-items-center">
+                                <h1 class="mt-0 -mb-4 text-black-alpha-90" style="font-size: 18px">
+                                    Temperature
+                                </h1>
+                                <div #tempBoxPlot style="width: 100%; height: 400px;"></div>
+                            </div>
+                            <div class="flex flex-column w-full align-items-center">
+                                <h1 class="mt-0 -mb-4 text-black-alpha-90" style="font-size: 18px">
+                                    Run Time
+                                </h1>
+                                <div #runTimeBoxPlot style="width: 100%; height: 400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+            </p-accordion>
         </div>
         <div class="w-full flex flex-column">
             <div class="w-full mb-3">
