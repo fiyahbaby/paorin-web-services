@@ -129,20 +129,8 @@ export class DataTabComponent implements OnInit, AfterViewInit {
       labels: ['PASS', 'FAIL', 'NOT-RUN'],
       datasets: [{
         data: [passCount, failCount, notRunCount],
-        backgroundColor: ['#00be00', '#FF0000', '#FFA500']
+        backgroundColor: ['#00BE00', '#FF0000', '#FFA500']
       }],
-      elements: [{
-        type: 'text',
-        x: 0.5,
-        y: 0.5,
-        text: 'Total Tests: ' + (passCount + failCount + notRunCount),
-        style: {
-          fontSize: 20,
-          fontWeight: 'bold',
-          color: '#ffffff',
-          fontFamily: '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'
-        },
-      }]
     };
 
     const passingPercentage = (passCount / this.testCount) * 100;

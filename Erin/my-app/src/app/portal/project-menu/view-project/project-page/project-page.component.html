@@ -23,13 +23,13 @@
                                             Total Run Count: {{ projectStats.total_run_count }}
                                         </h2>
                                         <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
+                                            Total Not-Run: {{ projectStats.total_not_run_count }}
+                                        </h2>
+                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
                                             Total Pass: {{ projectStats.total_pass_count }}
                                         </h2>
                                         <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
                                             Total Fail: {{ projectStats.total_fail_count }}
-                                        </h2>
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Not-Run: {{ projectStats.total_not_run_count }}
                                         </h2>
                                     </div>
                                 </div>
@@ -64,7 +64,45 @@
                                 </div>
                             </div>
                         </p-card>
-                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
+                        <p-card id="chart-content" class="w-6 mx-3 mb-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        Corner Summary
+                                    </h1>
+                                </p-header>
+                                <div>
+                                    <canvas id="cornerProgressChart" #cornerProgressChart height="150"></canvas>
+                                </div>
+                                <div *ngIf="voltageVsCornerData" class="w-full mt-2">
+                                    <p-table [value]="voltageVsCornerData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Corner</th>
+                                                <th style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltage of voltageNames">{{ voltage }}
+                                                </th>
+                                                <th style="width: 20rem; text-align: center">Overall</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-rowData>
+                                            <tr>
+                                                <td style="text-align: center">{{ rowData.corner }}</td>
+                                                <td style="width: 20rem; text-align: center"
+                                                    *ngFor="let voltage of voltageNames">{{
+                                                    rowData[voltage] }}%</td>
+                                                <td style="text-align: center">{{ calculateOverallPercentage(rowData)
+                                                    }}%
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row">
+                        <p-card id="chart-content" class="w-6 -3 mb-3">
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
@@ -99,44 +137,7 @@
                                 </div>
                             </div>
                         </p-card>
-                    </div>
-                    <div class="flex flex-row">
-                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
-                            <div class="w-full">
-                                <p-header>
-                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                        Corner Summary
-                                    </h1>
-                                </p-header>
-                                <div>
-                                    <canvas id="cornerProgressChart" #cornerProgressChart height="150"></canvas>
-                                </div>
-                                <div *ngIf="voltageVsCornerData" class="w-full mt-2">
-                                    <p-table [value]="voltageVsCornerData" styleClass="p-datatable-gridlines">
-                                        <ng-template pTemplate="header">
-                                            <tr>
-                                                <th style="text-align: center">Corner</th>
-                                                <th style="width: 20rem; text-align: center"
-                                                    *ngFor="let voltage of voltageNames">{{ voltage }}</th>
-                                                <th style="width: 20rem; text-align: center">Overall</th>
-                                            </tr>
-                                        </ng-template>
-                                        <ng-template pTemplate="body" let-rowData>
-                                            <tr>
-                                                <td style="text-align: center">{{ rowData.corner }}</td>
-                                                <td style="width: 20rem; text-align: center"
-                                                    *ngFor="let voltage of voltageNames">{{
-                                                    rowData[voltage] }}%</td>
-                                                <td style="text-align: center">{{ calculateOverallPercentage(rowData)
-                                                    }}%
-                                                </td>
-                                            </tr>
-                                        </ng-template>
-                                    </p-table>
-                                </div>
-                            </div>
-                        </p-card>
-                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
+                        <p-card id="chart-content" class="w-6 mx-3 mb-3">
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">

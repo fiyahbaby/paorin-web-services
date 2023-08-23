@@ -303,6 +303,4 @@ export class ViewMDataPageComponent implements OnInit {
         window.scrollTo(0, 0);
       });
   }
-
-
 }

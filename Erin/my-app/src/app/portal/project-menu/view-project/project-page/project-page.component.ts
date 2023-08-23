@@ -132,7 +132,6 @@ export class ProjectPageComponent implements OnInit {
     }
   }
 
-
   getBlockLabel(blockType: string): string {
     switch (blockType) {
       case 'passing_data':
@@ -217,7 +216,6 @@ export class ProjectPageComponent implements OnInit {
     if (!this.voltageVsBlockData) {
       return;
     }
-    console.log(this.voltageVsBlockData);
     const voltageNames = this.voltageNames;
     const data = voltageNames.map((voltageName: string) => {
       const voltageData = this.voltageVsBlockData.find((data: { voltage: string; }) => data.voltage === voltageName);
@@ -242,8 +240,6 @@ export class ProjectPageComponent implements OnInit {
       }
     });
 
-    console.log(data);
-
     const passData = voltageNames.map(voltageName => {
       const index = this.voltageNames.indexOf(voltageName);
       if (index !== -1) {
@@ -267,14 +263,29 @@ export class ProjectPageComponent implements OnInit {
       }
       return 0;
     });
-    console.log(voltageNames);
-    console.log(passData, failData, notRunData);
 
     if (this.stackedBarChart) {
       this.stackedBarChart.destroy();
     }
 
     const chartOptions: ChartOptions<'bar'> = {
+      onClick: (event, chartElements) => {
+        const clickedIndex = chartElements[0].index;
+        const clickedVoltage = voltageNames[clickedIndex];
+        const params = {
+          projectID: this.projectID,
+          summaryItem: clickedVoltage,
+          category: 'voltage'
+        }
+        console.log(params);
+        this.router.navigate(['item-summary'], {
+          relativeTo: this.route,
+          queryParams:
+          {
+            data: JSON.stringify(params),
+          }
+        });
+      },
       responsive: true,
       scales: {
         x: {
@@ -386,6 +397,7 @@ export class ProjectPageComponent implements OnInit {
       );
 
       return {
+        corner: item.corner,
         pass: this.isCornerSummaryPassEnabled ? parseFloat(((parseFloat(item.TOTAL_PASSING_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
         fail: this.isCornerSummaryFailEnabled ? parseFloat(((parseFloat(item.TOTAL_FAILING_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
         notRun: this.isCornerSummaryNotRunEnabled ? parseFloat(((parseFloat(item.TOTAL_NOT_RUN_PERCENTAGE ?? '0') / totalValue) * 100).toFixed(2)) : 0,
@@ -404,12 +416,11 @@ export class ProjectPageComponent implements OnInit {
       return isNaN(item.notRun) ? 0 : item.notRun;
     });
 
-    const ctx = this.cornerProgressChartRef.nativeElement.getContext('2d');
-
     if (this.cornerProgressChart) {
       this.cornerProgressChart.destroy();
     }
 
+    const ctx = this.cornerProgressChartRef.nativeElement.getContext('2d');
     const legendOptions: ChartOptions<'bar'>['plugins'] = {
       legend: {
         onClick: (event, legendItem) => {
@@ -559,6 +570,9 @@ export class ProjectPageComponent implements OnInit {
               const value = context.dataset.data[context.dataIndex];
               return value !== 0;
             },
+            formatter: (value: any) => {
+              return value + '%';
+            }
           },
           legend: {
             onClick: (event, legendItem) => {

@@ -12,15 +12,18 @@ Chart.register(ChartDataLabels);
   styleUrls: ['./item-summary.component.scss']
 })
 export class ItemSummaryComponent implements OnInit, AfterViewInit {
-  @ViewChild('cornerProgressChart') cornerProgressChartRef!: ElementRef;
-  @ViewChild('cornerVsVoltageChart') cornerVsVoltageChartRef!: ElementRef;
-  @ViewChild('unitProgressChart') unitProgressChartRef!: ElementRef;
-  @ViewChild('tempProgressChart') tempProgressChartRef!: ElementRef;
   data: any;
   summaryData: any;
   summaryItem: any;
   category: any;
   projectID: any;
+  unitList: any[] = [];
+
+  // corner category 
+  @ViewChild('cornerProgressChart') cornerProgressChartRef!: ElementRef;
+  @ViewChild('cornerVsVoltageChart') cornerVsVoltageChartRef!: ElementRef;
+  @ViewChild('unitProgressChart') unitProgressChartRef!: ElementRef;
+  @ViewChild('tempProgressChart') tempProgressChartRef!: ElementRef;
   cornerProgressChart: Chart | undefined;
   cornerVsVoltageChart: Chart | undefined;
   unitProgressChart: Chart | undefined;
@@ -33,6 +36,16 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   voltageNames: any[] = [];
   headers: any[] = [];
 
+  // voltage category
+  @ViewChild('voltageProgressChart') voltageProgressChartRef!: ElementRef;
+  @ViewChild('voltageVsCornerChart') voltageVsCornerChartRef!: ElementRef;
+  voltageProgressChart: Chart | undefined;
+  voltageVsCornerChart: Chart | undefined;
+  voltageResults: any;
+  voltageVsCornerData: any;
+  voltageVsUnitResults: any;
+  voltageVsCornerTableData: any;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -42,6 +55,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.data = JSON.parse(params['data']);
+      this.category = this.data.category;
       this.summaryItem = this.data.summaryItem;
       this.projectID = this.data.projectID;
     });
@@ -53,8 +67,6 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
 
   async retrieveItemSummary(): Promise<void> {
     this.summaryData = await this.portalService.retrieveItemSummary(this.data);
-    console.log(this.summaryData);
-    this.category = this.summaryData.summary_category;
     if (this.category === 'corner') {
       this.testInstancesData = this.summaryData.test_instances_data;
       this.temperatureData = this.summaryData.temperature_results;
@@ -62,6 +74,16 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       this.createCornerVsVoltageChart();
       this.createUnitProgressChart();
       this.createTempProgressChart();
+    }
+    else if (this.category === 'voltage') {
+      this.unitList = this.summaryData.units;
+      console.log(this.summaryData);
+      this.voltageResults = this.summaryData.voltage_test_results;
+      this.voltageVsCornerData = this.summaryData.corner_vs_voltage_results.corner_results;
+      console.log(this.voltageVsCornerData);
+      this.voltageVsUnitResults = this.summaryData.corner_vs_voltage_results.unit_results;
+      this.createVoltageProgressChart();
+      this.createVoltageVsCornerChart();
     }
   }
 
@@ -345,6 +367,58 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       data: chartData,
       options: chartOptions
     })
+  }
+
+  createVoltageProgressChart() {
+    if (!this.voltageProgressChartRef) {
+      console.log('voltageProgressChartRef is not defined');
+      return;
+    }
+    else if (!this.summaryData || !this.voltageResults) {
+      console.log('voltageResults is not defined');
+      return;
+    }
+
+    if (this.voltageProgressChart) {
+      this.voltageProgressChart.destroy();
+    }
+
+    const voltageTestCount = this.voltageResults.total_voltage_test_count
+    const passData = +((this.voltageResults.total_voltage_pass_count / voltageTestCount) * 100).toFixed(2);
+    const failData = +((this.voltageResults.total_voltage_fail_count / voltageTestCount) * 100).toFixed(2);
+    const notrun = +((this.voltageResults.total_voltage_not_run_count / voltageTestCount) * 100).toFixed(2);
+
+    const chartData = {
+      labels: ['PASS', 'FAIL', 'NOT-RUN'],
+      datasets: [{
+        data: [passData, failData, notrun],
+        backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+      }],
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: true,
+          formatter: (value: any) => {
+            return value + '%';
+          }
+        },
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.voltageProgressChartRef.nativeElement;
+    this.voltageProgressChart = new Chart(canvasElement, {
+      type: 'pie' as ChartType,
+      data: chartData,
+      options: chartOptions
+    })
+  }
+
+  createVoltageVsCornerChart() {
   }
 
   navigateToViewData(buildID: string) {
