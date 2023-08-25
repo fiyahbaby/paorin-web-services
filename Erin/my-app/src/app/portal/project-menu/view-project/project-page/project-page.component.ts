@@ -461,6 +461,7 @@ export class ProjectPageComponent implements OnInit {
         },
         y: {
           stacked: true,
+          max: 100
         },
       },
       plugins: {
@@ -687,6 +688,7 @@ export class ProjectPageComponent implements OnInit {
         },
         y: {
           stacked: true,
+          max: 100
         },
       },
     };

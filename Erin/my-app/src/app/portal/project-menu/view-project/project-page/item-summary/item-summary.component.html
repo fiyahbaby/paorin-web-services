@@ -233,9 +233,27 @@
                                     </h1>
                                 </p-header>
                                 <div class="w-full flex flex-column align-items-center">
-                                    <canvas id="mainChart" #voltageVsCornerChart></canvas>
+                                    <canvas width="600" height="300" #voltageVsCornerChart></canvas>
                                 </div>
+                                <div class="mt-3">
+                                    <p-table [value]="voltageVsCornerTableData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Category</th>
+                                                <th style="text-align: center" *ngFor="let corner of cornerNames">{{
+                                                    corner }}</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-rowData>
+                                            <tr>
+                                                <td style="text-align: center">{{ rowData.Category }}</td>
+                                                <td style="text-align: center" *ngFor="let corner of cornerNames">{{
+                                                    rowData[corner] }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
 
+                                </div>
                             </div>
                         </p-card>
                     </div>

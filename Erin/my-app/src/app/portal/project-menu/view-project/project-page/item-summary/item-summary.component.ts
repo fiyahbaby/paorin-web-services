@@ -45,6 +45,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   voltageVsCornerData: any;
   voltageVsUnitResults: any;
   voltageVsCornerTableData: any;
+  cornerNames: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -80,8 +81,8 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       console.log(this.summaryData);
       this.voltageResults = this.summaryData.voltage_test_results;
       this.voltageVsCornerData = this.summaryData.corner_vs_voltage_results.corner_results;
-      console.log(this.voltageVsCornerData);
       this.voltageVsUnitResults = this.summaryData.corner_vs_voltage_results.unit_results;
+      this.cornerNames = this.summaryData.corner_names;
       this.createVoltageProgressChart();
       this.createVoltageVsCornerChart();
     }
@@ -174,6 +175,8 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       labels: this.voltageNames,
       datasets: datasets,
     };
+
+    console.log(chartData);
 
     const chartOptions = {
       scales: {
@@ -419,6 +422,86 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   }
 
   createVoltageVsCornerChart() {
+    if (!this.voltageVsCornerChartRef) {
+      console.log('voltageVsCornerChartRef is not defined');
+      return;
+    }
+    else if (!this.summaryData || !this.voltageResults) {
+      console.log('voltageResults is not defined');
+      return;
+    }
+
+    if (this.voltageVsCornerChart) {
+      this.voltageVsCornerChart.destroy();
+    }
+
+    const data = this.voltageVsCornerData
+    this.cornerNames = Object.keys(data);
+    const resultTypes = ['PASS', 'FAIL', 'NOT-RUN'];
+    const backgroundColors: { [key: string]: string } = {
+      'PASS': 'rgba(75, 192, 192, 0.6)',
+      'FAIL': 'rgba(255, 99, 132, 0.6)',
+      'NOT-RUN': 'rgba(255, 206, 86, 0.6)',
+    }
+
+    const cornerSums = this.cornerNames.map(corner =>
+      resultTypes.reduce((sum, resultType) => sum + data[corner][resultType], 0)
+    );
+
+    const dataset = resultTypes.map(resultType => ({
+      label: resultType,
+      data: this.cornerNames.map((corner, index) =>
+        (data[corner][resultType] / cornerSums[index]) * 100
+      ),
+      backgroundColor: backgroundColors[resultType],
+    }));
+
+    const chartData = {
+      labels: this.cornerNames,
+      datasets: dataset,
+    }
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.voltageVsCornerChartRef.nativeElement;
+    this.voltageVsCornerChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: chartData,
+      options: options
+    })
+
+    this.voltageVsCornerTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        this.cornerNames.map((corner, index) => [
+          corner,
+          data[corner][resultType]
+        ])
+      )
+    }));
   }
 
   navigateToViewData(buildID: string) {

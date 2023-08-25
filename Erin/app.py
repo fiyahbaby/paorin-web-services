@@ -1555,8 +1555,8 @@ def retrieve_item_summary():
         return jsonify({"error": "Invalid summary item"})
     if category == "voltage":
         (
-            total_voltage_test_count,
             units,
+            corner_names,
             voltage_test_results,
             corner_vs_voltage_results,
         ) = get_category_test_counts(project_id, category, summary_item)
@@ -1566,6 +1566,7 @@ def retrieve_item_summary():
                 "summary_category": "voltage",
                 "summary_item": summary_item,
                 "units": units,
+                "corner_names": corner_names,
                 "voltage_test_results": voltage_test_results,
                 "corner_vs_voltage_results": corner_vs_voltage_results,
             }
@@ -1735,8 +1736,86 @@ def get_category_test_counts(project_id, category, summary_item):
         }
 
         # Get total pass/fail/not-run test counts per corner
+        corner_names = [
+            corner[0]
+            for corner in Units.query.with_entities(Units.process_corner)
+            .filter_by(project_id=project_id)
+            .distinct()
+            .all()
+        ]
+        # corner_vs_voltage_results = {
+        #     "corner_results": {"pass": {}, "fail": {}, "not_run": {}},
+        #     "unit_results": {},
+        # }
+
+        # for unit in unit_list:
+        #     unit_id = unit.id
+        #     corner = unit.process_corner
+
+        #     corner_pass_count = TestInstances.query.filter_by(
+        #         project_id=project_id,
+        #         unit_id=unit_id,
+        #         voltage_id=voltage_id,
+        #         result="PASS",
+        #     ).count()
+
+        #     corner_fail_count = TestInstances.query.filter_by(
+        #         project_id=project_id,
+        #         unit_id=unit_id,
+        #         voltage_id=voltage_id,
+        #         result="FAIL",
+        #     ).count()
+
+        #     units_in_corner = len([u for u in unit_list if u.process_corner == corner])
+        #     corner_not_run_count = (
+        #         units_in_corner * voltage_test_count
+        #         - corner_pass_count
+        #         - corner_fail_count
+        #     )
+        #     unit_not_run_count = (
+        #         voltage_test_count - corner_pass_count - corner_fail_count
+        #     )
+
+        #     if corner not in corner_vs_voltage_results["corner_results"]["pass"]:
+        #         corner_vs_voltage_results["corner_results"]["pass"][
+        #             corner
+        #         ] = corner_pass_count
+        #         corner_vs_voltage_results["corner_results"]["fail"][
+        #             corner
+        #         ] = corner_fail_count
+        #         corner_vs_voltage_results["corner_results"]["not_run"][
+        #             corner
+        #         ] = corner_not_run_count
+        #     else:
+        #         corner_vs_voltage_results["corner_results"]["pass"][
+        #             corner
+        #         ] += corner_pass_count
+        #         corner_vs_voltage_results["corner_results"]["fail"][
+        #             corner
+        #         ] += corner_fail_count
+        #         corner_vs_voltage_results["corner_results"]["not_run"][
+        #             corner
+        #         ] += corner_not_run_count
+
+        #     if unit.two_d_name not in corner_vs_voltage_results["unit_results"]:
+        #         corner_vs_voltage_results["unit_results"][unit.two_d_name] = {
+        #             "pass": 0,
+        #             "fail": 0,
+        #             "not_run": 0,
+        #         }
+
+        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
+        #         "pass"
+        #     ] += corner_pass_count
+        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
+        #         "fail"
+        #     ] += corner_fail_count
+        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
+        #         "not_run"
+        #     ] += unit_not_run_count
+
         corner_vs_voltage_results = {
-            "corner_results": {"pass": {}, "fail": {}, "not_run": {}},
+            "corner_results": {},
             "unit_results": {},
         }
 
@@ -1768,49 +1847,33 @@ def get_category_test_counts(project_id, category, summary_item):
                 voltage_test_count - corner_pass_count - corner_fail_count
             )
 
-            if corner not in corner_vs_voltage_results["corner_results"]["pass"]:
-                corner_vs_voltage_results["corner_results"]["pass"][
-                    corner
-                ] = corner_pass_count
-                corner_vs_voltage_results["corner_results"]["fail"][
-                    corner
-                ] = corner_fail_count
-                corner_vs_voltage_results["corner_results"]["not_run"][
-                    corner
-                ] = corner_not_run_count
-            else:
-                corner_vs_voltage_results["corner_results"]["pass"][
-                    corner
-                ] += corner_pass_count
-                corner_vs_voltage_results["corner_results"]["fail"][
-                    corner
-                ] += corner_fail_count
-                corner_vs_voltage_results["corner_results"]["not_run"][
-                    corner
-                ] += corner_not_run_count
+            if corner not in corner_vs_voltage_results["corner_results"]:
+                corner_vs_voltage_results["corner_results"][corner] = {
+                    "PASS": corner_pass_count,
+                    "FAIL": corner_fail_count,
+                    "NOT-RUN": corner_not_run_count,
+                }
 
             if unit.two_d_name not in corner_vs_voltage_results["unit_results"]:
                 corner_vs_voltage_results["unit_results"][unit.two_d_name] = {
-                    "pass": 0,
-                    "fail": 0,
-                    "not_run": 0,
+                    "PASS": 0,
+                    "FAIL": 0,
+                    "NOT-RUN": 0,
                 }
 
             corner_vs_voltage_results["unit_results"][unit.two_d_name][
-                "pass"
+                "PASS"
             ] += corner_pass_count
             corner_vs_voltage_results["unit_results"][unit.two_d_name][
-                "fail"
+                "FAIL"
             ] += corner_fail_count
             corner_vs_voltage_results["unit_results"][unit.two_d_name][
-                "not_run"
+                "NOT-RUN"
             ] += unit_not_run_count
 
-        print(corner_vs_voltage_results)
-
         return (
-            total_voltage_test_count,
             units,
+            corner_names,
             voltage_test_results,
             corner_vs_voltage_results,
         )
@@ -1897,7 +1960,7 @@ def get_corner_summary_item_data(project_id, corner_name):
 
         unit_vs_voltage_results[unit_name] = unit_results_per_voltage
 
-    # Fetch the last 10 unique test instances with passing percentage
+    # Fetch recent build IDs with passing percentage
     test_instances = (
         db.session.query(
             TestInstances.test_id,
@@ -1946,14 +2009,17 @@ def get_corner_summary_item_data(project_id, corner_name):
     temperature_list = Temperatures.query.filter(
         Temperatures.project_id == project_id
     ).all()
-    temperature_results = {}
+    temperature_count = len(temperature_list)
+    test_count_per_temp = int(
+        (TestList.query.filter_by(project_id=project_id).count()) / temperature_count
+    )
 
+    temperature_results = {}
     for temperature in temperature_list:
         temperature_value = temperature.value
         pass_count_per_temp = 0
         fail_count_per_temp = 0
         not_run_count_per_temp = 0
-
         for unit in unit_list:
             unit_id = unit.id
             pass_count_per_temp_unit = TestInstances.query.filter(
@@ -1969,7 +2035,7 @@ def get_corner_summary_item_data(project_id, corner_name):
                 TestInstances.result == "FAIL",
             ).count()
             not_run_count_per_temp_unit = (
-                voltage_test_count[voltage_name]
+                test_count_per_temp
                 - pass_count_per_temp_unit
                 - fail_count_per_temp_unit
             )
