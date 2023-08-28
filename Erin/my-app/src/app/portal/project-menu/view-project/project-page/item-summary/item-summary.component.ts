@@ -31,21 +31,39 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   cornerVsVoltageTableData: any[] = [];
   unitProgressData: any[] = [];
   testInstancesData: any[] = [];
-  temperatureData: any[] = [];
-  temperatureDataArray: any[] = [];
+  cornerTemperatureData: any[] = [];
+  cornerTemperatureDataArray: any[] = [];
   voltageNames: any[] = [];
   headers: any[] = [];
 
   // voltage category
   @ViewChild('voltageProgressChart') voltageProgressChartRef!: ElementRef;
   @ViewChild('voltageVsCornerChart') voltageVsCornerChartRef!: ElementRef;
+  @ViewChild('voltagePerUnitChart') voltagePerUnitChartRef!: ElementRef;
+  @ViewChild('voltageVsTempChart') voltageVsTempChartRef!: ElementRef;
   voltageProgressChart: Chart | undefined;
   voltageVsCornerChart: Chart | undefined;
+  voltagePerUnitChart: Chart | undefined;
+  voltageVsTempChart: Chart | undefined;
   voltageResults: any;
   voltageVsCornerData: any;
   voltageVsUnitResults: any;
   voltageVsCornerTableData: any;
+  voltagePerUnitTableData: any;
+  voltageTempData: any[] = [];
   cornerNames: any[] = [];
+  unitNames: any[] = [];
+
+  // project category
+  @ViewChild('unitChart') unitChartRef!: ElementRef;
+  @ViewChild('voltageChart') voltageChartRef!: ElementRef;
+  @ViewChild('tempChart') tempChartRef!: ElementRef;
+  unitChart: Chart | undefined;
+  voltageChart: Chart | undefined;
+  tempChart: Chart | undefined;
+  unitOutcomeData: any[] = [];
+  voltageOutcomeData: any[] = [];
+  tempOutcomeData: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -70,21 +88,31 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     this.summaryData = await this.portalService.retrieveItemSummary(this.data);
     if (this.category === 'corner') {
       this.testInstancesData = this.summaryData.test_instances_data;
-      this.temperatureData = this.summaryData.temperature_results;
+      this.cornerTemperatureData = this.summaryData.temperature_results;
       this.createCornerProgressChart();
       this.createCornerVsVoltageChart();
-      this.createUnitProgressChart();
-      this.createTempProgressChart();
+      this.createCornerUnitProgressChart();
+      this.createCornerVsTempProgressChart();
     }
     else if (this.category === 'voltage') {
       this.unitList = this.summaryData.units;
-      console.log(this.summaryData);
+      this.testInstancesData = this.summaryData.test_instances_data;
       this.voltageResults = this.summaryData.voltage_test_results;
       this.voltageVsCornerData = this.summaryData.corner_vs_voltage_results.corner_results;
       this.voltageVsUnitResults = this.summaryData.corner_vs_voltage_results.unit_results;
+      this.unitNames = Object.keys(this.voltageVsUnitResults);
       this.cornerNames = this.summaryData.corner_names;
+      this.voltageTempData = this.summaryData.temperature_results;
       this.createVoltageProgressChart();
       this.createVoltageVsCornerChart();
+      this.createVoltagePerUnitChart();
+      this.createVoltageVsTempProgressChart();
+    }
+    else if (this.category === 'project-result') {
+      console.log(this.summaryData);
+      this.unitOutcomeData = this.summaryData.outcome_per_unit;
+      this.voltageOutcomeData = this.summaryData.outcome_per_voltage;
+      this.tempOutcomeData = this.summaryData.outcome_per_temp;
     }
   }
 
@@ -142,10 +170,6 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       console.log('cornerVsVoltageChartRef is not defined');
       return;
     }
-    else if (!this.summaryData || !this.summaryData.corner_vs_voltage_results) {
-      console.log('summaryData is not defined');
-      return;
-    }
 
     const data = this.summaryData.corner_vs_voltage_results
     this.voltageNames = Object.keys(data);
@@ -175,8 +199,6 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       labels: this.voltageNames,
       datasets: datasets,
     };
-
-    console.log(chartData);
 
     const chartOptions = {
       scales: {
@@ -224,7 +246,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     }
   }
 
-  createUnitProgressChart() {
+  createCornerUnitProgressChart() {
     if (!this.unitProgressChartRef) {
       console.log('unitProgressChartChartRef is not defined');
       return;
@@ -298,15 +320,14 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     this.unitProgressData = dataArray;
   }
 
-  createTempProgressChart() {
+  createCornerVsTempProgressChart() {
     const temperatureArray = [];
-    for (const temperatureValue in this.temperatureData) {
-      const temperatureCounts = this.temperatureData[temperatureValue];
+    for (const temperatureValue in this.cornerTemperatureData) {
+      const temperatureCounts = this.cornerTemperatureData[temperatureValue];
       const row = [temperatureValue, temperatureCounts.PASS, temperatureCounts.FAIL, temperatureCounts['NOT-RUN']];
       temperatureArray.push(row);
     }
-    this.temperatureData = temperatureArray;
-
+    this.cornerTemperatureData = temperatureArray;
     if (!this.tempProgressChartRef) {
       console.log('tempProgressChartRef is not defined');
       return;
@@ -358,7 +379,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
             return context.dataset.data[context.dataIndex] > 0;
           },
           formatter: (value: any) => {
-            return value + '%';
+            return value.toFixed(2) + '%';
           }
         },
       },
@@ -502,6 +523,166 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
         ])
       )
     }));
+  }
+
+  createVoltagePerUnitChart() {
+    if (!this.voltagePerUnitChartRef) {
+      console.log('voltagePerUnitChartRef is not defined');
+      return;
+    }
+    else if (!this.summaryData || !this.voltageResults) {
+      console.log('voltageResults is not defined');
+      return;
+    }
+
+    if (this.voltagePerUnitChart) {
+      this.voltagePerUnitChart.destroy();
+    }
+
+    const data = this.voltageVsUnitResults;
+    const resultTypes = ['PASS', 'FAIL', 'NOT-RUN'];
+    const backgroundColors: { [key: string]: string } = {
+      'PASS': 'rgba(75, 192, 192, 0.6)',
+      'FAIL': 'rgba(255, 99, 132, 0.6)',
+      'NOT-RUN': 'rgba(255, 206, 86, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(data).map(unit => {
+        const count = data[unit][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + data[unit][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: this.unitNames,
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.voltagePerUnitChartRef.nativeElement;
+    this.voltagePerUnitChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
+
+    this.voltagePerUnitTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        Object.keys(data).map(unit => [
+          unit,
+          data[unit][resultType]
+        ])
+      )
+    }))
+  }
+
+  createVoltageVsTempProgressChart() {
+    const temperatureArray = [];
+    for (const temperatureValue in this.voltageTempData) {
+      const temperatureCounts = this.voltageTempData[temperatureValue];
+      const row = [temperatureValue, temperatureCounts.PASS, temperatureCounts.FAIL, temperatureCounts['NOT-RUN']];
+      temperatureArray.push(row);
+    }
+    this.voltageTempData = temperatureArray;
+
+    if (!this.voltageVsTempChartRef) {
+      console.log('voltageVsTempProgressChartRef is not defined');
+      return;
+    }
+    else if (!this.summaryData || !this.voltageResults) {
+      console.log('voltageResults is not defined');
+      return;
+    }
+
+    if (this.voltageVsTempChart) {
+      this.voltageVsTempChart.destroy();
+    }
+
+    const data = this.summaryData.temperature_results;
+    const resultTypes = ['PASS', 'FAIL', 'NOT-RUN'];
+    const backgroundColors: { [key: string]: string } = {
+      'PASS': 'rgba(75, 192, 192, 0.6)',
+      'FAIL': 'rgba(255, 99, 132, 0.6)',
+      'NOT-RUN': 'rgba(255, 206, 86, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(data).map(temperature => {
+        const count = data[temperature][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + data[temperature][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: Object.keys(data),
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.voltageVsTempChartRef.nativeElement;
+    this.voltageVsTempChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
   }
 
   navigateToViewData(buildID: string) {

@@ -538,7 +538,6 @@ export class ProjectPageComponent implements OnInit {
     }
 
     const projectData = this.projectStats;
-
     const totalValue =
       (this.isProjectSummaryPassEnabled ? projectData.project_progress : 0) +
       (this.isProjectSummaryFailEnabled ? projectData.project_fail_rate : 0) +
@@ -553,16 +552,33 @@ export class ProjectPageComponent implements OnInit {
       this.projectPieChart.destroy();
     }
 
+    const labels = ['PASS', 'FAIL', 'NOT-RUN'];
     this.projectPieChart = new Chart(pieChartCtx, {
       type: 'pie' as ChartType,
       data: {
-        labels: ['PASS', 'FAIL', 'NOT-RUN'],
+        labels: labels,
         datasets: [{
           data: [passData, failData, notRunData],
           backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
         }],
       },
       options: {
+        onClick: (event, chartElements) => {
+          const clickedIndex = chartElements[0].index;
+          const clickedCategory = labels[clickedIndex];
+          const params = {
+            projectID: this.projectID,
+            summaryItem: clickedCategory,
+            category: 'project-result'
+          }
+          this.router.navigate(['item-summary'], {
+            relativeTo: this.route,
+            queryParams:
+            {
+              data: JSON.stringify(params),
+            }
+          });
+        },
         responsive: true,
         plugins: {
           datalabels: {

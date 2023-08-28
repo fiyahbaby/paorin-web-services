@@ -121,7 +121,7 @@
                                         <canvas width="600" height="300" #tempProgressChart></canvas>
                                     </div>
                                     <div class="mt-3">
-                                        <p-table [value]="temperatureData" styleClass="p-datatable-gridlines">
+                                        <p-table [value]="cornerTemperatureData" styleClass="p-datatable-gridlines">
                                             <ng-template pTemplate="header">
                                                 <tr>
                                                     <th style="text-align: center">Temperature</th>
@@ -196,7 +196,7 @@
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
-                                        Voltage Summary
+                                        Voltage
                                     </h1>
                                 </p-header>
                                 <div class="w-full flex flex-column align-items-center">
@@ -229,7 +229,7 @@
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
-                                        Corner Summary
+                                        Corner
                                     </h1>
                                 </p-header>
                                 <div class="w-full flex flex-column align-items-center">
@@ -254,6 +254,169 @@
                                     </p-table>
 
                                 </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row ml-3 mt-3">
+                        <p-card id="chart-content" class="w-6">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Unit
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas width="600" height="300" #voltagePerUnitChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="voltagePerUnitTableData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Category</th>
+                                                <th style="text-align: center" *ngFor="let unit of unitNames">{{
+                                                    unit.slice(-4)
+                                                    }}</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-rowData>
+                                            <tr>
+                                                <td style="text-align: center">{{ rowData.Category }}</td>
+                                                <td style="text-align: center" *ngFor="let unit of unitNames">{{
+                                                    rowData[unit]
+                                                    }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 mx-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Temperature
+                                    </h1>
+                                </p-header>
+                                <div class="w-full flex flex-column align-items-center">
+                                    <canvas width="600" height="300" #voltageVsTempChart></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <p-table [value]="voltageTempData" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="text-align: center">Temperature</th>
+                                                <th style="text-align: center">PASS</th>
+                                                <th style="text-align: center">FAIL</th>
+                                                <th style="text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-row>
+                                            <tr>
+                                                <td style="text-align: center">{{ row[0] }}</td>
+                                                <td style="text-align: center">{{ row[1] }}</td>
+                                                <td style="text-align: center">{{ row[2] }}</td>
+                                                <td style="text-align: center">{{ row[3] }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row mx-3 mt-3">
+                        <p-card id="chart-content" class="w-full">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Recent Tests
+                                    </h1>
+                                </p-header>
+                                <p-table [value]="testInstancesData" styleClass="p-datatable-gridlines"
+                                    [paginator]="true" [rows]="10">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th style="text-align: center">Build ID</th>
+                                            <th style="text-align: center">Unit</th>
+                                            <th style="text-align: center">Voltage</th>
+                                            <th style="text-align: center">Temperature</th>
+                                            <th style="text-align: center">Passing Percentage</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-testInstance>
+                                        <tr>
+                                            <td style="text-align: left; cursor: pointer;"
+                                                (click)="navigateToViewData(testInstance['Build ID'])">{{
+                                                testInstance['Build ID']
+                                                }}</td>
+                                            <td style="text-align: center">{{ testInstance['Unit'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Voltage'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Temp'] }}</td>
+                                            <td style="text-align: center">{{ testInstance['Passing Percentage'] }}
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </p-card>
+                    </div>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </ng-container>
+    <ng-container *ngIf="category === 'project-result'">
+        <app-header formHeader="{{summaryData?.summary_item}} Summary"
+            formSubHeader="Project Menu > View Project > Project Dashboard > Outcome Summary"></app-header>
+        <p-tabView>
+            <p-tabPanel header="{{summaryData?.summary_item}} Summary">
+                <div class="flex flex-column">
+                    <div class="flex flex-row ml-3">
+                        <p-card id="chart-content" class="w-6">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Voltage
+                                    </h1>
+                                </p-header>
+                            </div>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 mx-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Corner
+                                    </h1>
+                                </p-header>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row ml-3 mt-3">
+                        <p-card id="chart-content" class="w-6">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Unit
+                                    </h1>
+                                </p-header>
+                            </div>
+                        </p-card>
+                        <p-card id="chart-content" class="w-6 mx-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Temperature
+                                    </h1>
+                                </p-header>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row mx-3 mt-3">
+                        <p-card id="chart-content" class="w-full">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-0 text-black-alpha-90" style="font-size: 18px">
+                                        Recent Tests
+                                    </h1>
+                                </p-header>
                             </div>
                         </p-card>
                     </div>

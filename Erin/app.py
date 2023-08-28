@@ -15,6 +15,7 @@ import itertools
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import and_, case, or_, desc, func
 from sqlalchemy.sql import func
+from sqlalchemy.orm import aliased
 
 app = Flask(__name__)
 app.secret_key = b"mySecretKey"
@@ -927,7 +928,7 @@ def add_to_project():
             test_name=test_data["Test Name"],
         ).first()
 
-        if existing_test_instance:
+        if existing_test_instance and test_data["Test Result"] == "PASS":
             existing_test_instance.result = test_data["Test Result"]
             existing_test_instance.max_temp = test_data["Max. Temp"]
             existing_test_instance.min_temp = test_data["Min. Temp"]
@@ -1541,6 +1542,7 @@ def get_unit_statistics():
 def retrieve_item_summary():
     project_id = request.args.get("projectID")
     summary_item = request.args.get("summaryItem")
+    category_item = request.args.get("category")
 
     voltage_names, temperature_values, unit_process_corners = get_summary_categories(
         project_id
@@ -1551,7 +1553,7 @@ def retrieve_item_summary():
         "unit_process_corner": unit_process_corners,
     }
     category = get_category(summary_item, categories)
-    if category is None:
+    if category is None and category_item is None:
         return jsonify({"error": "Invalid summary item"})
     if category == "voltage":
         (
@@ -1559,6 +1561,8 @@ def retrieve_item_summary():
             corner_names,
             voltage_test_results,
             corner_vs_voltage_results,
+            temperature_results,
+            test_instances_data,
         ) = get_category_test_counts(project_id, category, summary_item)
 
         return jsonify(
@@ -1569,6 +1573,8 @@ def retrieve_item_summary():
                 "corner_names": corner_names,
                 "voltage_test_results": voltage_test_results,
                 "corner_vs_voltage_results": corner_vs_voltage_results,
+                "temperature_results": temperature_results,
+                "test_instances_data": test_instances_data,
             }
         )
     elif category == "temperature":
@@ -1594,6 +1600,24 @@ def retrieve_item_summary():
                 "unit_vs_voltage_per_unit": unit_vs_voltage_results,
                 "test_instances_data": test_instances_data,
                 "temperature_results": temperature_results,
+            }
+        )
+    elif category_item == "project-result":
+        (
+            failing_test_count,
+            fail_test_instances,
+            failures_per_unit,
+            failures_per_temperature,
+            failures_per_voltage,
+        ) = get_category_test_counts(project_id, category_item, summary_item)
+        return jsonify(
+            {
+                "summary_item": "Failure",
+                "test_count": failing_test_count,
+                "test_instances": fail_test_instances,
+                "outcome_per_unit": failures_per_unit,
+                "outcome_per_temperature": failures_per_temperature,
+                "outcome_per_voltage": failures_per_voltage,
             }
         )
 
@@ -1743,76 +1767,6 @@ def get_category_test_counts(project_id, category, summary_item):
             .distinct()
             .all()
         ]
-        # corner_vs_voltage_results = {
-        #     "corner_results": {"pass": {}, "fail": {}, "not_run": {}},
-        #     "unit_results": {},
-        # }
-
-        # for unit in unit_list:
-        #     unit_id = unit.id
-        #     corner = unit.process_corner
-
-        #     corner_pass_count = TestInstances.query.filter_by(
-        #         project_id=project_id,
-        #         unit_id=unit_id,
-        #         voltage_id=voltage_id,
-        #         result="PASS",
-        #     ).count()
-
-        #     corner_fail_count = TestInstances.query.filter_by(
-        #         project_id=project_id,
-        #         unit_id=unit_id,
-        #         voltage_id=voltage_id,
-        #         result="FAIL",
-        #     ).count()
-
-        #     units_in_corner = len([u for u in unit_list if u.process_corner == corner])
-        #     corner_not_run_count = (
-        #         units_in_corner * voltage_test_count
-        #         - corner_pass_count
-        #         - corner_fail_count
-        #     )
-        #     unit_not_run_count = (
-        #         voltage_test_count - corner_pass_count - corner_fail_count
-        #     )
-
-        #     if corner not in corner_vs_voltage_results["corner_results"]["pass"]:
-        #         corner_vs_voltage_results["corner_results"]["pass"][
-        #             corner
-        #         ] = corner_pass_count
-        #         corner_vs_voltage_results["corner_results"]["fail"][
-        #             corner
-        #         ] = corner_fail_count
-        #         corner_vs_voltage_results["corner_results"]["not_run"][
-        #             corner
-        #         ] = corner_not_run_count
-        #     else:
-        #         corner_vs_voltage_results["corner_results"]["pass"][
-        #             corner
-        #         ] += corner_pass_count
-        #         corner_vs_voltage_results["corner_results"]["fail"][
-        #             corner
-        #         ] += corner_fail_count
-        #         corner_vs_voltage_results["corner_results"]["not_run"][
-        #             corner
-        #         ] += corner_not_run_count
-
-        #     if unit.two_d_name not in corner_vs_voltage_results["unit_results"]:
-        #         corner_vs_voltage_results["unit_results"][unit.two_d_name] = {
-        #             "pass": 0,
-        #             "fail": 0,
-        #             "not_run": 0,
-        #         }
-
-        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
-        #         "pass"
-        #     ] += corner_pass_count
-        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
-        #         "fail"
-        #     ] += corner_fail_count
-        #     corner_vs_voltage_results["unit_results"][unit.two_d_name][
-        #         "not_run"
-        #     ] += unit_not_run_count
 
         corner_vs_voltage_results = {
             "corner_results": {},
@@ -1871,12 +1825,223 @@ def get_category_test_counts(project_id, category, summary_item):
                 "NOT-RUN"
             ] += unit_not_run_count
 
+        # get temperature results
+        temperature_list = Temperatures.query.filter(
+            Temperatures.project_id == project_id
+        ).all()
+        temperature_count = len(temperature_list)
+        test_count_per_temp = int(
+            (
+                TestList.query.filter_by(
+                    project_id=project_id, voltage_id=voltage_id
+                ).count()
+            )
+            / temperature_count
+        )
+
+        temperature_results = {}
+        for temperature in temperature_list:
+            temperature_value = temperature.value
+            pass_count_per_temp = 0
+            fail_count_per_temp = 0
+            not_run_count_per_temp = 0
+            for unit in unit_list:
+                unit_id = unit.id
+                pass_count_per_temp_unit = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit_id,
+                    TestInstances.temperature_id == temperature.id,
+                    TestInstances.voltage_id == voltage_id,
+                    TestInstances.result == "PASS",
+                ).count()
+                fail_count_per_temp_unit = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit_id,
+                    TestInstances.temperature_id == temperature.id,
+                    TestInstances.voltage_id == voltage_id,
+                    TestInstances.result == "FAIL",
+                ).count()
+                not_run_count_per_temp_unit = (
+                    test_count_per_temp
+                    - pass_count_per_temp_unit
+                    - fail_count_per_temp_unit
+                )
+
+                pass_count_per_temp += pass_count_per_temp_unit
+                fail_count_per_temp += fail_count_per_temp_unit
+                not_run_count_per_temp += not_run_count_per_temp_unit
+
+            temperature_results[temperature_value] = {
+                "PASS": pass_count_per_temp,
+                "FAIL": fail_count_per_temp,
+                "NOT-RUN": not_run_count_per_temp,
+            }
+
+        # Fetch recent build IDs with passing percentage
+        unit_ids = [
+            unit.id for unit in Units.query.filter(Units.project_id == project_id).all()
+        ]
+
+        # Query to retrieve the last 10 test instances with passing percentage
+        test_instances = (
+            db.session.query(
+                TestInstances.test_id,
+                Units.two_d_name.label("unit_name"),
+                Voltages.name.label("voltage_name"),
+                Temperatures.value.label("temperature_value"),
+                func.sum(case((TestInstances.result == "PASS", 1), else_=0)).label(
+                    "pass_count"
+                ),
+                func.count(TestInstances.id).label("total_count"),
+            )
+            .join(Units, TestInstances.unit_id == Units.id)
+            .join(Voltages, TestInstances.voltage_id == Voltages.id)
+            .join(Temperatures, TestInstances.temperature_id == Temperatures.id)
+            .filter(
+                TestInstances.voltage_id == voltage_id,
+                TestInstances.project_id == project_id,
+                TestInstances.unit_id.in_(unit_ids),
+            )
+            .group_by(
+                TestInstances.test_id,
+                Units.two_d_name,
+                Voltages.value,
+                Temperatures.value,
+            )
+            .order_by(desc(TestInstances.id))
+            .limit(30)
+            .all()
+        )
+
+        test_instances_data = []
+        for test_instance in test_instances:
+            test_id = test_instance.test_id
+            unit_name = test_instance.unit_name
+            voltage_value = test_instance.voltage_name
+            temperature_value = test_instance.temperature_value
+            pass_count = test_instance.pass_count
+            total_count = test_instance.total_count
+            passing_percentage = (
+                (pass_count / total_count) * 100 if total_count > 0 else 0
+            )
+
+            test_instance_data = {
+                "Build ID": test_id,
+                "Unit": unit_name,
+                "Voltage": voltage_value,
+                "Temp": temperature_value,
+                "Passing Percentage": f"{passing_percentage:.2f}%",
+            }
+            test_instances_data.append(test_instance_data)
+
         return (
             units,
             corner_names,
             voltage_test_results,
             corner_vs_voltage_results,
+            temperature_results,
+            test_instances_data,
         )
+    elif category == "project-result":
+        if summary_item == "FAIL":
+            # get list of units, temperatures and voltages
+            unit_list = Units.query.filter_by(project_id=project_id).all()
+            temperature_list = Temperatures.query.filter(
+                Temperatures.project_id == project_id
+            ).all()
+            voltage_list = Voltages.query.filter(
+                Voltages.project_id == project_id
+            ).all()
+
+            # get failing test cases
+            failing_test_cases = TestInstances.query.filter(
+                TestInstances.project_id == project_id, TestInstances.result == "FAIL"
+            ).all()
+            failing_test_count = len(failing_test_cases)
+            test_instance_data = []
+            for test_instance in failing_test_cases:
+                test_id = test_instance.test_id
+                unit_id = test_instance.unit_id
+                voltage_id = test_instance.voltage_id
+                temperature_id = test_instance.temperature_id
+                result = test_instance.result
+                max_temp = test_instance.max_temp
+                min_temp = test_instance.min_temp
+                run_time = test_instance.run_time
+                vcc_int = test_instance.vcc_int
+                vcc_pmc = test_instance.vcc_pmc
+                vcc_psfp = test_instance.vcc_psfp
+                vcc_ram = test_instance.vcc_ram
+                vcc_soc = test_instance.vcc_soc
+                vcc_batt = test_instance.vcc_batt
+                vcc_aux = test_instance.vcc_aux
+                vccaux_pmc = test_instance.vccaux_pmc
+                vccaux_sysmon = test_instance.vccaux_sysmon
+                s_suite = test_instance.s_suite
+                suite = test_instance.suite
+                test_name = test_instance.test_name
+
+                unit = next((u for u in unit_list if u.id == unit_id), None)
+                voltage = next((v for v in voltage_list if v.id == voltage_id), None)
+                temperature = next(
+                    (t for t in temperature_list if t.id == temperature_id), None
+                )
+
+                test_data = {
+                    "Build ID": test_id,
+                    "Unit": unit.two_d_name if unit else None,
+                    "Voltage": voltage.name if voltage else None,
+                    "Temperature": temperature.value if temperature else None,
+                    "S-Suite": s_suite,
+                    "Suite": suite,
+                    "Test Name": test_name,
+                    "Result": result,
+                    "Max Temp": max_temp,
+                    "Min Temp": min_temp,
+                    "Run Time": run_time,
+                    "VCC Int": vcc_int,
+                    "VCC PMC": vcc_pmc,
+                    "VCC PSFP": vcc_psfp,
+                    "VCC RAM": vcc_ram,
+                    "VCC SOC": vcc_soc,
+                    "VCC Batt": vcc_batt,
+                    "VCC Aux": vcc_aux,
+                    "VCCAux PMC": vccaux_pmc,
+                    "VCCAux Sysmon": vccaux_sysmon,
+                }
+                test_instance_data.append(test_data)
+
+            # get breakdown of failures per unit, temperature and voltage
+            failures_per_unit = {}
+            failures_per_temperature = {}
+            failures_per_voltage = {}
+            for test_instance in test_instance_data:
+                unit_name = test_instance["Unit"]
+                temperature_value = test_instance["Temperature"]
+                voltage_name = test_instance["Voltage"]
+
+                if unit_name:
+                    if unit_name not in failures_per_unit:
+                        failures_per_unit[unit_name] = []
+                    failures_per_unit[unit_name].append(test_instance)
+
+                if temperature_value is not None:
+                    if temperature_value not in failures_per_temperature:
+                        failures_per_temperature[temperature_value] = []
+                    failures_per_temperature[temperature_value].append(test_instance)
+
+                if voltage_name:
+                    if voltage_name not in failures_per_voltage:
+                        failures_per_voltage[voltage_name] = []
+                    failures_per_voltage[voltage_name].append(test_instance)
+
+            return (
+                failing_test_count,
+                test_instance_data,
+                failures_per_unit,
+                failures_per_temperature,
+                failures_per_voltage,
+            )
 
 
 def get_corner_summary_item_data(project_id, corner_name):
@@ -1965,7 +2130,7 @@ def get_corner_summary_item_data(project_id, corner_name):
         db.session.query(
             TestInstances.test_id,
             Units.two_d_name.label("unit_name"),
-            Voltages.value.label("voltage_value"),
+            Voltages.name.label("voltage_name"),
             Temperatures.value.label("temperature_value"),
             func.sum(case((TestInstances.result == "PASS", 1), else_=0)).label(
                 "pass_count"
@@ -1979,10 +2144,9 @@ def get_corner_summary_item_data(project_id, corner_name):
             TestInstances.project_id == project_id, TestInstances.unit_id.in_(unit_ids)
         )
         .group_by(
-            TestInstances.test_id, Units.two_d_name, Voltages.value, Temperatures.value
+            TestInstances.test_id, Units.two_d_name, Voltages.name, Temperatures.value
         )
         .order_by(desc(TestInstances.id))
-        # .limit(30)
         .all()
     )
 
@@ -1990,7 +2154,7 @@ def get_corner_summary_item_data(project_id, corner_name):
     for test_instance in test_instances:
         test_id = test_instance.test_id
         unit_name = test_instance.unit_name
-        voltage_value = test_instance.voltage_value
+        voltage_value = test_instance.voltage_name
         temperature_value = test_instance.temperature_value
         pass_count = test_instance.pass_count
         total_count = test_instance.total_count
