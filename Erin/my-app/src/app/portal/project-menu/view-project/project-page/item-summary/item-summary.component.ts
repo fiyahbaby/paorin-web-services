@@ -55,15 +55,38 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
   unitNames: any[] = [];
 
   // project category
-  @ViewChild('unitChart') unitChartRef!: ElementRef;
-  @ViewChild('voltageChart') voltageChartRef!: ElementRef;
-  @ViewChild('tempChart') tempChartRef!: ElementRef;
-  unitChart: Chart | undefined;
-  voltageChart: Chart | undefined;
-  tempChart: Chart | undefined;
-  unitOutcomeData: any[] = [];
-  voltageOutcomeData: any[] = [];
-  tempOutcomeData: any[] = [];
+  @ViewChild('unitChart') outcomeUnitChartRef!: ElementRef;
+  @ViewChild('voltageChart') outcomeVoltageChartRef!: ElementRef;
+  @ViewChild('tempChart') outcomeTempChartRef!: ElementRef;
+  @ViewChild('cornerChart') outcomeCornerChartRef!: ElementRef;
+  outcomeUnitChart: Chart | undefined;
+  outcomeVoltageChart: Chart | undefined;
+  outcomeTempChart: Chart | undefined;
+  outcomeCornerChart: Chart | undefined;
+  unitOutcomeData: any;
+  voltageOutcomeData: any;
+  tempOutcomeData: any;
+  cornerOutcomeData: any;
+  testInstancesOutcomeData: any[] = [];
+  testResults: any[] = [
+    "Build ID",
+    "S-Suite",
+    "Suite",
+    "Test Name",
+    "Result",
+    "Max. Temp",
+    "Min. Temp",
+    "Run Time",
+    "VCCINT",
+    "VCC_PMC",
+    "VCC_PSFP",
+    "VCC_RAM",
+    "VCC_SOC",
+    "VCC_BATT",
+    "VCCAUX",
+    "VCCAUX_PMC",
+    "VCCAUX_SYSMON",
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -112,7 +135,13 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       console.log(this.summaryData);
       this.unitOutcomeData = this.summaryData.outcome_per_unit;
       this.voltageOutcomeData = this.summaryData.outcome_per_voltage;
-      this.tempOutcomeData = this.summaryData.outcome_per_temp;
+      this.tempOutcomeData = this.summaryData.outcome_per_temperature;
+      this.cornerOutcomeData = this.summaryData.outcome_per_corner;
+      this.testInstancesOutcomeData = this.summaryData.test_instances;
+      this.createOutcomeVoltageChart();
+      this.createOutcomeUnitChart();
+      this.createOutcomeTempChart();
+      this.createOutcomeCornerChart();
     }
   }
 
@@ -654,7 +683,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
 
     const chartOptions = {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
         x: {
           stacked: true,
@@ -674,6 +703,11 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
             return value.toFixed(2) + '%';
           }
         },
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        },
       },
     }
 
@@ -683,6 +717,258 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       data: chartData,
       options: chartOptions
     })
+  }
+
+  createOutcomeVoltageChart() {
+    if (!this.outcomeVoltageChartRef) {
+      console.log('outcomeVoltageChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeVoltageChart) {
+      this.outcomeVoltageChart.destroy();
+    }
+
+    const labels = Object.keys(this.voltageOutcomeData);
+    const data = Object.values(this.voltageOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeVoltageChartRef.nativeElement;
+    this.outcomeVoltageChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: data,
+            backgroundColor: 'rgba(212, 75, 75, 0.5)',
+            borderColor: 'rgba(192, 75, 75, 1)',
+            borderWidth: 1
+          }
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Failures'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Voltage'
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    });
+  }
+
+  createOutcomeUnitChart() {
+    if (!this.outcomeUnitChartRef) {
+      console.log('outcomeUnitChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeUnitChart) {
+      this.outcomeUnitChart.destroy();
+    }
+
+    const labels = Object.keys(this.unitOutcomeData);
+    const data = Object.values(this.unitOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeUnitChartRef.nativeElement;
+    this.outcomeUnitChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: data,
+            backgroundColor: 'rgba(212, 212, 75, 0.5)',
+            borderColor: 'rgba(212, 212, 75, 1)',
+            borderWidth: 1
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Failures'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Unit'
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    });
+  }
+
+  createOutcomeTempChart() {
+    if (!this.outcomeTempChartRef) {
+      console.log('outcomeTempChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeTempChart) {
+      this.outcomeTempChart.destroy();
+    }
+
+    const labels = Object.keys(this.tempOutcomeData);
+    const data = Object.values(this.tempOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeTempChartRef.nativeElement;
+    this.outcomeTempChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: data,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Failures'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Temperature'
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    });
+  }
+
+  createOutcomeCornerChart() {
+    if (!this.outcomeCornerChartRef) {
+      console.log('outcomeCornerChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeCornerChart) {
+      this.outcomeCornerChart.destroy();
+    }
+
+    const labels = Object.keys(this.cornerOutcomeData);
+    const data = Object.values(this.cornerOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeCornerChartRef.nativeElement;
+    this.outcomeCornerChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: data,
+            backgroundColor: 'rgba(75, 75, 192, 0.5)',
+            borderColor: 'rgba(75, 75, 192, 1)',
+            borderWidth: 1
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Failures'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Corner'
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    });
+  }
+
+  onBack() {
+    this.router.navigate(['../'], { relativeTo: this.route });
   }
 
   navigateToViewData(buildID: string) {

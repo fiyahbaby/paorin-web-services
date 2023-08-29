@@ -1609,15 +1609,17 @@ def retrieve_item_summary():
             failures_per_unit,
             failures_per_temperature,
             failures_per_voltage,
+            failures_per_corner,
         ) = get_category_test_counts(project_id, category_item, summary_item)
         return jsonify(
             {
-                "summary_item": "Failure",
+                "summary_item": "Fail",
                 "test_count": failing_test_count,
                 "test_instances": fail_test_instances,
                 "outcome_per_unit": failures_per_unit,
                 "outcome_per_temperature": failures_per_temperature,
                 "outcome_per_voltage": failures_per_voltage,
+                "outcome_per_corner": failures_per_corner,
             }
         )
 
@@ -1996,18 +1998,18 @@ def get_category_test_counts(project_id, category, summary_item):
                     "Suite": suite,
                     "Test Name": test_name,
                     "Result": result,
-                    "Max Temp": max_temp,
-                    "Min Temp": min_temp,
+                    "Max. Temp": max_temp,
+                    "Min. Temp": min_temp,
                     "Run Time": run_time,
-                    "VCC Int": vcc_int,
-                    "VCC PMC": vcc_pmc,
-                    "VCC PSFP": vcc_psfp,
-                    "VCC RAM": vcc_ram,
-                    "VCC SOC": vcc_soc,
-                    "VCC Batt": vcc_batt,
-                    "VCC Aux": vcc_aux,
-                    "VCCAux PMC": vccaux_pmc,
-                    "VCCAux Sysmon": vccaux_sysmon,
+                    "VCCINT": vcc_int,
+                    "VCC_PMC": vcc_pmc,
+                    "VCC_PSFP": vcc_psfp,
+                    "VCC_RAM": vcc_ram,
+                    "VCC_SOC": vcc_soc,
+                    "VCC_BATT": vcc_batt,
+                    "VCCAUX": vcc_aux,
+                    "VCCAUX_PMC": vccaux_pmc,
+                    "VCCAUX_SYSMON": vccaux_sysmon,
                 }
                 test_instance_data.append(test_data)
 
@@ -2015,6 +2017,7 @@ def get_category_test_counts(project_id, category, summary_item):
             failures_per_unit = {}
             failures_per_temperature = {}
             failures_per_voltage = {}
+            failures_per_corner = {}
             for test_instance in test_instance_data:
                 unit_name = test_instance["Unit"]
                 temperature_value = test_instance["Temperature"]
@@ -2035,12 +2038,24 @@ def get_category_test_counts(project_id, category, summary_item):
                         failures_per_voltage[voltage_name] = []
                     failures_per_voltage[voltage_name].append(test_instance)
 
+                unit_id = next(
+                    (u.id for u in unit_list if u.two_d_name == unit_name), None
+                )
+                if unit_id is not None:
+                    unit = next((u for u in unit_list if u.id == unit_id), None)
+                    if unit:
+                        corner = unit.process_corner
+                        if corner not in failures_per_corner:
+                            failures_per_corner[corner] = []
+                        failures_per_corner[corner].append(test_instance)
+
             return (
                 failing_test_count,
                 test_instance_data,
                 failures_per_unit,
                 failures_per_temperature,
                 failures_per_voltage,
+                failures_per_corner,
             )
 
 
