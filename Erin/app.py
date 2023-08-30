@@ -1610,6 +1610,10 @@ def retrieve_item_summary():
             failures_per_temperature,
             failures_per_voltage,
             failures_per_corner,
+            voltage_test_count,
+            corner_test_count,
+            unit_test_count,
+            temperature_test_count,
         ) = get_category_test_counts(project_id, category_item, summary_item)
         return jsonify(
             {
@@ -1620,6 +1624,10 @@ def retrieve_item_summary():
                 "outcome_per_temperature": failures_per_temperature,
                 "outcome_per_voltage": failures_per_voltage,
                 "outcome_per_corner": failures_per_corner,
+                "voltage_test_count": voltage_test_count,
+                "corner_test_count": corner_test_count,
+                "unit_test_count": unit_test_count,
+                "temperature_test_count": temperature_test_count,
             }
         )
 
@@ -2049,6 +2057,86 @@ def get_category_test_counts(project_id, category, summary_item):
                             failures_per_corner[corner] = []
                         failures_per_corner[corner].append(test_instance)
 
+            # retrieve failure to total count ratio per voltage
+            voltage_test_count = {}
+            for voltage in voltage_list:
+                voltage_test_count[voltage.name] = {}
+                voltage_name = voltage.name
+                voltage_id = voltage.id
+                total_voltage_test_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.voltage_id == voltage.id,
+                ).count()
+                voltage_test_count[voltage_name]["TOTAL"] = total_voltage_test_count
+
+                total_voltage_fail_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.voltage_id == voltage.id,
+                    TestInstances.result == "FAIL",
+                ).count()
+                voltage_test_count[voltage_name]["FAIL"] = total_voltage_fail_count
+
+            # retrieve failure to total count ratio per corner
+            corner_test_count = {}
+            unit_id_to_corner = {unit.id: unit.process_corner for unit in unit_list}
+            for unit_id, corner in unit_id_to_corner.items():
+                corner_test_count[corner] = {}
+                corner_name = corner
+
+                total_corner_test_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit_id,
+                ).count()
+                corner_test_count[corner_name]["TOTAL"] = total_corner_test_count
+
+                total_corner_fail_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit_id,
+                    TestInstances.result == "FAIL",
+                ).count()
+                corner_test_count[corner_name]["FAIL"] = total_corner_fail_count
+
+            # retrieve failure to total count ratio per unit
+            unit_test_count = {}
+            for unit in unit_list:
+                unit_name = unit.two_d_name
+                unit_test_count[unit_name] = {}
+                unit_id = unit.id
+                total_unit_test_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit.id,
+                ).count()
+                unit_test_count[unit_name]["TOTAL"] = total_unit_test_count
+
+                total_unit_fail_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.unit_id == unit.id,
+                    TestInstances.result == "FAIL",
+                ).count()
+                unit_test_count[unit_name]["FAIL"] = total_unit_fail_count
+
+            # retrieve failure to total count ratio per temperature
+            temperature_test_count = {}
+            for temperature in temperature_list:
+                temperature_test_count[temperature.name] = {}
+                temperature_name = temperature.name
+                total_temperature_test_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.temperature_id == temperature.id,
+                ).count()
+                temperature_test_count[temperature_name][
+                    "TOTAL"
+                ] = total_temperature_test_count
+
+                total_temperature_fail_count = TestInstances.query.filter(
+                    TestInstances.project_id == project_id,
+                    TestInstances.temperature_id == temperature.id,
+                    TestInstances.result == "FAIL",
+                ).count()
+                temperature_test_count[temperature_name][
+                    "FAIL"
+                ] = total_temperature_fail_count
+
             return (
                 failing_test_count,
                 test_instance_data,
@@ -2056,6 +2144,10 @@ def get_category_test_counts(project_id, category, summary_item):
                 failures_per_temperature,
                 failures_per_voltage,
                 failures_per_corner,
+                voltage_test_count,
+                corner_test_count,
+                unit_test_count,
+                temperature_test_count,
             )
 
 

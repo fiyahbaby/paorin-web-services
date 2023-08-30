@@ -56,17 +56,50 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
 
   // project category
   @ViewChild('unitChart') outcomeUnitChartRef!: ElementRef;
+  @ViewChild('unitPieChart') outcomeUnitPieChartRef!: ElementRef;
+  @ViewChild('unitRatioChart') unitRatioChartRef!: ElementRef;
   @ViewChild('voltageChart') outcomeVoltageChartRef!: ElementRef;
+  @ViewChild('voltagePieChart') outcomeVoltagePieChartRef!: ElementRef;
+  @ViewChild('voltageRatioChart') voltageRatioChartRef!: ElementRef;
   @ViewChild('tempChart') outcomeTempChartRef!: ElementRef;
+  @ViewChild('tempPieChart') tempPieChartRef!: ElementRef;
+  @ViewChild('tempRatioChart') tempRatioChartRef!: ElementRef;
   @ViewChild('cornerChart') outcomeCornerChartRef!: ElementRef;
+  @ViewChild('cornerPieChart') cornerPieChartRef!: ElementRef;
+  @ViewChild('cornerRatioChart') cornerRatioChartRef!: ElementRef;
   outcomeUnitChart: Chart | undefined;
+  outcomeUnitPieChart: Chart | undefined;
+  unitRatioChart: Chart | undefined;
+  outcomeUnitTableData: any[] = [];
+  unitRatioData: any;
+  unitRatioTableData: any[] = [];
+  unitRatioHeaders: any[] = [];
   outcomeVoltageChart: Chart | undefined;
+  outcomeVoltagePieChart: Chart | undefined;
+  voltageRatioChart: Chart | undefined;
+  outcomeVoltageTableData: any[] = [];
   outcomeTempChart: Chart | undefined;
+  tempPieChart: Chart | undefined;
+  tempRatioChart: Chart | undefined;
+  tempRatioData: any;
+  tempNames: any[] = [];
+  tempRatioHeaders: any[] = [];
+  outcomeTempTableData: any[] = [];
+  tempRatioTableData: any[] = [];
   outcomeCornerChart: Chart | undefined;
+  cornerPieChart: Chart | undefined;
+  cornerRatioChart: Chart | undefined;
   unitOutcomeData: any;
   voltageOutcomeData: any;
+  voltageRatioData: any;
+  voltageRatioTableData: any[] = [];
+  voltageRatioHeaders: any[] = [];
   tempOutcomeData: any;
   cornerOutcomeData: any;
+  cornerRatioData: any;
+  cornerRatioTableData: any[] = [];
+  cornerRatioHeaders: any[] = [];
+  outcomeCornerTableData: any[] = [];
   testInstancesOutcomeData: any[] = [];
   testResults: any[] = [
     "Build ID",
@@ -138,6 +171,10 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       this.tempOutcomeData = this.summaryData.outcome_per_temperature;
       this.cornerOutcomeData = this.summaryData.outcome_per_corner;
       this.testInstancesOutcomeData = this.summaryData.test_instances;
+      this.voltageRatioData = this.summaryData.voltage_test_count;
+      this.cornerRatioData = this.summaryData.corner_test_count;
+      this.unitRatioData = this.summaryData.unit_test_count;
+      this.tempRatioData = this.summaryData.temperature_test_count;
       this.createOutcomeVoltageChart();
       this.createOutcomeUnitChart();
       this.createOutcomeTempChart();
@@ -635,6 +672,144 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     }))
   }
 
+  createUnitPieChart() {
+    if (!this.outcomeUnitPieChartRef) {
+      console.log('outcomeUnitPieChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeUnitPieChart) {
+      this.outcomeUnitPieChart.destroy();
+    }
+
+    this.unitNames = Object.keys(this.unitOutcomeData);
+    this.outcomeUnitTableData = Object.values(this.unitOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeUnitPieChartRef.nativeElement;
+    const backgroundColors = this.outcomeUnitTableData.map(() => {
+      const opacity = 0.5;
+      const yellowChannel = Math.floor(Math.random() * 100) + 155;
+      const randomColor = `rgba(${yellowChannel}, ${yellowChannel}, ${Math.floor(
+        Math.random() * 100
+      )}, ${opacity})`;
+      return randomColor;
+    });
+
+    this.outcomeUnitPieChart = new Chart(canvasElement, {
+      type: 'pie' as ChartType,
+      data: {
+        labels: this.unitNames.map(label => label.slice(-4)),
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: this.outcomeUnitTableData,
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black',
+            }
+          },
+        },
+      },
+    })
+
+    this.outcomeUnitTableData = this.unitNames.map((unitName, index) => ({
+      name: unitName,
+      value: this.outcomeUnitTableData[index]
+    }))
+  }
+
+  createUnitRatioChart() {
+    if (!this.unitRatioChartRef) {
+      console.log('unitRatioChartRef is not defined');
+      return;
+    }
+
+    if (this.unitRatioChart) {
+      this.unitRatioChart.destroy();
+    }
+
+    this.unitRatioHeaders = Object.keys(this.unitRatioData);
+    const resultTypes = ['TOTAL', 'FAIL'];
+    const backgroundColors: { [key: string]: string } = {
+      'TOTAL': 'rgba(75, 192, 192, 0.6)',
+      'FAIL': 'rgba(255, 99, 132, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(this.unitRatioData).map(unit => {
+        const count = this.unitRatioData[unit][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + this.unitRatioData[unit][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: this.unitRatioHeaders,
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        }
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.unitRatioChartRef.nativeElement;
+    this.unitRatioChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
+
+    this.unitRatioTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        Object.keys(this.unitRatioData).map(unit => [
+          unit,
+          this.unitRatioData[unit][resultType]
+        ])
+      )
+    }))
+  }
+
   createVoltageVsTempProgressChart() {
     const temperatureArray = [];
     for (const temperatureValue in this.voltageTempData) {
@@ -779,6 +954,288 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
         maintainAspectRatio: false
       },
     });
+    this.createOutcomeVoltagePieChart();
+    this.createVoltageRatioChart();
+  }
+
+  createOutcomeVoltagePieChart() {
+    if (!this.outcomeVoltagePieChartRef) {
+      console.log('outcomeVoltagePieChartRef is not defined');
+      return;
+    }
+
+    if (this.outcomeVoltagePieChart) {
+      this.outcomeVoltagePieChart.destroy();
+    }
+
+    this.voltageNames = Object.keys(this.voltageOutcomeData);
+    this.outcomeVoltageTableData = Object.values(this.voltageOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.outcomeVoltagePieChartRef.nativeElement;
+    const backgroundColors = this.outcomeVoltageTableData.map(() => {
+      const opacity = 0.5;
+      const redChannel = Math.floor(Math.random() * 100) + 155;
+      const randomColor = `rgba(${redChannel}, ${Math.floor(
+        Math.random() * 100
+      )}, ${Math.floor(Math.random() * 100)}, ${opacity})`;
+      return randomColor;
+    });
+
+    this.outcomeVoltagePieChart = new Chart(canvasElement, {
+      type: 'pie' as ChartType,
+      data: {
+        labels: this.voltageNames,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: this.outcomeVoltageTableData,
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          },
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    })
+
+    this.outcomeVoltageTableData = this.voltageNames.map((voltageName, index) => ({
+      name: voltageName,
+      value: this.outcomeVoltageTableData[index]
+    }));
+  }
+
+  createVoltageRatioChart() {
+    if (!this.voltageRatioChartRef) {
+      console.log('voltageRatioChartRef is not defined');
+      return;
+    }
+
+    if (this.voltageRatioChart) {
+      this.voltageRatioChart.destroy();
+    }
+
+    this.voltageRatioHeaders = Object.keys(this.voltageRatioData);
+    const data = Object.values(this.voltageRatioData).map(subArray => (subArray as any[]).length);
+    const resultTypes = ['TOTAL', 'FAIL'];
+    const backgroundColors: { [key: string]: string } = {
+      TOTAL: 'rgba(75, 192, 192, 0.6)',
+      FAIL: 'rgba(192, 75, 75, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(this.voltageRatioData).map(voltage => {
+        const count = this.voltageRatioData[voltage][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + this.voltageRatioData[voltage][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: this.voltageRatioHeaders,
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        }
+      },
+    }
+
+    const canvasElement: HTMLCanvasElement = this.voltageRatioChartRef.nativeElement;
+    this.voltageRatioChart = new Chart(canvasElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
+
+    this.voltageRatioTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        Object.keys(this.voltageRatioData).map(voltage => [
+          voltage,
+          this.voltageRatioData[voltage][resultType]
+        ])
+      )
+    }))
+  }
+
+  createOutcomeCornerPieChart() {
+    if (!this.cornerPieChartRef) {
+      console.log('cornerPieChartRef is not defined');
+      return;
+    }
+
+    if (this.cornerPieChart) {
+      this.cornerPieChart.destroy();
+    }
+
+    this.cornerNames = Object.keys(this.cornerOutcomeData);
+    this.outcomeCornerTableData = Object.values(this.cornerOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.cornerPieChartRef.nativeElement;
+    const backgroundColors = this.outcomeCornerTableData.map(() => {
+      const opacity = 0.5;
+      const blueChannel = Math.floor(Math.random() * 100) + 155;
+      const randomColor = `rgba(${Math.floor(Math.random() * 100)}, ${Math.floor(
+        Math.random() * 100
+      )}, ${blueChannel}, ${opacity})`;
+      return randomColor;
+    });
+
+
+    this.cornerPieChart = new Chart(canvasElement, {
+      type: 'pie' as ChartType,
+      data: {
+        labels: this.cornerNames,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: this.outcomeCornerTableData,
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context: any) => {
+              return context.dataset.data[context.dataIndex] > 0;
+            },
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          },
+        },
+      },
+    })
+
+    this.outcomeCornerTableData = this.cornerNames.map((cornerName, index) => ({
+      name: cornerName,
+      value: this.outcomeCornerTableData[index]
+    }))
+  }
+
+  createCornerRatioChart() {
+    if (!this.cornerRatioChartRef) {
+      console.log('cornerRatioChartRef is not defined');
+      return;
+    }
+
+    if (this.cornerRatioChart) {
+      this.cornerRatioChart.destroy();
+    }
+
+    this.cornerRatioHeaders = Object.keys(this.cornerRatioData);
+    const data = Object.values(this.cornerRatioData).map(subArray => (subArray as any[]).length);
+    const resultTypes = ['TOTAL', 'FAIL'];
+    const backgroundColors: { [key: string]: string } = {
+      TOTAL: 'rgba(75, 192, 192, 0.6)',
+      FAIL: 'rgba(192, 75, 75, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(this.cornerRatioData).map(corner => {
+        const count = this.cornerRatioData[corner][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + this.cornerRatioData[corner][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: this.cornerRatioHeaders,
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          }
+        },
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        }
+      },
+    }
+
+    this.cornerRatioChart = new Chart(this.cornerRatioChartRef.nativeElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
+
+    this.cornerRatioTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        Object.keys(this.cornerRatioData).map(corner => [
+          corner,
+          this.cornerRatioData[corner][resultType]
+        ])
+      )
+    }))
   }
 
   createOutcomeUnitChart() {
@@ -797,7 +1254,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     this.outcomeUnitChart = new Chart(canvasElement, {
       type: 'bar',
       data: {
-        labels: labels,
+        labels: labels.map(label => label.slice(-4)),
         datasets: [
           {
             label: 'Fail Count',
@@ -818,8 +1275,8 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
           },
           legend: {
             labels: {
-              color: 'black'
-            }
+              color: 'black',
+            },
           }
         },
         scales: {
@@ -841,6 +1298,8 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
         maintainAspectRatio: false
       },
     });
+    this.createUnitPieChart();
+    this.createUnitRatioChart();
   }
 
   createOutcomeTempChart() {
@@ -903,6 +1362,143 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
         maintainAspectRatio: false
       },
     });
+    this.createTempPieChart();
+    this.createTempRatioChart();
+  }
+
+  createTempRatioChart() {
+    if (!this.tempRatioChartRef) {
+      console.log('tempRatioChartRef is not defined');
+      return;
+    }
+
+    if (this.tempRatioChart) {
+      this.tempRatioChart.destroy();
+    }
+
+    this.tempRatioHeaders = Object.keys(this.tempRatioData);
+    const data = Object.values(this.tempRatioData).map(subArray => (subArray as any[]).length);
+    const resultTypes = ['TOTAL', 'FAIL'];
+    const backgroundColors: { [key: string]: string } = {
+      TOTAL: 'rgba(75, 192, 192, 0.6)',
+      FAIL: 'rgba(192, 75, 75, 0.6)',
+    }
+
+    const datasets = resultTypes.map(resultType => ({
+      label: resultType,
+      data: Object.keys(this.tempRatioData).map(temp => {
+        const count = this.tempRatioData[temp][resultType];
+        const totalCount = resultTypes.reduce((sum, type) => sum + this.tempRatioData[temp][type], 0);
+        const percentage = (count / totalCount) * 100;
+        return +percentage.toFixed(2);
+      }),
+      backgroundColor: backgroundColors[resultType],
+    }))
+
+    const chartData = {
+      labels: this.tempRatioHeaders,
+      datasets: datasets,
+    }
+
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+          max: 100
+        },
+      },
+      plugins: {
+        datalabels: {
+          color: 'black',
+          display: (context: any) => {
+            return context.dataset.data[context.dataIndex] > 0;
+          },
+          formatter: (value: any) => {
+            return value.toFixed(2) + '%';
+          },
+        },
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        }
+      },
+    }
+
+    this.tempRatioChart = new Chart(this.tempRatioChartRef.nativeElement, {
+      type: 'bar',
+      data: chartData,
+      options: chartOptions
+    })
+
+    this.tempRatioTableData = resultTypes.map(resultType => ({
+      Category: resultType,
+      ...Object.fromEntries(
+        Object.keys(this.tempRatioData).map(temp => [
+          temp,
+          this.tempRatioData[temp][resultType]
+        ])
+      )
+    }))
+  }
+
+  createTempPieChart() {
+    if (!this.tempPieChartRef) {
+      console.log('tempPieChartRef is not defined');
+      return;
+    }
+
+    if (this.tempPieChart) {
+      this.tempPieChart.destroy();
+    }
+
+    this.tempNames = Object.keys(this.tempOutcomeData);
+    this.outcomeTempTableData = Object.values(this.tempOutcomeData).map(subArray => (subArray as any[]).length);
+    const canvasElement: HTMLCanvasElement = this.tempPieChartRef.nativeElement;
+    const backgroundColors = this.outcomeVoltageTableData.map(() => {
+      const opacity = 0.5;
+      const greenChannel = Math.floor(Math.random() * 100) + 155;
+      const randomColor = `rgba(${Math.floor(Math.random() * 100)}, ${greenChannel}, ${Math.floor(Math.random() * 100)}, ${opacity})`;
+      return randomColor;
+    });
+
+    this.tempPieChart = new Chart(canvasElement, {
+      type: 'pie' as ChartType,
+      data: {
+        labels: this.tempNames,
+        datasets: [
+          {
+            label: 'Fail Count',
+            data: this.outcomeTempTableData,
+            backgroundColor: backgroundColors,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: 'black',
+          },
+          legend: {
+            labels: {
+              color: 'black'
+            }
+          },
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+    })
+
+    this.outcomeTempTableData = this.tempNames.map((tempName, index) => ({
+      name: tempName,
+      value: this.outcomeTempTableData[index]
+    }))
   }
 
   createOutcomeCornerChart() {
@@ -965,6 +1561,8 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
         maintainAspectRatio: false
       },
     });
+    this.createOutcomeCornerPieChart();
+    this.createCornerRatioChart();
   }
 
   onBack() {
