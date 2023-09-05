@@ -48,6 +48,9 @@ export class ProjectPageComponent implements OnInit {
   isCornerSummaryPassEnabled: boolean = true;
   isCornerSummaryFailEnabled: boolean = true;
   isCornerSummaryNotRunEnabled: boolean = true;
+  testDuration: any;
+  testDurationStats: any;
+  testDurationList: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -78,6 +81,7 @@ export class ProjectPageComponent implements OnInit {
     this.createCornerProgressChart();
     this.createProjectChart();
     this.createUnitStatsChart();
+    this.getTestDuration();
   }
 
   async getProcessedTests(): Promise<void> {
@@ -739,5 +743,24 @@ export class ProjectPageComponent implements OnInit {
       data: unitStatsChartData,
       options: options,
     });
+  }
+
+  async getTestDuration() {
+    this.testDuration = await this.portalService.getTestDuration(this.projectID);
+    this.testDurationList = this.testDuration.passing_test_durations;
+    const total = this.testDuration?.total_run_time;
+    const testCount = this.testDurationList.length;
+    const longest = Math.max(...this.testDurationList);
+    const shortest = Math.min(...this.testDurationList);
+    const sum = this.testDurationList.reduce((acc, value) => acc + value, 0);
+    const average = sum / this.testDurationList.length;
+    const average_rounded = Math.round(average);
+    this.testDurationStats = {
+      total: total,
+      average: average_rounded,
+      longest: longest,
+      shortest: shortest,
+      testCount: testCount
+    }
   }
 }

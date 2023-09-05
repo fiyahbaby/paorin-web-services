@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 import pytz
 from werkzeug.security import check_password_hash
 import socket
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pytz import timezone
 from flask_migrate import Migrate
 from pymongo import MongoClient
@@ -2118,13 +2118,13 @@ def get_category_test_counts(project_id, category, summary_item):
             # retrieve failure to total count ratio per temperature
             temperature_test_count = {}
             for temperature in temperature_list:
-                temperature_test_count[temperature.name] = {}
-                temperature_name = temperature.name
+                temperature_test_count[temperature.value] = {}
+                temperature_value = temperature.value
                 total_temperature_test_count = TestInstances.query.filter(
                     TestInstances.project_id == project_id,
                     TestInstances.temperature_id == temperature.id,
                 ).count()
-                temperature_test_count[temperature_name][
+                temperature_test_count[temperature_value][
                     "TOTAL"
                 ] = total_temperature_test_count
 
@@ -2133,7 +2133,7 @@ def get_category_test_counts(project_id, category, summary_item):
                     TestInstances.temperature_id == temperature.id,
                     TestInstances.result == "FAIL",
                 ).count()
-                temperature_test_count[temperature_name][
+                temperature_test_count[temperature_value][
                     "FAIL"
                 ] = total_temperature_fail_count
 
@@ -2327,6 +2327,47 @@ def get_corner_summary_item_data(project_id, corner_name):
         test_instances_data,
         temperature_results,
     )
+
+
+@app.route("/api/get_project_test_durations", methods=["GET"])
+def get_project_test_durations():
+    project_id = request.args.get("project_id")
+
+    all_passing_test_instances = (
+        TestInstances.query.filter_by(project_id=project_id, result="PASS")
+        .order_by(TestInstances.id.desc())
+        .all()
+    )
+
+    test_duration = {}
+    passing_test_durations = []
+    total_passing_test_duration = 0
+    test_instances = {}
+
+    for test_instance in all_passing_test_instances:
+        identifier = (
+            f"{test_instance.s_suite}-{test_instance.suite}-{test_instance.test_name}"
+        )
+
+        if identifier not in test_instances:
+            test_instances[identifier] = test_instance
+            total_passing_test_duration += test_instance.run_time
+            passing_test_durations.append(test_instance.run_time)
+
+    svf_multipler = 0.8
+    total_passing_test_duration = round(total_passing_test_duration / svf_multipler)
+    total_passing_test_duration = seconds_to_hms(total_passing_test_duration)
+    test_duration["total_run_time"] = total_passing_test_duration
+    test_duration["passing_test_durations"] = passing_test_durations
+
+    return test_duration
+
+
+def seconds_to_hms(seconds):
+    duration = timedelta(seconds=seconds)
+    formatted_duration = str(duration)
+
+    return formatted_duration
 
 
 if __name__ == "__main__":

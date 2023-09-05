@@ -11,7 +11,7 @@ Chart.register(ChartDataLabels);
   templateUrl: './item-summary.component.html',
   styleUrls: ['./item-summary.component.scss']
 })
-export class ItemSummaryComponent implements OnInit, AfterViewInit {
+export class ItemSummaryComponent implements OnInit {
   data: any;
   summaryData: any;
   summaryItem: any;
@@ -127,17 +127,31 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     private portalService: PortalService,
   ) { }
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+  async ngOnInit(): Promise<void> {
+    this.route.queryParams.subscribe(async (params) => {
       this.data = JSON.parse(params['data']);
       this.category = this.data.category;
       this.summaryItem = this.data.summaryItem;
       this.projectID = this.data.projectID;
-    });
-  }
 
-  ngAfterViewInit(): void {
-    this.retrieveItemSummary();
+      await this.retrieveItemSummary();
+      if (this.category === 'corner') {
+        this.createCornerProgressChart();
+        this.createCornerVsVoltageChart();
+        this.createCornerUnitProgressChart();
+        this.createCornerVsTempProgressChart();
+      } else if (this.category === 'voltage') {
+        this.createVoltageProgressChart();
+        this.createVoltageVsCornerChart();
+        this.createVoltagePerUnitChart();
+        this.createVoltageVsTempProgressChart();
+      } else if (this.category === 'project-result') {
+        this.createOutcomeVoltageChart();
+        this.createOutcomeUnitChart();
+        this.createOutcomeTempChart();
+        this.createOutcomeCornerChart();
+      }
+    });
   }
 
   async retrieveItemSummary(): Promise<void> {
@@ -145,12 +159,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     if (this.category === 'corner') {
       this.testInstancesData = this.summaryData.test_instances_data;
       this.cornerTemperatureData = this.summaryData.temperature_results;
-      this.createCornerProgressChart();
-      this.createCornerVsVoltageChart();
-      this.createCornerUnitProgressChart();
-      this.createCornerVsTempProgressChart();
-    }
-    else if (this.category === 'voltage') {
+    } else if (this.category === 'voltage') {
       this.unitList = this.summaryData.units;
       this.testInstancesData = this.summaryData.test_instances_data;
       this.voltageResults = this.summaryData.voltage_test_results;
@@ -159,13 +168,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       this.unitNames = Object.keys(this.voltageVsUnitResults);
       this.cornerNames = this.summaryData.corner_names;
       this.voltageTempData = this.summaryData.temperature_results;
-      this.createVoltageProgressChart();
-      this.createVoltageVsCornerChart();
-      this.createVoltagePerUnitChart();
-      this.createVoltageVsTempProgressChart();
-    }
-    else if (this.category === 'project-result') {
-      console.log(this.summaryData);
+    } else if (this.category === 'project-result') {
       this.unitOutcomeData = this.summaryData.outcome_per_unit;
       this.voltageOutcomeData = this.summaryData.outcome_per_voltage;
       this.tempOutcomeData = this.summaryData.outcome_per_temperature;
@@ -175,10 +178,6 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
       this.cornerRatioData = this.summaryData.corner_test_count;
       this.unitRatioData = this.summaryData.unit_test_count;
       this.tempRatioData = this.summaryData.temperature_test_count;
-      this.createOutcomeVoltageChart();
-      this.createOutcomeUnitChart();
-      this.createOutcomeTempChart();
-      this.createOutcomeCornerChart();
     }
   }
 
@@ -758,7 +757,7 @@ export class ItemSummaryComponent implements OnInit, AfterViewInit {
     }))
 
     const chartData = {
-      labels: this.unitRatioHeaders,
+      labels: this.unitRatioHeaders.map(header => header.slice(-4)),
       datasets: datasets,
     }
 

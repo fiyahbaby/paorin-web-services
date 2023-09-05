@@ -192,4 +192,10 @@ export class PortalService {
     const response = await this.http.get<any>(url, { params: summaryData }).toPromise();
     return response;
   }
+
+  async getTestDuration(projectId: number): Promise<any[] | undefined> {
+    const url = `${await this.getBackendUrl()}/api/get_project_test_durations?project_id=${projectId}`;
+    const response = this.http.get<any[]>(url).toPromise();
+    return response
+  }
 }

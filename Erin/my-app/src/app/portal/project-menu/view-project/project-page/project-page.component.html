@@ -14,25 +14,6 @@
                                         Project Summary
                                     </h1>
                                 </p-header>
-                                <div class="w-full">
-                                    <div class="flex flex-row justify-content-evenly">
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Test Count: {{ projectStats.total_test_count }}
-                                        </h2>
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Run Count: {{ projectStats.total_run_count }}
-                                        </h2>
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Not-Run: {{ projectStats.total_not_run_count }}
-                                        </h2>
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Pass: {{ projectStats.total_pass_count }}
-                                        </h2>
-                                        <h2 class="my-3 text-black-alpha-90" style="font-size: 16px">
-                                            Total Fail: {{ projectStats.total_fail_count }}
-                                        </h2>
-                                    </div>
-                                </div>
                                 <div class="m-0 flex justify-content-center">
                                     <canvas id="projectPieChart" #projectPieChart></canvas>
                                 </div>
@@ -42,6 +23,7 @@
                                             <tr>
                                                 <th style="width: 20rem; text-align: center">Block
                                                 </th>
+                                                <th style="width: 20rem; text-align: center">TOTAL</th>
                                                 <th style="width: 20rem; text-align: center">PASS</th>
                                                 <th style="width: 20rem; text-align: center">FAIL</th>
                                                 <th style="width: 20rem; text-align: center">NOT-RUN</th>
@@ -53,15 +35,50 @@
                                                     selectedProject.blockId
                                                     }}</td>
                                                 <td style="width: 20rem; text-align: center">{{
-                                                    projectStats.project_progress }}%</td>
+                                                    projectStats.total_test_count }}</td>
                                                 <td style="width: 20rem; text-align: center">{{
-                                                    projectStats.project_fail_rate }}%</td>
+                                                    projectStats.total_pass_count }}</td>
                                                 <td style="width: 20rem; text-align: center">{{
-                                                    projectStats.project_not_run_rate }}%</td>
+                                                    projectStats.total_fail_count }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.total_not_run_count }}</td>
                                             </tr>
                                         </ng-template>
                                     </p-table>
                                 </div>
+                            </div>
+                            <div class="w-full mt-3">
+                                <p-header>
+                                    <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
+                                        Full Suite Test Duration
+                                    </h1>
+                                </p-header>
+                                <p-table styleClass="p-datatable-gridlines" [value]="[testDurationStats]">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th style="width: 20rem; text-align: center">Total Run Time (hrs)</th>
+                                            <th style="width: 10rem; text-align: center">Test Count</th>
+                                            <th style="width: 10rem; text-align: center">Average (s)</th>
+                                            <th style="width: 10rem; text-align: center">Longest (s)</th>
+                                            <th style="width: 10rem; text-align: center">Shortest (s)</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-row>
+                                        <tr>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                row.total }}
+                                            </td>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                row.testCount }}</td>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                row.average }}</td>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                row.longest }}</td>
+                                            <td style="width: fit-content; text-align: center">{{
+                                                row.shortest }}</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
                             </div>
                         </p-card>
                         <p-card id="chart-content" class="w-6 mx-3 mb-3">
