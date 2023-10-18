@@ -7,11 +7,57 @@
             <p-tabPanel header="Summary">
                 <div class="flex flex-column">
                     <div class="flex flex-row">
+                        <p-card id="chart-content" class="w-full ml-3 mb-3">
+                            <div class="w-full">
+                                <p-header>
+                                    <h1 class="mb-3 mt-2 text-black-alpha-90" style="font-size: 18px">
+                                        Overall Progress
+                                    </h1>
+                                </p-header>
+                                <div class="m-0 flex justify-content-center">
+                                    <canvas id="overallProjectPieChart" #overallProjectPieChart></canvas>
+                                </div>
+                                <div class="w-full mt-4">
+                                    <p-table styleClass="p-datatable-gridlines" [value]="[projectStats]">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th style="width: 20rem; text-align: center">Block
+                                                </th>
+                                                <th style="width: 20rem; text-align: center">Target Unit Count</th>
+                                                <th style="width: 20rem; text-align: center">TOTAL</th>
+                                                <th style="width: 20rem; text-align: center">PASS</th>
+                                                <th style="width: 20rem; text-align: center">FAIL</th>
+                                                <th style="width: 20rem; text-align: center">NOT-RUN</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body">
+                                            <tr>
+                                                <td style="width: fit-content; text-align: center">{{
+                                                    selectedProject.blockId
+                                                    }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.target_unit_count }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.total_target_test_count }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.total_pass_count }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.total_fail_count }}</td>
+                                                <td style="width: 20rem; text-align: center">{{
+                                                    projectStats.total_overall_not_run_count }}</td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                        </p-card>
+                    </div>
+                    <div class="flex flex-row">
                         <p-card id="chart-content" class="w-6 ml-3 mb-3" *ngIf="projectStats">
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
-                                        Project Summary
+                                        Current Progress
                                     </h1>
                                 </p-header>
                                 <div class="m-0 flex justify-content-center">
@@ -65,21 +111,26 @@
                                     </ng-template>
                                     <ng-template pTemplate="body" let-row>
                                         <tr>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                row.total }}
+                                            <td style="width: fit-content; text-align: center">
+                                                {{ row.total || '-' }}
                                             </td>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                row.testCount }}</td>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                row.average }}</td>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                row.longest }}</td>
-                                            <td style="width: fit-content; text-align: center">{{
-                                                row.shortest }}</td>
+                                            <td style="width: fit-content; text-align: center">
+                                                {{ row.testCount || '-' }}
+                                            </td>
+                                            <td style="width: fit-content; text-align: center">
+                                                {{ row.average || '-' }}
+                                            </td>
+                                            <td style="width: fit-content; text-align: center">
+                                                {{ row.longest || '-' }}
+                                            </td>
+                                            <td style="width: fit-content; text-align: center">
+                                                {{ row.shortest || '-' }}
+                                            </td>
                                         </tr>
                                     </ng-template>
                                 </p-table>
                             </div>
+
                         </p-card>
                         <p-card id="chart-content" class="w-6 mx-3 mb-3">
                             <div class="w-full">
@@ -119,7 +170,7 @@
                         </p-card>
                     </div>
                     <div class="flex flex-row">
-                        <p-card id="chart-content" class="w-6 -3 mb-3">
+                        <p-card id="chart-content" class="w-6 ml-3 mb-3">
                             <div class="w-full">
                                 <p-header>
                                     <h1 class="my-3 text-black-alpha-90" style="font-size: 18px">
@@ -205,6 +256,7 @@
                                 <th style="width: 20rem; text-align: center">Revision</th>
                                 <th style="width: 20rem; text-align: center">Test Type</th>
                                 <th style="width: 20rem; text-align: center">Block</th>
+                                <th style="width: 20rem; text-align: center">Target Unit Count</th>
                                 <th style="width: 20rem; text-align: center">Date created</th>
                             </tr>
                         </ng-template>
@@ -214,6 +266,7 @@
                                 <td style="text-align: center">{{selectedProject.revisionId}}</td>
                                 <td style="text-align: center">{{selectedProject.testTypeId}}</td>
                                 <td style="text-align: center">{{selectedProject.blockId}}</td>
+                                <td style="text-align: center">{{selectedProject.targetUnitCount}}</td>
                                 <td style="text-align: center">{{selectedProject.dateCreated}}</td>
                             </tr>
                         </ng-template>
@@ -285,8 +338,8 @@
                         <tr>
                             <th style="width: 1rem; text-align: center">#</th>
                             <th style="width: 10rem; text-align: center">DC</th>
+                            <th style="width: 10rem; text-align: center">S-Suite</th>
                             <th style="width: 10rem; text-align: center">Suite</th>
-                            <th style="width: 10rem; text-align: center">SubSuite</th>
                             <th style="width: 10rem; text-align: center">Test Name</th>
                             <th style="width: 15rem; text-align: center">Voltages</th>
                             <th style="width: 20rem; text-align: center">Temperatures</th>

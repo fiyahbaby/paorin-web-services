@@ -387,13 +387,16 @@ export class DataTabComponent implements OnInit, AfterViewInit {
 
   onSubmit() {
     if (this.selectedProject && this.selectedVoltage && this.selectedTemp && this.selectedUnit) {
+      const testDataList = Object.values(this.singleBuildData[0]);
       const combinedList = {
-        buildData: [this.singleBuildData[0][0]],
+        buildData: testDataList,
         project: this.selectedProject,
         voltage: this.selectedVoltage,
         temperature: this.selectedTemp,
         unit: this.selectedUnit
       };
+      console.log(testDataList);
+      console.log(combinedList);
 
       this.portalService.addToProject(combinedList)
         .then(response => {

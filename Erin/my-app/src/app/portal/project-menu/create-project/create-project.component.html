@@ -5,7 +5,7 @@
   <div class="w-full flex align-items-center justify-content-center">
     <p-card class="w-12 h-full card-header" id="create-project-p-card">
       <p-accordion [multiple]="true" class="w-full" [activeIndex]="0">
-        <div class="flex justify-content-end buttons-container top">
+        <div class="flex justify-content-end buttons-container mb-3">
           <ng-container *ngTemplateOutlet="buttons"></ng-container>
         </div>
         <p-accordionTab header="Device" [selected]="true">
@@ -31,7 +31,7 @@
           </div>
         </p-accordionTab>
 
-        <p-accordionTab header="Revision" [selected]="true">
+        <p-accordionTab header="Revision">
           <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
             <app-form-label class="col-2" formLabel="Existing revision"></app-form-label>
             <div>
@@ -53,7 +53,7 @@
           </div>
         </p-accordionTab>
 
-        <p-accordionTab header="Test Type" [selected]="true">
+        <p-accordionTab header="Test Type">
           <div class="flex flex-row gap-2 mb-5 w-full align-items-center">
             <app-form-label class="col-2" formLabel="Existing test type"></app-form-label>
             <div>
@@ -75,16 +75,23 @@
           </div>
         </p-accordionTab>
 
-        <p-accordionTab header="Block" [selected]="true">
+        <p-accordionTab header="Block">
           <div class="flex flex-row gap-2 my-3 w-full align-items-center">
             <app-form-label class="col-2" formLabel="New block"></app-form-label>
             <input pInputText formControlName="block" type="text" class="col-4 input-field" />
             <app-error-field-message [formControl]="block"></app-error-field-message>
-
           </div>
         </p-accordionTab>
 
-        <div class="flex justify-content-end buttons-container bottom">
+        <p-accordionTab header="Unit Count">
+          <div class="flex flex-row gap-2 my-3 w-full align-items-center">
+            <app-form-label class="col-2" formLabel="Target Unit Count"></app-form-label>
+            <input pInputText formControlName="targetUnitCount" type="text" class="col-4 input-field" />
+            <app-error-field-message [formControl]="targetUnitCount"></app-error-field-message>
+          </div>
+        </p-accordionTab>
+
+        <div class="flex justify-content-end buttons-container my-3">
           <ng-container *ngTemplateOutlet="buttons"></ng-container>
         </div>
       </p-accordion>

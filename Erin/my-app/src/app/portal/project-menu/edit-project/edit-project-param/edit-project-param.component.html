@@ -18,6 +18,7 @@
                         <th style="width: 20rem; text-align: center">Test Type</th>
                         <th style="width: 20rem; text-align: center">Block</th>
                         <th style="width: 20rem; text-align: center">Date created</th>
+                        <th style="width: 20rem; text-align: center">Target Unit Count</th>
                         <th style="text-align: center">Actions</th>
                     </tr>
                 </ng-template>
@@ -41,6 +42,10 @@
                         </td>
                         <td style="text-align: center">
                             <input pInputText type="text" [(ngModel)]="selectedProject.dateCreated"
+                                [disabled]="!selectedProject.isEditing" />
+                        </td>
+                        <td style="text-align: center">
+                            <input pInputText type="text" [(ngModel)]="selectedProject.targetUnitCount"
                                 [disabled]="!selectedProject.isEditing" />
                         </td>
                         <td style="text-align: center">
@@ -129,7 +134,19 @@
                 </p-accordionTab>
 
                 <p-accordionTab header="Test List">
-
+                    <p-fileUpload chooseLabel="Select" accept=".xlsx,.csv" [maxFileSize]="1000000"
+                        (onSelect)="handleFileUpload($event.files)">
+                        <ng-template pTemplate="toolbar">
+                            <div *ngIf="!isFileContentExists" class="pt-3">Upload test list file.</div>
+                            <p-progressSpinner *ngIf="isLoading" styleClass="w-3rem h-3rem" strokeWidth="5"
+                                fill="var(--surface-ground)"></p-progressSpinner>
+                        </ng-template>
+                        <ng-template let-file pTemplate="file">
+                            <div>
+                                <div>{{ uploadedFileName }}</div>
+                            </div>
+                        </ng-template>
+                    </p-fileUpload>
                 </p-accordionTab>
                 <p-accordionTab header="Unit">
                     <p id="p-header" class="mt-0 mb-3 p-0 text-black-alpha-90" style="font-size: 18px">

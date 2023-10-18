@@ -62,7 +62,8 @@ export class PortalService {
         revisionId: project.revision_id,
         testTypeId: project.test_type_id,
         blockId: project.block_id,
-        dateCreated: project.date_created
+        dateCreated: project.date_created,
+        targetUnitCount: project.target_unit_count
       };
     }) || [];
   }

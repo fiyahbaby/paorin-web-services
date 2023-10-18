@@ -108,10 +108,10 @@
         <p-accordionTab header="Test List">
           <p-fileUpload chooseLabel="Choose" accept=".xlsx,.csv" [maxFileSize]="1000000"
             (onSelect)="handleFileUpload($event.files)">
-            <!-- <p-fileUpload mode="basic" chooseLabel="Choose" accept=".xlsx,.csv" [maxFileSize]="1000000"
-            (onSelect)="handleFileUpload($event.files)"> -->
             <ng-template pTemplate="toolbar">
-              <div class="pt-3">Upload test list file.</div>
+              <div *ngIf="!isFileContentExists" class="pt-3">Upload test list file.</div>
+              <p-progressSpinner *ngIf="isLoading" styleClass="w-3rem h-3rem" strokeWidth="5"
+                fill="var(--surface-ground)"></p-progressSpinner>
             </ng-template>
             <ng-template let-file pTemplate="file">
               <div>
@@ -119,8 +119,8 @@
               </div>
             </ng-template>
           </p-fileUpload>
-
         </p-accordionTab>
+
         <p-accordionTab header="Unit">
           <form [formGroup]="addUnitForm" class="p-0">
             <div class="w-full">

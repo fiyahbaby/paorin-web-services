@@ -18,7 +18,9 @@ export class AddProjectParamComponent implements OnInit {
   formHasChanges: boolean = false;
   uploadedFileName: string = '';
   fileContent: string | undefined;
+  isFileContentExists: boolean = false;
   csvData: string[][] = [];
+  isLoading: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,7 +35,6 @@ export class AddProjectParamComponent implements OnInit {
       this.selectedProject = params;
     });
     this.selectedProject = JSON.parse(this.selectedProject.data);
-    console.log(this.selectedProject);
     this.initializeForm();
     this.addUnitForm.valueChanges.subscribe(() => {
       this.formHasChanges = true;
@@ -67,6 +68,7 @@ export class AddProjectParamComponent implements OnInit {
     return this.formBuilder.group({
       processCorner: '',
       barcode: '',
+      deviceDNA: '',
       index: index
     });
   }
@@ -119,13 +121,20 @@ export class AddProjectParamComponent implements OnInit {
 
   handleFileUpload(files: File[]): void {
     if (files && files.length > 0) {
+      this.isLoading = true;
       const file = files[0];
       this.uploadedFileName = files[0].name;
       const reader = new FileReader();
       reader.onload = (e) => {
         this.fileContent = reader.result as string;
+        if (this.fileContent) {
+        }
       };
       reader.readAsText(file);
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 1000);
+      this.isFileContentExists = true;
     }
   }
 
@@ -160,11 +169,11 @@ export class AddProjectParamComponent implements OnInit {
       return;
     }
 
+    const errorMessages: string[] = [];
     if (this.formHasChanges) {
       const unitValues = this.addUnitForm.value.units;
       const tempValues = this.addTempForm.value.temperatures;
       const voltageValues = this.addVoltageForm.value.voltages;
-
       const projectData = {
         project_id: this.selectedProject.id,
         voltages: voltageValues,
@@ -172,22 +181,20 @@ export class AddProjectParamComponent implements OnInit {
         units: unitValues
       };
 
-      this.portalService.addProjectParam(projectData).then(response => {
-      })
+      this.portalService.addProjectParam(projectData).then(response => { })
         .catch(error => {
           console.error(error);
+          errorMessages.push('Error adding project parameters. Please try again.');
         });
     }
 
     if (this.fileContent) {
-      const selectedProjectJson = JSON.stringify(this.selectedProject, null, 2);
       const existingData = this.fileContent
         .trim()
         .split('\n')
         .map(line => line.trim())
         .filter(line => line !== '')
         .map(line => line.split(/\s*,\s*/))
-        // .slice(1)
         .map(([dc, voltage, temperature, ssuite, suite, Testname]) => ({ dc, voltage, temperature, ssuite, suite, Testname }));
 
       const combinedData = [...existingData, this.selectedProject];
@@ -201,6 +208,7 @@ export class AddProjectParamComponent implements OnInit {
       })
         .catch(error => {
           console.error(error);
+          errorMessages.push('Error adding test list. Please try again.');
         });
     }
 
@@ -208,12 +216,21 @@ export class AddProjectParamComponent implements OnInit {
     this.fileContent = undefined;
     this.uploadedFileName = '';
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Parameters added successfully.',
-      life: 2000
-    });
+    if (errorMessages.length > 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: errorMessages.join(' '),
+        life: 5000
+      });
+    } else {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Parameters added successfully.',
+        life: 2000
+      });
+    }
     window.scrollTo(0, 0);
 
     setTimeout(() => {

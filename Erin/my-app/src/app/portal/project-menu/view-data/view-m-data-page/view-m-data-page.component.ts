@@ -128,6 +128,7 @@ export class ViewMDataPageComponent implements OnInit {
     await this.portalService.getRecomendedData(buildData)
       .then(response => {
         this.reccomendedDataMap[buildID] = response;
+        console.log(response);
         this.recommendedProject[buildID] = response["recommended_projects"];
         this.recommendedUnit[buildID] = response["unit"];
         this.recommendedVoltage[buildID] = response["voltage"];
@@ -269,7 +270,9 @@ export class ViewMDataPageComponent implements OnInit {
     const promises: Promise<any>[] = [];
     for (const buildID of this.recommededBuildIDList) {
       const buildDataMap = this.singleBuildDataMap[buildID];
+      console.log(buildDataMap);
       const buildDataArray = Object.values(buildDataMap);
+      console.log(buildDataArray);
       const combinedList = {
         buildData: buildDataArray,
         project: this.recommendedProject[buildID][0],

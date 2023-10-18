@@ -11,6 +11,15 @@
   width: 400px !important;
 }
 
+#overallProjectPieChart {
+  height: 400px !important;
+  width: 400px !important;
+}
+
+#overallProjectPieChart:hover {
+  cursor: pointer;
+}
+
 #projectPieChart:hover {
   cursor: pointer;
 }

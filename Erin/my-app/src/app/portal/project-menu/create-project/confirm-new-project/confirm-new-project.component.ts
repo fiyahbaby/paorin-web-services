@@ -25,6 +25,7 @@ export class ConfirmNewProjectComponent implements OnInit {
       this.newProjectParams = params;
     });
     this.newProjectParams = JSON.parse(this.newProjectParams.data);
+    console.log(this.newProjectParams);
   }
 
   onBack() {
@@ -42,12 +43,14 @@ export class ConfirmNewProjectComponent implements OnInit {
     const revision = this.newProjectParams.existingRevisionField || this.newProjectParams.revision;
     const testType = this.newProjectParams.existingTestTypeField || this.newProjectParams.testType;
     const block = this.newProjectParams.block;
+    const targetUnitCount = this.newProjectParams.targetUnitCount;
 
     const projectData = {
       project_name: project_name,
       revision_name: revision,
       test_type_name: testType,
-      block_name: block
+      block_name: block,
+      targetUnitCount: targetUnitCount
     };
 
     this.portalService.submitProjectData(projectData).then((response) => {

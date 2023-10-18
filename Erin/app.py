@@ -40,6 +40,7 @@ class Projects(db.Model):
     test_type_id = db.Column(db.String(255))
     block_id = db.Column(db.String(255))
     date_created = db.Column(db.String(255))
+    target_unit_count = db.Column(db.Integer, nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint(
@@ -277,6 +278,7 @@ def get_projects():
             "test_type_id": project.test_type_id,
             "block_id": project.block_id,
             "date_created": project.date_created,
+            "target_unit_count": project.target_unit_count,
         }
         projects_list.append(project_dict)
     return jsonify(projects_list)
@@ -333,6 +335,7 @@ def create_project():
     revision_id = project_data.get("revision_name")
     test_type_id = project_data.get("test_type_name")
     block_id = project_data.get("block_name")
+    target_unit_count = project_data.get("targetUnitCount")
     date_created = datetime.now(pytz.timezone("Asia/Singapore")).date()
 
     existing_project = Projects.query.filter_by(
@@ -350,6 +353,7 @@ def create_project():
         test_type_id=test_type_id,
         block_id=block_id,
         date_created=date_created,
+        target_unit_count=target_unit_count,
     )
     db.session.add(project)
     db.session.commit()
@@ -359,44 +363,53 @@ def create_project():
 
 @app.route("/api/addProjectParam", methods=["POST"])
 def add_project_param():
-    project_data = request.json
-    project_id = project_data.get("project_id")
-    voltages = project_data.get("voltages")
-    temperatures = project_data.get("temperatures")
-    units = project_data.get("units")
-    existing_project = Projects.query.get(project_id)
+    try:
+        db.session.begin()
+        project_data = request.json
+        project_id = project_data.get("project_id")
+        voltages = project_data.get("voltages")
+        temperatures = project_data.get("temperatures")
+        units = project_data.get("units")
+        existing_project = Projects.query.get(project_id)
 
-    if existing_project:
-        for voltage in voltages:
-            if voltage["name"] and voltage["value"]:
-                v = Voltages(
-                    name=voltage["name"], value=voltage["value"], project_id=project_id
-                )
-                db.session.add(v)
+        if existing_project:
+            for voltage in voltages:
+                if voltage["name"] and voltage["value"]:
+                    v = Voltages(
+                        name=voltage["name"],
+                        value=voltage["value"],
+                        project_id=project_id,
+                    )
+                    db.session.add(v)
 
-        for temperature in temperatures:
-            if temperature["name"] and temperature["value"]:
-                t = Temperatures(
-                    name=temperature["name"],
-                    value=temperature["value"],
-                    project_id=project_id,
-                )
-                db.session.add(t)
+            for temperature in temperatures:
+                if temperature["name"] and temperature["value"]:
+                    t = Temperatures(
+                        name=temperature["name"],
+                        value=temperature["value"],
+                        project_id=project_id,
+                    )
+                    db.session.add(t)
 
-        for unit in units:
-            if unit["processCorner"] and unit["barcode"]:
-                u = Units(
-                    process_corner=unit["processCorner"],
-                    two_d_name=unit["barcode"],
-                    device_dna=unit["deviceDNA"],
-                    project_id=project_id,
-                )
-                db.session.add(u)
+            for unit in units:
+                if unit["processCorner"] and unit["barcode"]:
+                    u = Units(
+                        process_corner=unit["processCorner"],
+                        two_d_name=unit["barcode"],
+                        device_dna=unit["deviceDNA"],
+                        project_id=project_id,
+                    )
+                    db.session.add(u)
 
-        db.session.commit()
-        return {"message": "Project data updated successfully"}
-    else:
-        return {"message": "Project not found"}
+            db.session.commit()
+            print("Project data added successfully")
+            return {"message": "Project data updated successfully"}
+        else:
+            print("Project not found")
+            return {"message": "Project not found"}
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}
 
 
 @app.route("/api/updateProjectData", methods=["PUT"])
@@ -451,6 +464,7 @@ def update_project_data():
         revision_id = project["revisionId"]
         test_type_id = project["testTypeId"]
         block_id = project["blockId"]
+        target_unit_count = project["targetUnitCount"]
         date_created = project["dateCreated"]
 
         updated_project = Projects.query.get(project_id)
@@ -459,12 +473,14 @@ def update_project_data():
             or updated_project.revision_id != revision_id
             or updated_project.test_type_id != test_type_id
             or updated_project.block_id != block_id
+            or updated_project.target_unit_count != target_unit_count
             or updated_project.date_created != date_created
         ):
             updated_project.device_name = device_name
             updated_project.revision_id = revision_id
             updated_project.test_type_id = test_type_id
             updated_project.block_id = block_id
+            updated_project.target_unit_count = target_unit_count
             updated_project.date_created = date_created
 
     db.session.commit()
@@ -547,9 +563,14 @@ def recommend_data():
         device_dna = build_data[0].get("DNA", "")
 
         voltage_string = build_data[0].get("Voltage", "")
-        voltage_split = voltage_string.split("_")
-        if len(voltage_split) > 1:
-            new_voltage_string = voltage_split[1]
+        if voltage_string == "0":
+            new_voltage_string = ""  # or set it to some default value
+        elif "_" in voltage_string:
+            voltage_split = voltage_string.split("_")
+            if len(voltage_split) > 1:
+                new_voltage_string = voltage_split[1]
+        else:
+            new_voltage_string = voltage_string
 
         voltage_match = re.search(r"[\d.]+", voltage_string)
         if voltage_match:
@@ -705,45 +726,28 @@ def calculate_temperature_stats(data):
 
 @app.route("/api/addTestList", methods=["POST"])
 def addTestList():
-    file_content = request.json
-    if file_content:
-        file_content = remove_carriage_return(file_content)
-        processed_tests, project_details = process_test_list(file_content)
+    try:
+        db.session.begin()
+        file_content = request.json
+        if file_content:
+            file_content = remove_carriage_return(file_content)
+            processed_tests, project_details = process_test_list(file_content)
 
-        project_id = project_details.get("id")
-        project = Projects.query.filter_by(id=project_id).first()
-        if not project:
-            return jsonify({"error": "Project not found"})
+            project_id = project_details.get("id")
+            project = Projects.query.filter_by(id=project_id).first()
+            if not project:
+                return jsonify({"error": "Project not found"})
 
-        error_set = set()
+            TestList.query.filter_by(project_id=project_id).delete()
 
-        processed_tests = processed_tests[1:]
-        for test in processed_tests:
-            voltage_name = test["voltage"]
-            temperature_name = test["temperature"]
+            error_set = set()
 
-            # Fetch the voltage and temperature objects by searching for the exact matching names
-            voltage = Voltages.query.filter_by(
-                name=voltage_name, project_id=project_id
-            ).first()
-            temperature = Temperatures.query.filter_by(
-                value=temperature_name, project_id=project_id
-            ).first()
-
-            if not voltage:
-                error_set.add(f"Invalid voltage: {voltage_name}")
-            if not temperature:
-                error_set.add(f"Invalid temperature: {temperature_name}")
-
-        errors = list(error_set)
-
-        if errors:
-            return jsonify({"errors": errors})
-        else:
-            # All data is valid, now commit to the database
+            processed_tests = processed_tests[1:]
             for test in processed_tests:
                 voltage_name = test["voltage"]
                 temperature_name = test["temperature"]
+
+                # Fetch the voltage and temperature objects by searching for the exact matching names
                 voltage = Voltages.query.filter_by(
                     name=voltage_name, project_id=project_id
                 ).first()
@@ -751,21 +755,45 @@ def addTestList():
                     value=temperature_name, project_id=project_id
                 ).first()
 
-                new_test = TestList(
-                    dc=test["dc"],
-                    s_suite=test["ssuite"],
-                    suite=test["suite"],
-                    name=test["Testname"],
-                    project_id=project_id,
-                    voltage_id=voltage.id if voltage else None,
-                    temperature_id=temperature.id if temperature else None,
-                )
-                db.session.add(new_test)
+                if not voltage:
+                    error_set.add(f"Invalid voltage: {voltage_name}")
+                if not temperature:
+                    error_set.add(f"Invalid temperature: {temperature_name}")
 
-            db.session.commit()
-            return {"success": "File content uploaded without errors."}
-    else:
-        return {"error": "No file content uploaded."}
+            errors = list(error_set)
+
+            if errors:
+                return jsonify({"errors": errors})
+            else:
+                # All data is valid, now commit to the database
+                for test in processed_tests:
+                    voltage_name = test["voltage"]
+                    temperature_name = test["temperature"]
+                    voltage = Voltages.query.filter_by(
+                        name=voltage_name, project_id=project_id
+                    ).first()
+                    temperature = Temperatures.query.filter_by(
+                        value=temperature_name, project_id=project_id
+                    ).first()
+
+                    new_test = TestList(
+                        dc=test["dc"],
+                        s_suite=test["ssuite"],
+                        suite=test["suite"],
+                        name=test["Testname"],
+                        project_id=project_id,
+                        voltage_id=voltage.id if voltage else None,
+                        temperature_id=temperature.id if temperature else None,
+                    )
+                    db.session.add(new_test)
+
+                db.session.commit()
+                return {"success": "File content uploaded without errors."}
+        else:
+            return {"error": "No file content uploaded."}
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}
 
 
 def remove_carriage_return(data_list):
@@ -918,8 +946,10 @@ def add_to_project():
     updated_tests = 0
     new_tests = 0
     for test_data in build_data:
+        test_id = test_data["Build ID"]
         existing_test_instance = TestInstances.query.filter_by(
             project_id=project_id,
+            test_id=test_id,
             unit_id=unit_id,
             voltage_id=voltage_id,
             temperature_id=temperature_id,
@@ -928,58 +958,61 @@ def add_to_project():
             test_name=test_data["Test Name"],
         ).first()
 
-        if existing_test_instance and test_data["Test Result"] == "PASS":
-            existing_test_instance.result = test_data["Test Result"]
-            existing_test_instance.max_temp = test_data["Max. Temp"]
-            existing_test_instance.min_temp = test_data["Min. Temp"]
-            existing_test_instance.run_time = test_data["Run Time"]
+        if existing_test_instance:
+            if test_data["Test Result"] == "PASS":
+                existing_test_instance.result = test_data["Test Result"]
+                existing_test_instance.max_temp = test_data["Max. Temp"]
+                existing_test_instance.min_temp = test_data["Min. Temp"]
+                existing_test_instance.run_time = test_data["Run Time"]
 
-            existing_test_instance.vcc_int = (
-                float(test_data["VCCINT"])
-                if test_data["VCCINT"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_pmc = (
-                float(test_data["VCC_PMC"])
-                if test_data["VCC_PMC"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_psfp = (
-                float(test_data["VCC_PSFP"])
-                if test_data["VCC_PSFP"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_ram = (
-                float(test_data["VCC_RAM"])
-                if test_data["VCC_RAM"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_soc = (
-                float(test_data["VCC_SOC"])
-                if test_data["VCC_SOC"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_batt = (
-                float(test_data["VCC_BATT"])
-                if test_data["VCC_BATT"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vcc_aux = (
-                float(test_data["VCCAUX"])
-                if test_data["VCCAUX"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vccaux_pmc = (
-                float(test_data["VCCAUX_PMC"])
-                if test_data["VCCAUX_PMC"] not in (None, 0)
-                else None
-            )
-            existing_test_instance.vccaux_sysmon = (
-                float(test_data["VCCAUX_SYSMON"])
-                if test_data["VCCAUX_SYSMON"] not in (None, 0)
-                else None
-            )
-            updated_tests += 1
+                existing_test_instance.vcc_int = (
+                    float(test_data["VCCINT"])
+                    if test_data["VCCINT"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_pmc = (
+                    float(test_data["VCC_PMC"])
+                    if test_data["VCC_PMC"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_psfp = (
+                    float(test_data["VCC_PSFP"])
+                    if test_data["VCC_PSFP"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_ram = (
+                    float(test_data["VCC_RAM"])
+                    if test_data["VCC_RAM"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_soc = (
+                    float(test_data["VCC_SOC"])
+                    if test_data["VCC_SOC"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_batt = (
+                    float(test_data["VCC_BATT"])
+                    if test_data["VCC_BATT"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vcc_aux = (
+                    float(test_data["VCCAUX"])
+                    if test_data["VCCAUX"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vccaux_pmc = (
+                    float(test_data["VCCAUX_PMC"])
+                    if test_data["VCCAUX_PMC"] not in (None, 0)
+                    else None
+                )
+                existing_test_instance.vccaux_sysmon = (
+                    float(test_data["VCCAUX_SYSMON"])
+                    if test_data["VCCAUX_SYSMON"] not in (None, 0)
+                    else None
+                )
+                updated_tests += 1
+            else:
+                continue
         else:
             test_instance = TestInstances(
                 project_id=project_id,
@@ -1431,9 +1464,13 @@ def get_test_statistics():
         jsonify({"message": "No project ID provided."})
     try:
         unit_count = Units.query.filter(Units.project_id == project_id).count()
+        target_unit_count = Projects.query.get(project_id).target_unit_count
         total_test_count = (
             TestList.query.filter_by(project_id=project_id).count()
         ) * unit_count
+        total_target_test_count = (
+            TestList.query.filter_by(project_id=project_id).count()
+        ) * target_unit_count
         total_test_instance_count = TestInstances.query.filter_by(
             project_id=project_id
         ).count()
@@ -1445,6 +1482,9 @@ def get_test_statistics():
             project_id=project_id, result="FAIL"
         ).count()
         total_not_run_count = total_test_count - total_pass_count - total_fail_count
+        total_overall_not_run_count = (
+            total_target_test_count - total_pass_count - total_fail_count
+        )
 
         unique_test_count = (
             db.session.query(TestList.dc, TestList.name)
@@ -1466,6 +1506,18 @@ def get_test_statistics():
                 (total_not_run_count / total_test_count) * 100, 2
             ),
             "unique_test_count": unique_test_count,
+            "total_target_test_count": total_target_test_count,
+            "total_overall_not_run_count": total_overall_not_run_count,
+            "target_unit_count": target_unit_count,
+            "overall_project_progress": round(
+                (total_pass_count / total_target_test_count) * 100, 2
+            ),
+            "overall_project_fail_rate": round(
+                (total_fail_count / total_target_test_count) * 100, 2
+            ),
+            "overall_project_not_run_rate": round(
+                (total_overall_not_run_count / total_target_test_count) * 100, 2
+            ),
         }
         return jsonify(response)
 

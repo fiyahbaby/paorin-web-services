@@ -87,20 +87,26 @@ export class CreateProjectComponent implements OnInit {
     return this.createProjectForm.get('block') as FormControl;
   }
 
+  get targetUnitCount() {
+    return this.createProjectForm.get('targetUnitCount') as FormControl;
+  }
+
   private initFormControl(): void {
     this.createProjectForm = this.formBuilder.group({
-      existingDevice: [{ value: false, disabled: false }, Validators.required],
-      existingRevision: [{ value: false, disabled: false }, Validators.required,],
-      existingTestType: [{ value: false, disabled: false }, Validators.required,],
-      deviceFamily: [{ value: '', disabled: false }, Validators.required],
-      revision: [{ value: '', disabled: false }, Validators.required],
-      testType: [{ value: '', disabled: false }, Validators.required],
-      block: [{ value: '', disabled: false }, Validators.required],
-      existingDeviceField: [{ value: '', disabled: true }, [Validators.required],],
-      existingRevisionField: [{ value: '', disabled: true }, Validators.required,],
-      existingTestTypeField: [{ value: '', disabled: true }, Validators.required,],
+      existingDevice: [false, Validators.required],
+      existingRevision: [false, Validators.required],
+      existingTestType: [false, Validators.required],
+      deviceFamily: ['', Validators.required],
+      revision: ['', Validators.required],
+      testType: ['', Validators.required],
+      block: ['', Validators.required],
+      targetUnitCount: [''],
+      existingDeviceField: ['', [Validators.required]],
+      existingRevisionField: ['', Validators.required],
+      existingTestTypeField: ['', Validators.required],
     });
   }
+
 
   private async initSelectOptions() {
     this.existingDeviceOptions = await this.getDevice();

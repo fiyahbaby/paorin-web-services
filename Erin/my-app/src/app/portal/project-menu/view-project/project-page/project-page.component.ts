@@ -15,10 +15,12 @@ export class ProjectPageComponent implements OnInit {
   @ViewChild('stackedBarChart') stackedBarChartRef!: ElementRef;
   @ViewChild('cornerProgressChart') cornerProgressChartRef!: ElementRef;
   @ViewChild('projectPieChart') projectPieChartRef!: ElementRef;
+  @ViewChild('overallProjectPieChart') overallProjectPieChartRef!: ElementRef;
   @ViewChild('unitStatsChartData') unitProgressChartRef!: ElementRef;
   stackedBarChart: Chart | undefined;
   cornerProgressChart: Chart | undefined;
   projectPieChart: Chart | undefined;
+  overallProjectPieChart: Chart | undefined;
   unitStatsChartData: Chart | undefined;
   unitStatsChartOptions: any;
   selectedProject: any;
@@ -42,6 +44,9 @@ export class ProjectPageComponent implements OnInit {
   isProjectSummaryPassEnabled: boolean = true;
   isProjectSummaryFailEnabled: boolean = true;
   isProjectSummaryNotRunEnabled: boolean = true;
+  isOverallProjectSummaryPassEnabled: boolean = true;
+  isOverallProjectSummaryFailEnabled: boolean = true;
+  isOverallProjectSummaryNotRunEnabled: boolean = true;
   isUnitSummaryPassEnabled: boolean = true;
   isUnitSummaryFailEnabled: boolean = true;
   isUnitSummaryNotRunEnabled: boolean = true;
@@ -79,6 +84,7 @@ export class ProjectPageComponent implements OnInit {
     this.voltageVsBlockChart();
     await this.getVoltageVsCornerData();
     this.createCornerProgressChart();
+    this.createOverallChart();
     this.createProjectChart();
     this.createUnitStatsChart();
     this.getTestDuration();
@@ -536,6 +542,103 @@ export class ProjectPageComponent implements OnInit {
     });
   }
 
+  createOverallChart(): void {
+    if (!this.projectStats) {
+      return;
+    }
+
+    const projectData = this.projectStats;
+    const totalValue =
+      (this.isOverallProjectSummaryPassEnabled ? projectData.overall_project_progress : 0) +
+      (this.isOverallProjectSummaryFailEnabled ? projectData.overall_project_fail_rate : 0) +
+      (this.isOverallProjectSummaryNotRunEnabled ? projectData.overall_project_not_run_rate : 0);
+
+    const passData = this.isOverallProjectSummaryPassEnabled ? parseFloat(((projectData.overall_project_progress / totalValue) * 100).toFixed(2)) : 0;
+    const failData = this.isOverallProjectSummaryFailEnabled ? parseFloat(((projectData.overall_project_fail_rate / totalValue) * 100).toFixed(2)) : 0;
+    const notRunData = this.isOverallProjectSummaryNotRunEnabled ? parseFloat(((projectData.overall_project_not_run_rate / totalValue) * 100).toFixed(2)) : 0;
+    const pieChartCtx = this.overallProjectPieChartRef.nativeElement.getContext('2d');
+
+    if (this.overallProjectPieChart) {
+      this.overallProjectPieChart.destroy();
+    }
+
+    const labels = ['PASS', 'FAIL', 'NOT-RUN'];
+    this.overallProjectPieChart = new Chart(pieChartCtx, {
+      type: 'pie' as ChartType,
+      data: {
+        labels: labels,
+        datasets: [{
+          data: [passData, failData, notRunData],
+          backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+        }],
+      },
+      options: {
+        onClick: (event, chartElements) => {
+          const clickedIndex = chartElements[0].index;
+          const clickedCategory = labels[clickedIndex];
+          const params = {
+            projectID: this.projectID,
+            summaryItem: clickedCategory,
+            category: 'project-result'
+          }
+          if (clickedCategory === 'FAIL') {
+            this.router.navigate(['item-summary'], {
+              relativeTo: this.route,
+              queryParams:
+              {
+                data: JSON.stringify(params),
+              }
+            });
+          }
+        },
+        responsive: true,
+        plugins: {
+          datalabels: {
+            color: 'black',
+            display: (context) => {
+              const value = context.dataset.data[context.dataIndex];
+              return value !== 0;
+            },
+            formatter: (value: any) => {
+              return value + '%';
+            },
+          },
+          legend: {
+            onClick: (event, legendItem) => {
+              const datasetIndex = legendItem.index;
+              if (datasetIndex === 0) {
+                this.isOverallProjectSummaryPassEnabled = !this.isOverallProjectSummaryPassEnabled;
+              } else if (datasetIndex === 1) {
+                this.isOverallProjectSummaryFailEnabled = !this.isOverallProjectSummaryFailEnabled;
+              } else if (datasetIndex === 2) {
+                this.isOverallProjectSummaryNotRunEnabled = !this.isOverallProjectSummaryNotRunEnabled;
+              }
+              this.createOverallChart();
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const datasetIndex = context.datasetIndex;
+                const value = context.formattedValue;
+                if (datasetIndex === 0 && !this.isOverallProjectSummaryPassEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 1 && !this.isOverallProjectSummaryFailEnabled) {
+                  return '';
+                }
+                if (datasetIndex === 2 && !this.isOverallProjectSummaryNotRunEnabled) {
+                  return '';
+                }
+                return value + '%';
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   createProjectChart(): void {
     if (!this.projectStats) {
       return;
@@ -575,13 +678,15 @@ export class ProjectPageComponent implements OnInit {
             summaryItem: clickedCategory,
             category: 'project-result'
           }
-          this.router.navigate(['item-summary'], {
-            relativeTo: this.route,
-            queryParams:
-            {
-              data: JSON.stringify(params),
-            }
-          });
+          if (clickedCategory === 'FAIL') {
+            this.router.navigate(['item-summary'], {
+              relativeTo: this.route,
+              queryParams:
+              {
+                data: JSON.stringify(params),
+              }
+            });
+          }
         },
         responsive: true,
         plugins: {
@@ -748,19 +853,25 @@ export class ProjectPageComponent implements OnInit {
   async getTestDuration() {
     this.testDuration = await this.portalService.getTestDuration(this.projectID);
     this.testDurationList = this.testDuration.passing_test_durations;
-    const total = this.testDuration?.total_run_time;
-    const testCount = this.testDurationList.length;
-    const longest = Math.max(...this.testDurationList);
-    const shortest = Math.min(...this.testDurationList);
+    const total = this.isNumber(this.testDuration?.total_run_time) ? this.testDuration.total_run_time : '-';
+    const testCount = this.isNumber(this.testDurationList.length) ? this.testDurationList.length : '-';
+    const longest = this.isNumber(Math.max(...this.testDurationList)) ? Math.max(...this.testDurationList) : '-';
+    const shortest = this.isNumber(Math.min(...this.testDurationList)) ? Math.min(...this.testDurationList) : '-';
     const sum = this.testDurationList.reduce((acc, value) => acc + value, 0);
     const average = sum / this.testDurationList.length;
-    const average_rounded = Math.round(average);
+    const average_rounded = this.isNumber(average) ? Math.round(average) : '-';
+
     this.testDurationStats = {
       total: total,
       average: average_rounded,
       longest: longest,
       shortest: shortest,
       testCount: testCount
-    }
+    };
   }
+
+  isNumber(value: any): boolean {
+    return typeof value === 'number' && !isNaN(value) && isFinite(value);
+  }
+
 }
